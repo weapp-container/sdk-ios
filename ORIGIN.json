@@ -86,7 +86,7 @@
       "sourcePath": "examples/sdk/ios/Sources/Consumer.swift",
       "destinationPath": "examples/consumer/Sources/Consumer.swift",
       "sourceSha256": "f7f34e922b3af3348a6b7ff198445cdf363d0cb8fbceaa74b3580427ed5ad81f",
-      "destinationSha256": "f84550015be213479d87fee925fd8ad6f1572294f64c824da7bc5d8406b238cd",
+      "destinationSha256": "d01d9a2da79f30831e7a4fdb6ec8467603e24c857bb4f42459ea241246c5e238",
       "transformed": true
     },
     {

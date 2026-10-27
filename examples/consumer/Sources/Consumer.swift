@@ -84,13 +84,12 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
         facts.removeValue(forKey: "scroll"); facts.removeValue(forKey: "geometry")
         hostScroll.addSubview(parentDragArea); hostScroll.addSubview(surfaceHost)
         view.setNeedsLayout(); view.layoutIfNeeded()
-        do { try session.sendMessage(.object(["op": .string("inspect")])) } catch { fail(error) }
         facts["nested"] = .bool(true); publish()
     }
     @objc private func resetParent() { hostScroll.setContentOffset(.zero, animated: false); publish() }
     func scrollViewDidScroll(_ scrollView: UIScrollView) { publish() }
     private func install() throws {
-        facts["loaded"] = .bool(false); facts["completedFrames"] = .number(0); facts.removeValue(forKey: "initial")
+        facts["loaded"] = .bool(false); facts["completedFrames"] = .number(0); facts.removeValue(forKey: "initial"); facts.removeValue(forKey: "geometry")
         let s = WeappContainerSession(configuration: .init(storageKey: "sdk-ios-consumer/account"))
         try s.registerHostMethod("native.echo") { value in .object(["echo": value, "native": .bool(true)]) }
         try s.registerHostMethod("native.delayed") { value in
@@ -104,7 +103,13 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             facts["presentedRevision"] = .number(Double(revision))
             facts["completedFrames"] = .number(Double(v.presentedFrameCount))
             facts["stateAfterPresentation"] = try? s.state()
-            facts["capabilitiesAfterPresentation"] = try? s.capabilities(); publish()
+            facts["capabilitiesAfterPresentation"] = try? s.capabilities()
+            // Geometry is valid only after this revision has actually been
+            // presented. Loading and resizing may still be awaiting Metal.
+            if facts["geometry"] == nil, facts["stateAfterPresentation"]?["inputEnabled"].bool == true {
+                do { try s.sendMessage(.object(["op": .string("inspect")])) } catch { fail(error) }
+            }
+            publish()
         }
         s.onEvent = { [weak self, weak v, weak s] event in
             guard let self, let v, let s else { return }
@@ -146,7 +151,6 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
                 facts["capabilities"] = try s.capabilities()
                 facts["loaded"] = .bool(true)
                 try s.sendMessage(.object(["kind": .string("echo"), "value": .string("host-to-js")]))
-                try s.sendMessage(.object(["op": .string("inspect")]))
                 publish()
             } catch { fail(error) }
         }
