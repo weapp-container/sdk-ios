@@ -2,11 +2,19 @@ import UIKit
 import WeappContainer
 
 @main final class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: "SDK Consumer", sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = ConsumerSceneDelegate.self
+        return configuration
+    }
+}
+
+final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let window = UIWindow(frame: UIScreen.main.bounds)
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let scene = scene as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: scene)
         window.rootViewController = ConsumerController(); window.makeKeyAndVisible(); self.window = window
-        return true
     }
 }
 

@@ -86,7 +86,7 @@
       "sourcePath": "examples/sdk/ios/Sources/Consumer.swift",
       "destinationPath": "examples/consumer/Sources/Consumer.swift",
       "sourceSha256": "f7f34e922b3af3348a6b7ff198445cdf363d0cb8fbceaa74b3580427ed5ad81f",
-      "destinationSha256": "9f1a3705dd3d7bd650b868bddce21bee63e49c7e40a5fea88e7df8b0636df8e5",
+      "destinationSha256": "f84550015be213479d87fee925fd8ad6f1572294f64c824da7bc5d8406b238cd",
       "transformed": true
     },
     {
@@ -100,8 +100,8 @@
       "sourcePath": "examples/sdk/ios/make-project.mjs",
       "destinationPath": "examples/consumer/make-project.mjs",
       "sourceSha256": "24402d05f10008b5d4d4d22663df7008d04622d1624a16c7126ec4b3ceaf5f17",
-      "destinationSha256": "24402d05f10008b5d4d4d22663df7008d04622d1624a16c7126ec4b3ceaf5f17",
-      "transformed": false
+      "destinationSha256": "0e3641a410060273210d7df0fc3d3cecce6857ee767db435dc607423803f0fb0",
+      "transformed": true
     },
     {
       "sourcePath": "scripts/sdk-ios-smoke.mjs",
