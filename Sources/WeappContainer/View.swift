@@ -147,6 +147,9 @@ import WeappContainerNative
     private var started: TimeInterval = 0
     private var moved = false
     private var ignoringTouches = false
+    private var pendingInput: [(events: [WeappJSON], deadline: TimeInterval)] = []
+    private var pendingInputContext: WeappJSON?
+    private var gestureContext: WeappJSON?
 
     public init(session: WeappContainerSession) throws {
         self.session = session
@@ -161,6 +164,7 @@ import WeappContainerNative
         surface.onPresented = { [weak self] revision in
             guard let self else { return }
             presentedFrameCount &+= 1; lastPresentedRevision = revision; onPresented?(revision)
+            flushPendingInput()
         }
         let displayLink = CADisplayLink(target: target, selector: #selector(DisplayTarget.tick))
         displayLink.preferredFramesPerSecond = 60; displayLink.isPaused = true
@@ -203,6 +207,7 @@ import WeappContainerNative
     public override func didMoveToSuperview() { super.didMoveToSuperview(); if surface != nil { synchronizeActivity() } }
     public override func didMoveToWindow() {
         super.didMoveToWindow()
+        cancelTouch()
         let scene = window?.windowScene.map(ObjectIdentifier.init)
         if scene != observedScene { observedScene = scene; sceneActive = true }
         surface.invalidate(); setNeedsLayout(); synchronizeActivity()
@@ -237,6 +242,7 @@ import WeappContainerNative
     fileprivate func display() {
         guard !detached else { return }
         synchronizeActivity()
+        flushPendingInput()
         do { try surface.present() } catch { session.report(error) }
     }
     private func activity(_ n: Notification) {
@@ -291,6 +297,7 @@ import WeappContainerNative
         if activeCount(event) == 0 { ignoringTouches = false }
     }
     private func cancelTouch() {
+        pendingInput.removeAll(); pendingInputContext = nil; gestureContext = nil
         guard let t = touch else { return }
         let value = pointer("touchcancel", active: false, time: t.timestamp); touch = nil
         if session.isLoaded, session.isForeground {
@@ -298,7 +305,58 @@ import WeappContainerNative
         }
     }
     private func activeCount(_ event: UIEvent?) -> Int { event?.allTouches?.filter { $0.phase != .ended && $0.phase != .cancelled }.count ?? 0 }
-    private func dispatch(_ values: [WeappJSON]) { do { try session.input(values) } catch { session.report(error) } }
+    private func dispatch(_ values: [WeappJSON]) {
+        do {
+            let state = try session.state(), context = inputContext(state)
+            if values.first?["type"].string == "touchstart" { gestureContext = context }
+            guard gestureContext == context else { retireInput(); return }
+            if pendingInputContext != context { pendingInput.removeAll(); pendingInputContext = context }
+            // OS touch delivery may outrun completed GPU frames. Coalesce
+            // only consecutive moves; retain start/end/tap batch ordering.
+            if values.count == 1, values[0]["type"].string == "touchmove",
+               let previous = pendingInput.last, previous.events.count == 1,
+               previous.events[0]["type"].string == "touchmove" {
+                pendingInput[pendingInput.count - 1].events = values
+            } else {
+                guard pendingInput.count < 64 else {
+                    cancelTouch()
+                    throw WeappContainerError(code: "ERR_INPUT_OVERFLOW", message: "Input exceeded the bounded presentation queue")
+                }
+                pendingInput.append((values, CACurrentMediaTime() + 2))
+            }
+            flushPendingInput()
+        } catch { session.report(error) }
+    }
+    private func flushPendingInput() {
+        guard !pendingInput.isEmpty, session.canPresent else { return }
+        do {
+            let state = try session.state()
+            guard inputContext(state) == pendingInputContext else { retireInput(); return }
+            guard pendingInput[0].deadline > CACurrentMediaTime() else {
+                cancelTouch()
+                throw WeappContainerError(code: "ERR_TIMEOUT", message: "Input awaited GPU presentation for more than two seconds")
+            }
+            guard state["inputEnabled"].bool == true else { return }
+            let batch = pendingInput.removeFirst()
+            do { try session.input(batch.events) }
+            catch {
+                if inputContext(try session.state()) == pendingInputContext { pendingInput.insert(batch, at: 0) }
+                throw error
+            }
+        } catch let error as WeappContainerError where error.code == "ERR_CANCELLED" {
+            // A runtime completion accepted another frame before input. Keep
+            // this batch until its actual presentation acknowledgement.
+        } catch {
+            retireInput(); session.report(error)
+        }
+    }
+    private func inputContext(_ state: WeappJSON) -> WeappJSON {
+        .object(["generation": state["generation"], "page": state["page"]])
+    }
+    private func retireInput() {
+        pendingInput.removeAll(); pendingInputContext = nil; gestureContext = nil
+        if touch != nil { touch = nil; ignoringTouches = true }
+    }
     private func pointer(_ type: String, active: Bool, time: TimeInterval) -> WeappJSON {
         let x = Double(last.x * max(1, bounds.width.rounded()) / max(1, bounds.width))
         let y = Double(last.y * max(1, bounds.height.rounded()) / max(1, bounds.height))
