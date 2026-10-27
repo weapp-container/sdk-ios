@@ -130,7 +130,8 @@
     "version": "0.1.0-preview.2",
     "abiVersion": 1,
     "license": "Separate private binary license; no runtime source included",
-    "pinFile": "runtime-artifacts.lock.json"
+    "pinFile": "runtime-artifacts.lock.json",
+    "pinSha256": "c574d527f87160a2b28ff416dfb0f9da43e16c2989de2b83880b71e1874f3f0b"
   },
   "reviewedCopies": [
     {
@@ -160,7 +161,7 @@
     },
     {
       "destinationPath": "README.md",
-      "destinationSha256": "cb8f357d041c5aeb64218e63339f657c25b405e3f0573a9c3f0fe88497b4ba7d",
+      "destinationSha256": "d1fc047bfc5ff4fe0dcd246bc5713f2ff22309df165d2a4474ceacf257d37ec5",
       "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
     },
     {
@@ -222,6 +223,11 @@
       "destinationPath": "tools/test-presentation-input.mjs",
       "destinationSha256": "9d608c08be647002233a9569c04c41bbdda169b930dc823067d44aa47a399993",
       "purpose": "Public presentation input state machine and deterministic ACK/cancellation regression tests; no private core implementation"
+    },
+    {
+      "destinationPath": "runtime-artifacts.lock.json",
+      "destinationSha256": "c574d527f87160a2b28ff416dfb0f9da43e16c2989de2b83880b71e1874f3f0b",
+      "purpose": "Reviewed immutable preview.2 manifest: seven private runtime slices and three host SDK archives, exact ABI1 and SHA256 pins; contains no runtime source or credentials"
     }
   ]
 }

@@ -20,6 +20,8 @@ For an authorized offline copy use `--artifact-dir /absolute/runtime-archives`, 
 
 Preparation atomically installs verified inputs under `.runtime/install/native` and `.runtime/install/licenses`. It preserves the prior installation on failure. Generated archives, binaries, caches and credentials are excluded from Git. `--native-root` below also accepts an explicitly supplied local distribution with matching per-target `build.json`, SHA-256, the reviewed C header and runtime license; local input does not imply private-release authentication.
 
+Exact runtime distributions retain the producer's original `build.json` and bind its bytes with `runtime-distribution.json`. The selection accounts for every producer artifact and can omit only the unused iOS dynamic library or Android static archive. Required libraries, the reviewed header and platform notices remain mandatory. Inputs without this selection receipt continue to verify the full producer inventory.
+
 ## Build and embed
 
 Requirements: macOS with Xcode/Apple SDKs, Swift 5.9+, deployment target iOS 16. The runtime inputs contain arm64 device, arm64 simulator and x86_64 simulator archives. The Swift product/module stays `WeappContainer`.
@@ -47,5 +49,7 @@ npm run test:input # macOS Swift compiler; no private runtime required
 ```
 
 These are wrapper input-contract and presentation queue tests, not runtime, GPU, device, performance or WeChat parity results. The queue tests use the production Swift state machine and a changing ACK gate to cover cancellation while a frame is pending, phase ordering, retirement, bounds and timeouts. Lifecycle retirement clears queued input; UIKit gesture cancellation waits for the current frame acknowledgement. This split starts with a new version: historical preview.1 results are not attributed to preview.2. Platform build/UI reports must be regenerated against the exact pinned runtime before claiming that scope passed. Native IME, complete accessibility and advanced gestures remain separate limitations.
+
+The 2026-10-27 preview.2 report for wrapper source `58977df` records nine production input-queue cases and one complete UI test on an arm64 iOS 27 simulator using completed Metal frames. The UI test covers two sessions, OS touch and continuous scrolling, nested host scrolling, pinch recovery, navigation, background/foreground, device rotation and durable reopening. Device arm64 and simulator x86_64 were compiled and linked; physical-device and x86_64 execution, performance and WeChat parity remain unmeasured. The runtime archive identity is fixed by the release lock, and the independent-consumer reports retain their exact source commits.
 
 `ORIGIN.json` lists the allowlisted source paths, original source SHA-256, transformed destination SHA-256 and reviewed C-header contract hash. This repository includes no core implementation, Git history from the original repository, binary runtime, cache or credentials.
