@@ -43,8 +43,9 @@ Consumer sources and the Xcode project generator are in `examples/consumer`. The
 
 ```sh
 npm test
+npm run test:input # macOS Swift compiler; no private runtime required
 ```
 
-These are wrapper input-contract tests, not runtime, GPU, device, performance or WeChat parity results. This split starts with a new version: historical preview.1 results are not attributed to preview.2. Platform build/UI reports must be regenerated against the exact pinned runtime before claiming that scope passed. Native IME, complete accessibility and advanced gestures remain separate limitations.
+These are wrapper input-contract and presentation queue tests, not runtime, GPU, device, performance or WeChat parity results. The queue tests use the production Swift state machine and a changing ACK gate to cover cancellation while a frame is pending, phase ordering, retirement, bounds and timeouts. Lifecycle retirement clears queued input; UIKit gesture cancellation waits for the current frame acknowledgement. This split starts with a new version: historical preview.1 results are not attributed to preview.2. Platform build/UI reports must be regenerated against the exact pinned runtime before claiming that scope passed. Native IME, complete accessibility and advanced gestures remain separate limitations.
 
 `ORIGIN.json` lists the allowlisted source paths, original source SHA-256, transformed destination SHA-256 and reviewed C-header contract hash. This repository includes no core implementation, Git history from the original repository, binary runtime, cache or credentials.

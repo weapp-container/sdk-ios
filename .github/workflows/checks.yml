@@ -16,3 +16,13 @@ jobs:
         run: node tools/check-origin.mjs
       - name: Test standalone wrapper input contracts
         run: npm test
+  presentation-input:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test production gesture queue against presentation state changes
+        run: node tools/test-presentation-input.mjs

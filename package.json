@@ -13,6 +13,7 @@
     "runtime:prepare": "node tools/prepare-runtime.mjs",
     "build": "node tools/build.mjs",
     "test": "node --test test/*.test.mjs",
+    "test:input": "node tools/test-presentation-input.mjs",
     "check:origin": "node tools/check-origin.mjs"
   }
 }

@@ -44,7 +44,7 @@
       "sourcePath": "sdk/ios/Sources/WeappContainer/View.swift",
       "destinationPath": "Sources/WeappContainer/View.swift",
       "sourceSha256": "6724c26dc9d5141bcc1005a08ce2ed49e42faa9a69315c25e97cf01737e6a8e3",
-      "destinationSha256": "7b5919069a4eead3c59ec337043efdd6577064447184bc2586bb1db7d6a1cfeb",
+      "destinationSha256": "0392fb5811f38d70b6ae17bb61f991d8b19cce88210a3fbc544516db77859756",
       "transformed": true
     },
     {
@@ -160,12 +160,12 @@
     },
     {
       "destinationPath": "README.md",
-      "destinationSha256": "abce72aa9d0c530ba5ac7519980318426715bdf624410870a934f13ad408535a",
+      "destinationSha256": "cb8f357d041c5aeb64218e63339f657c25b405e3f0573a9c3f0fe88497b4ba7d",
       "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
     },
     {
       "destinationPath": "package.json",
-      "destinationSha256": "aa27dfeec63712e3388ec0c3a9bca2a4b1b4b03a85322acbcd25078948b9d4ed",
+      "destinationSha256": "574cd45798fb2b940f00a09e8008da32921b24c309e60a412fa15c4b35548913",
       "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
     },
     {
@@ -205,8 +205,23 @@
     },
     {
       "destinationPath": ".github/workflows/checks.yml",
-      "destinationSha256": "25bd65ad89c1686fd5866e359788028fe9a5772cacb5f1ceae405ab2e8c2da4f",
+      "destinationSha256": "6eaccf756307b7f6a07027ce3094e8e42ca9438a0c2a2eea7471e6c3bcf3c232",
       "purpose": "Manual-only independent SDK source checks; no automatic push/PR builds"
+    },
+    {
+      "destinationPath": "Sources/WeappContainer/PresentationInputQueue.swift",
+      "destinationSha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0",
+      "purpose": "Public presentation input state machine and deterministic ACK/cancellation regression tests; no private core implementation"
+    },
+    {
+      "destinationPath": "test/PresentationInputQueueTests.swift",
+      "destinationSha256": "7af25939141b70a4484bc4acbcf7b64eafa8115c2e6b59230f4b4aa2a90ba7d9",
+      "purpose": "Public presentation input state machine and deterministic ACK/cancellation regression tests; no private core implementation"
+    },
+    {
+      "destinationPath": "tools/test-presentation-input.mjs",
+      "destinationSha256": "9d608c08be647002233a9569c04c41bbdda169b930dc823067d44aa47a399993",
+      "purpose": "Public presentation input state machine and deterministic ACK/cancellation regression tests; no private core implementation"
     }
   ]
 }
