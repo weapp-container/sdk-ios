@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "git@github.com:sonofmagic/weapp-container.git",
+  "sourceCommit": "63c003e328ecee3e91ffe1185462a7f63ea96f0b",
+  "newRepository": "https://github.com/weapp-container/sdk-ios",
+  "sdkVersion": "0.1.0-preview.2",
+  "license": "Apache-2.0",
+  "extraction": "Reviewed source allowlist only; no history, core implementation, native binaries or caches.",
+  "contract": {
+    "abi": 1,
+    "headerPath": "include/weapp_container_sdk.h",
+    "headerSha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b"
+  },
+  "sources": [
+    {
+      "sourcePath": "sdk/ios/Package.swift",
+      "destinationPath": "Package.swift",
+      "sourceSha256": "b0180c6c70996a45df263d990c744d9eb6d869a28c98f4993ce6816418a55d5c",
+      "destinationSha256": "b0180c6c70996a45df263d990c744d9eb6d869a28c98f4993ce6816418a55d5c",
+      "transformed": false
+    },
+    {
+      "sourcePath": "sdk/ios/README.md",
+      "destinationPath": "docs/EMBEDDING.md",
+      "sourceSha256": "54d35e802f3d0b4f386f842d8375b46083b18ca52fa14de3ee1c56957a758433",
+      "destinationSha256": "fbad2d43b97fd646a42d166ea86181bd3a21a6790580a4a2ba1006578a6a0e03",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/ios/Sources/WeappContainer/Session.swift",
+      "destinationPath": "Sources/WeappContainer/Session.swift",
+      "sourceSha256": "baa919702d7e98682ca31a896ccce713889615f2d374aef0b9a465949c5ec3ce",
+      "destinationSha256": "a87298bba0cc7d52ec06435f4a8fcdba6733c6f2f8fa05e8f6a201c4cb612699",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/ios/Sources/WeappContainer/Types.swift",
+      "destinationPath": "Sources/WeappContainer/Types.swift",
+      "sourceSha256": "2eeacf411888b2f8cb26a09667753f70ce41909b5b65dcf24de07ed5fdc2828b",
+      "destinationSha256": "2eeacf411888b2f8cb26a09667753f70ce41909b5b65dcf24de07ed5fdc2828b",
+      "transformed": false
+    },
+    {
+      "sourcePath": "sdk/ios/Sources/WeappContainer/View.swift",
+      "destinationPath": "Sources/WeappContainer/View.swift",
+      "sourceSha256": "6724c26dc9d5141bcc1005a08ce2ed49e42faa9a69315c25e97cf01737e6a8e3",
+      "destinationSha256": "6bf03c58e608049e8f0b5296f11e4eff192239276a2433bb435926935f72fd68",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/ios/WeappContainer.podspec",
+      "destinationPath": "WeappContainer.podspec",
+      "sourceSha256": "6258fb5e363f82dcf8839b3baabc4431827585036da0a9162d632553b275d33a",
+      "destinationSha256": "48f349a3b3617745622ea9218b2090550503dc29f7c46ad4a2aa59d983d7d747",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/LICENSE",
+      "destinationPath": "LICENSE",
+      "sourceSha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+      "destinationSha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+      "transformed": false
+    },
+    {
+      "sourcePath": "sdk/CONTRACT.md",
+      "destinationPath": "CONTRACT.md",
+      "sourceSha256": "be8e15cde918c30569640b60c4cff9fe29f2c9bc1054fcb4d516882b15019402",
+      "destinationSha256": "8196aa203908de36d50ff7adf002ea07752a52c0b3a1723fb1f090f6a20d2af9",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/include/weapp_container_sdk.h",
+      "destinationPath": "include/weapp_container_sdk.h",
+      "sourceSha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b",
+      "destinationSha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b",
+      "transformed": false
+    },
+    {
+      "sourcePath": "examples/sdk/ios/README.md",
+      "destinationPath": "examples/consumer/README.md",
+      "sourceSha256": "027f9632bbf87003c089f809299c062cdaec0d6a6033324bc324600bcb21af9c",
+      "destinationSha256": "3ec33352ef4ceb2390b123aca85186be15a430a39cb6a2f05867aba4b4e3ebae",
+      "transformed": true
+    },
+    {
+      "sourcePath": "examples/sdk/ios/Sources/Consumer.swift",
+      "destinationPath": "examples/consumer/Sources/Consumer.swift",
+      "sourceSha256": "f7f34e922b3af3348a6b7ff198445cdf363d0cb8fbceaa74b3580427ed5ad81f",
+      "destinationSha256": "9f1a3705dd3d7bd650b868bddce21bee63e49c7e40a5fea88e7df8b0636df8e5",
+      "transformed": true
+    },
+    {
+      "sourcePath": "examples/sdk/ios/Sources/ConsumerUITests.swift",
+      "destinationPath": "examples/consumer/Sources/ConsumerUITests.swift",
+      "sourceSha256": "19f00a3da03f3eb0916e38e9b264a7b879b7bebbdfed4b958cc39e075f23599c",
+      "destinationSha256": "fcb6f14ac9493ad350a92de427afd8ad00e8fc3c77feb48e770a6002f2dd6429",
+      "transformed": true
+    },
+    {
+      "sourcePath": "examples/sdk/ios/make-project.mjs",
+      "destinationPath": "examples/consumer/make-project.mjs",
+      "sourceSha256": "24402d05f10008b5d4d4d22663df7008d04622d1624a16c7126ec4b3ceaf5f17",
+      "destinationSha256": "24402d05f10008b5d4d4d22663df7008d04622d1624a16c7126ec4b3ceaf5f17",
+      "transformed": false
+    },
+    {
+      "sourcePath": "scripts/sdk-ios-smoke.mjs",
+      "destinationPath": "tools/simulator-smoke.mjs",
+      "sourceSha256": "eb7f4c0cd8666fedfee2e188428a456b537f4df5738f79e5d8bb4fcd3b61e7de",
+      "destinationSha256": "50d3f613464ebcc9902c0a44b26c7297738af1d7063d8dc6b8d93bf9b7b16b0a",
+      "transformed": true
+    },
+    {
+      "sourcePath": "scripts/sdk-ios-pod-smoke.mjs",
+      "destinationPath": "tools/pod-smoke.mjs",
+      "sourceSha256": "633a5030687704e2436bf1ca32348c4ed6262442f30700ea2d235163b3fc578a",
+      "destinationSha256": "ae50622bf2de13d419e60f1916a83f3395b26741056d98efeb120c498e9ef799",
+      "transformed": true
+    },
+    {
+      "sourcePath": "sdk/types/weapp-container.d.ts",
+      "destinationPath": "types/weapp-container.d.ts",
+      "sourceSha256": "3a5bedab2f7b32d23aaf0e36a33cf675d8111b87948f9d1a5cf9ee765caa8b9a",
+      "destinationSha256": "3a5bedab2f7b32d23aaf0e36a33cf675d8111b87948f9d1a5cf9ee765caa8b9a",
+      "transformed": false
+    }
+  ],
+  "runtime": {
+    "repository": "weapp-container/runtime-artifacts",
+    "version": "0.1.0-preview.2",
+    "abiVersion": 1,
+    "license": "Separate private binary license; no runtime source included",
+    "pinFile": "runtime-artifacts.lock.json"
+  },
+  "reviewedCopies": [
+    {
+      "repository": "weapp-container/sdk-contract",
+      "version": "0.1.0-preview.2",
+      "path": "tools/runtime-artifacts.mjs",
+      "sha256": "a00382730316f1105e685ebefbe61e0533b8da1280c548f6eb58e77f71f4a3e8"
+    },
+    {
+      "repository": "weapp-container/sdk-contract",
+      "version": "0.1.0-preview.2",
+      "path": "tools/unpack-runtime.py",
+      "sha256": "d4f49e8aa2541ca01670a4fd10330e6bc4b470cf95452b0585605bae09f76f89"
+    },
+    {
+      "repository": "weapp-container/sdk-contract",
+      "version": "0.1.0-preview.2",
+      "path": "CONTRACT.md",
+      "sha256": "8196aa203908de36d50ff7adf002ea07752a52c0b3a1723fb1f090f6a20d2af9"
+    }
+  ],
+  "generated": [
+    {
+      "destinationPath": ".gitignore",
+      "destinationSha256": "c9cbe620e120627c6e7f4d75ec73d3cee15d5ff21f2fca8fc7bc006ac5eb7fa1",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "README.md",
+      "destinationSha256": "abce72aa9d0c530ba5ac7519980318426715bdf624410870a934f13ad408535a",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "package.json",
+      "destinationSha256": "aa27dfeec63712e3388ec0c3a9bca2a4b1b4b03a85322acbcd25078948b9d4ed",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "test/native-input.test.mjs",
+      "destinationSha256": "56e3b8bf6b0eeb65c7a3ad8d76ff2296b22589e39754453cad2e56f1cb92f508",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/build.mjs",
+      "destinationSha256": "e3e5bf2fe4e737a50911ce81ff2910d067f24ca1b280a46180d7e88391298832",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/check-origin.mjs",
+      "destinationSha256": "10901cb5df489c56f3745ff5420f6c6319233ab9b3a844ff794ccff1146a4561",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/native-input.mjs",
+      "destinationSha256": "34b2b22c44d02acce80e9432a77a1357439fb8edc9348a82b4b0c9825f582f8b",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/prepare-runtime.mjs",
+      "destinationSha256": "d314aceabcea7a5dfcaef7502f0206f9f78c8661f22fd0dfe7c324ec35f43dc1",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/runtime-artifacts.mjs",
+      "destinationSha256": "a00382730316f1105e685ebefbe61e0533b8da1280c548f6eb58e77f71f4a3e8",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": "tools/unpack-runtime.py",
+      "destinationSha256": "d4f49e8aa2541ca01670a4fd10330e6bc4b470cf95452b0585605bae09f76f89",
+      "purpose": "Independent SDK wrapper tooling, validation or distribution documentation"
+    },
+    {
+      "destinationPath": ".github/workflows/checks.yml",
+      "destinationSha256": "25bd65ad89c1686fd5866e359788028fe9a5772cacb5f1ceae405ab2e8c2da4f",
+      "purpose": "Manual-only independent SDK source checks; no automatic push/PR builds"
+    }
+  ]
+}
