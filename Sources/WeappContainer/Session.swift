@@ -60,6 +60,23 @@ import WeappContainerNative
     /// Waits for a view attached to a window with positive, measured bounds.
     /// Cancellation before that layout does not initialize the mini-program.
     public func load(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:]) async throws {
+        _ = try await replacePack(packURL: packURL, route: route, options: options, development: false)
+    }
+
+    /// Presentation-only updates retain the live session and Metal attachment.
+    /// A restart drains and detaches the old target before invoking SDK load.
+    public func applyDevPack(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:]) async throws -> WeappJSON {
+        try await replacePack(packURL: packURL, route: route, options: options, development: true)
+    }
+
+    public func devState() throws -> WeappJSON { try ensureAvailable(); return try command("devState") }
+    public func clearDevStorage() async throws {
+        try ensureAvailable()
+        _ = try command("clearDevStorage")
+        try await flushStorage()
+    }
+
+    private func replacePack(packURL: URL, route: String?, options: [String: WeappJSON], development: Bool) async throws -> WeappJSON {
         try ensureOpen()
         try await waitForMetrics()
         await acquireGate()
@@ -67,12 +84,23 @@ import WeappContainerNative
         try ensureOpen()
         try Task.checkCancellation()
         guard packURL.isFileURL else { throw failure("ERR_INVALID_REQUEST", "load requires a verified local portable-pack directory") }
+        var payload: [String: WeappJSON] = ["packPath": .string(packURL.path), "options": .object(options)]
+        if let route { payload["route"] = .string(route) }
+        var restart = true
+        if development, isLoaded {
+            let classification = try command("classifyDevPack", payload)
+            guard let kind = classification["reloadKind"].string, ["inPlace", "restart"].contains(kind) else {
+                throw failure("ERR_INVALID_REQUEST", "Invalid development reload classification")
+            }
+            restart = kind == "restart"
+        }
         let p = surface
         p?.cancelInput?()
         await p?.drain()
         try ensureOpen()
-        try p?.detach()
+        if restart { try p?.detach() }
         var loadError: Error?
+        var result: WeappJSON = .null
         do {
             if !isLoaded {
                 try native?.destroy()
@@ -80,19 +108,21 @@ import WeappContainerNative
                 for name in methods.keys.sorted() { _ = try command("registerHostMethod", ["name": .string(name)]) }
                 startPump()
             }
-            var payload: [String: WeappJSON] = ["packPath": .string(packURL.path), "options": .object(options)]
-            if let route { payload["route"] = .string(route) }
-            _ = try command("load", payload)
+            result = try command(development ? "applyDevPack" : "load", payload)
             isLoaded = true
-            if let metrics { _ = try command("windowMetrics", metrics.dictionary) }
-            _ = try command("lifecycle", ["event": .string(isForeground ? "show" : "hide")])
+            if restart {
+                if let metrics { _ = try command("windowMetrics", metrics.dictionary) }
+                _ = try command("lifecycle", ["event": .string(isForeground ? "show" : "hide")])
+            }
         } catch { loadError = error }
-        // A failed candidate retains the old runtime; restore its surface too.
+        // Failed validation/startup keeps the previous runtime. A failure after
+        // accepted startup may require explicit rollback; no old JS heap claim.
         if isLoaded {
-            do { try p?.attach(); p?.invalidate() }
+            do { if restart { try p?.attach() }; p?.invalidate() }
             catch { if loadError == nil { loadError = error }; report(error) }
         }
         if let loadError { throw loadError }
+        return result
     }
 
     public func sendMessage(_ message: WeappJSON) throws { try ensureAvailable(); _ = try command("sendMessage", ["message": message]) }
@@ -255,6 +285,7 @@ import WeappContainerNative
     }
     private func makeConfig() throws -> WeappJSON {
         guard let metrics else { throw failure("ERR_NOT_READY", "A measured viewport is required") }
+        guard configuration.gpuRequired != false else { throw failure("ERR_UNSUPPORTED_CAPABILITY", "iOS native preview requires GPU") }
         var display = metrics.dictionary
         display.removeValue(forKey: "windowWidth"); display.removeValue(forKey: "windowHeight")
         var config: [String: WeappJSON] = ["engine": .string("quickjs"), "sessionId": .string(configuration.sessionID), "host": .object([
@@ -262,6 +293,8 @@ import WeappContainerNative
             "user_agent": .string("WeappContainer/\(Self.version) iOS"),
             "windowWidth": metrics["windowWidth"], "windowHeight": metrics["windowHeight"], "displayMetrics": .object(display)
         ])]
+        if let required = configuration.gpuRequired { config["gpuRequired"] = .bool(required) }
+        if configuration.devDiagnostics { config["devDiagnostics"] = .bool(true) }
         if case .persistent(let key, let suppliedRoot) = configuration.storage {
             guard !key.isEmpty else { throw failure("ERR_INVALID_REQUEST", "Persistent storage requires a stable nonempty key") }
             let root = try suppliedRoot ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("WeappContainer", isDirectory: true)

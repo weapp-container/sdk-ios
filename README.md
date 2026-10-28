@@ -1,10 +1,17 @@
 # Weapp Container Ios SDK
 
-Version **0.1.0-preview.2** · [weapp-container organization](https://github.com/weapp-container) · [SDK contract](https://github.com/weapp-container/sdk-contract)
+Version **0.1.0-preview.3** · [weapp-container organization](https://github.com/weapp-container) · [SDK contract](https://github.com/weapp-container/sdk-contract)
 
 This independent repository contains the **Apache-2.0 host wrapper and consumer source**. The runtime implementation remains closed source. Its separately licensed binaries are obtained only from the private [`weapp-container/runtime-artifacts`](https://github.com/weapp-container/runtime-artifacts) repository. SDK source licensing does not grant a runtime binary license. Distributions retain `RUNTIME-LICENSE` and all third-party notices alongside the wrapper's `LICENSE`.
 
 A fresh clone needs Node.js 24+, Python 3 and the platform toolchain below. It does **not** need a parent monorepo, Rust, Cargo, a git submodule or private implementation source.
+
+This checkout targets **0.1.0-preview.3** for Dev Player. The checked-in
+preview.2 runtime lock and its historical reports remain unchanged; they do not
+supply preview.3 binaries or evidence. Default preparation rejects that version
+mismatch. Use an explicitly reviewed preview.3 lock with `--manifest` once its
+real archive hashes exist, or build the wrapper with an explicit local preview.3
+`--native-root` and `--licenses-root`. No preview.2 fallback is performed.
 
 ## Obtain the native runtime
 
