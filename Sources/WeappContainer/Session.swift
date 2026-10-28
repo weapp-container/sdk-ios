@@ -143,6 +143,16 @@ import WeappContainerNative
     }
     public func state() throws -> WeappJSON { try ensureOpen(); return try command("state") }
     public func capabilities() throws -> WeappJSON { try ensureOpen(); return try command("capabilities") }
+    /// Wait for a real attached view, then inspect an empty runtime before any
+    /// App/Page module executes. The C ABI and normal capabilities stay unchanged.
+    public func prepareView() async throws -> WeappJSON {
+        try ensureOpen()
+        try await waitForMetrics()
+        await acquireGate(); defer { releaseGate() }
+        try ensureOpen(); try Task.checkCancellation()
+        if native == nil { native = try NativeOwner(config: makeConfig()); startPump() }
+        return try command("capabilities")
+    }
 
     public func flushStorage() async throws {
         try ensureAvailable()

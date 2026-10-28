@@ -48,6 +48,14 @@ window/system APIs see those measured metrics during initialization. Cancelling
 that task before layout cancels the wait. Packs are verified local directories;
 remote downloads and pack updates belong to the host application.
 
+Development clients can await `session.prepareView()` after mounting the view
+to inspect capabilities before startup. It waits for those same real metrics
+and creates an empty runtime without executing App/Page JS or acknowledging a
+frame. Cancelling the task or closing the session settles the wait. Keep an
+accepted view mounted until a staged candidate has prepared and loaded; use
+`load` for initial startup and `applyDevPack` only for an already loaded session.
+This is an additive Swift wrapper method; the C ABI is unchanged.
+
 For SwiftUI, create a `WeappContainerView` once and pass it to
 `WeappContainerRepresentable(view:)`. The caller owns the session lifetime.
 Flutter and React Native wrappers embed this same UIKit view.
