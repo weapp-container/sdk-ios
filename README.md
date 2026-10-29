@@ -1,21 +1,31 @@
 # Weapp Container Ios SDK
 
-Source version **0.1.0-preview.5.1** (private preview) · [weapp-container organization](https://github.com/weapp-container) · [SDK contract](https://github.com/weapp-container/sdk-contract)
+Source version **0.1.0-preview.5.2** (private preview) · [weapp-container organization](https://github.com/weapp-container) · [SDK contract](https://github.com/weapp-container/sdk-contract)
 
-The current source and exact runtime lock target `0.1.0-preview.5.1`. The lock SHA-256 is `bc2bf8a79ebb1ea1b7bcf2b5a4749271f2022c9b103773bd7be6ebc3b94271cd`; it pins ten independently produced archives. Native preparation checks the matching version and exact artifact bytes; it cannot reuse or relabel an older binary. The lock does not assert private-release availability, Player installation or GPU/device acceptance.
+The current source and exact distribution lock target `0.1.0-preview.5.2`. The lock SHA-256 is `10cf2f084601c9d0e2f06c54dcce4810527035beeee760f075b414651c67d829`; it pins ten independently produced archives. Native preparation checks the declared distribution version, original native producer receipts and exact artifact bytes; it cannot silently substitute or relabel a different binary. The lock does not assert private-release availability, Player installation or GPU/device acceptance.
 
 This independent repository contains the **Apache-2.0 host wrapper and consumer source**. The runtime implementation remains closed source. Its separately licensed binaries are obtained only from the private [`weapp-container/runtime-artifacts`](https://github.com/weapp-container/runtime-artifacts) repository. SDK source licensing does not grant a runtime binary license. Distributions retain `RUNTIME-LICENSE` and all third-party notices alongside the wrapper's `LICENSE`.
 
 A fresh clone needs Node.js 24+, Python 3 and the platform toolchain below. It does **not** need a parent monorepo, Rust, Cargo, a git submodule or private implementation source.
 
-The default lock identifies the independently built **0.1.0-preview.5.1** QuickJS
-+ Skia GPU artifacts by exact size and SHA-256: seven runtime slices and Android,
-iOS and macOS universal SDK packages. Native production is bound to
-`747d0b02131d7f67b3adbdd7127abcd5e21ffdbe`; wrapper producer commits remain
-separately recorded in archive provenance. Later pin-only commits do not change
-those producer identities. Windows/Linux runtime distributions remain blocked.
+The default lock identifies the **0.1.0-preview.5.2** QuickJS + Skia GPU
+distribution set by exact size and SHA-256: seven runtime slices and Android,
+iOS and macOS universal SDK packages. The native code retains its original
+**0.1.0-preview.5.1** production identity,
+`747d0b02131d7f67b3adbdd7127abcd5e21ffdbe`. The iOS wrapper archive was produced
+from `f8af959868b009b6b627c370c28983c410be7e9e`; the other wrapper producer
+commits remain separately recorded in archive provenance. Later pin-only commits
+do not change those producer identities. Windows/Linux runtime distributions remain blocked.
 Archive validation, private publication and actual Player/GPU/device acceptance
 are separate gates. No older-runtime fallback is allowed.
+
+The new iOS wrapper package retains both native static archives, C headers and
+module maps byte for byte. Reassembling its XCFramework changed only the
+`Info.plist` `AvailableLibraries` array order; its parsed contents are otherwise
+equal. The strict whole-XCFramework byte gate remains **failed**. A separate
+qualification records unchanged native code bytes and this metadata difference;
+it does not turn the strict gate into a pass or establish publication, App
+linking, simulator, device, GPU or performance acceptance for preview.5.2.
 
 Historical preview.5 native production remains bound to
 `05aec6c4056a124a9c399c75b34d081cffbdaa5d`. All earlier release bytes, reports
@@ -85,7 +95,7 @@ After reviewing an update, stage all intended new source files, refresh explicit
 
 ```sh
 git add <reviewed-files>
-node tools/source-inventory.mjs --write --version 0.1.0-preview.5.1 --reason "Describe the reviewed changes"
+node tools/source-inventory.mjs --write --version 0.1.0-preview.5.2 --reason "Describe the reviewed changes"
 git add SOURCE-INVENTORY.json
 node tools/check-origin.mjs
 npm test
