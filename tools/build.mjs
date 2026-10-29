@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { verifySourceInventory } from './source-inventory.mjs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -7,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { copyVerifiedTree, option, readNative, readNotices, requireNativeRoot, sourceProvenance, nativeIdentity, SDK_VERSION } from './native-input.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const reviewedSource = verifySourceInventory(root);
 const args = process.argv.slice(2);
 if (process.platform !== 'darwin') throw new Error('XCFramework assembly requires macOS and Xcode');
 const native = requireNativeRoot(args);
@@ -27,7 +29,7 @@ function run(command, argv) {
 }
 const receipt = {
   schemaVersion: 1, sdkVersion: SDK_VERSION, status: 'building', profile: 'release',
-  ...sourceProvenance(root), minimumIOS: '16.0',
+  ...sourceProvenance(root), sourceInventorySha256: reviewedSource.inventorySha256, minimumIOS: '16.0',
   startedAt: new Date().toISOString(), targets, native: inputs.map(input => nativeIdentity(input.receipt)), artifacts: [],
 };
 const save = () => writeFileSync(resolve(out, 'build.json'), `${JSON.stringify(receipt, null, 2)}\n`);

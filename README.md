@@ -68,3 +68,19 @@ These are wrapper input-contract and presentation queue tests, not runtime, GPU,
 The 2026-10-27 preview.2 report for wrapper source `58977df` records nine production input-queue cases and one complete UI test on an arm64 iOS 27 simulator using completed Metal frames. The UI test covers two sessions, OS touch and continuous scrolling, nested host scrolling, pinch recovery, navigation, background/foreground, device rotation and durable reopening. Device arm64 and simulator x86_64 were compiled and linked; physical-device and x86_64 execution, performance and WeChat parity remain unmeasured. The runtime archive identity is fixed by the release lock, and the independent-consumer reports retain their exact source commits.
 
 `ORIGIN.json` lists the allowlisted source paths, original source SHA-256, transformed destination SHA-256 and reviewed C-header contract hash. This repository includes no core implementation, Git history from the original repository, binary runtime, cache or credentials.
+
+### Reviewing later SDK source changes
+
+`ORIGIN.json` stays as the historical extraction receipt. `SOURCE-INVENTORY.json` records the current reviewed wrapper source paths, SHA-256, sizes and executable modes, including the historical receipt's unchanged hash. The origin check and package build verify this exact inventory in the standalone SDK checkout and reject untracked or unreviewed paths, modified bytes, symlinks, core sources, binaries and caches. This source review is separate from build, artifact and device acceptance evidence.
+
+After reviewing an update, stage all intended new source files, refresh explicitly, then stage the inventory:
+
+```sh
+git add <reviewed-files>
+node tools/source-inventory.mjs --write --version 0.1.0-preview.4 --reason "Describe the reviewed changes"
+git add SOURCE-INVENTORY.json
+node tools/check-origin.mjs
+npm test
+```
+
+Commit source and inventory together before building distributable packages. `sourceBaseCommit` identifies the checkout used to prepare the source review; it does not bind subsequent build evidence to that earlier commit. Never rewrite historical receipts or fabricate runtime archive lock hashes to make this check pass.

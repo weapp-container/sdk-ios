@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.1.0-preview.4",
+  "sourceBaseCommit": "2bfa8e6bbaa7ed1833e3db4050f521407c1ae695",
+  "review": "Review preview.4 host chrome wrappers, standalone source inventories and unchanged historical ORIGIN. Runtime archive locks remain preview.3 pending separately verified preview.4 release bytes.",
+  "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
+  "historicalOrigin": {
+    "path": "ORIGIN.json",
+    "sha256": "fb2e151764d1d82b9687616b0ccf86a45f261850c2025c19ab06f956d8b9f524"
+  },
+  "files": [
+    {
+      "path": ".github/workflows/checks.yml",
+      "sha256": "c8da2938bfce31a56e699d9d6fa8e730c720a572d6d4d9a13e764baf307a0f35",
+      "size": 849,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "c9cbe620e120627c6e7f4d75ec73d3cee15d5ff21f2fca8fc7bc006ac5eb7fa1",
+      "size": 70,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRACT.md",
+      "sha256": "e1ae00fd1b55a952943ac025832eadc0384037e31f728fb703cc8729fde2547c",
+      "size": 13434,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+      "size": 10847,
+      "mode": "100644"
+    },
+    {
+      "path": "ORIGIN.json",
+      "sha256": "fb2e151764d1d82b9687616b0ccf86a45f261850c2025c19ab06f956d8b9f524",
+      "size": 17821,
+      "mode": "100644"
+    },
+    {
+      "path": "Package.swift",
+      "sha256": "b0180c6c70996a45df263d990c744d9eb6d869a28c98f4993ce6816418a55d5c",
+      "size": 824,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "44bbcdeb906bc1022588b398021c8084f80c5c0f91c96de7ef02d2f48e360559",
+      "size": 8299,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/PresentationInputQueue.swift",
+      "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0",
+      "size": 2420,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/Session.swift",
+      "sha256": "775b5241b0abc4eb0ba2762d83726a42d66de259380375c6852a8dc398b081d5",
+      "size": 26969,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/Types.swift",
+      "sha256": "7bf03ac3e99711edc0d9c04f5ba66f82b1ef432ac3460aea7593eaf78f3e640f",
+      "size": 3834,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/View.swift",
+      "sha256": "0392fb5811f38d70b6ae17bb61f991d8b19cce88210a3fbc544516db77859756",
+      "size": 21068,
+      "mode": "100644"
+    },
+    {
+      "path": "WeappContainer.podspec",
+      "sha256": "fbf4452040f2b87b3e50c64f753e6ea8e1a5c5371c39d5880325c55e7e7d16b9",
+      "size": 836,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/EMBEDDING.md",
+      "sha256": "298f7f62571b36e020a06236d1082a15c01dfb65a83ce64f32eb5eb0393e6c59",
+      "size": 7219,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/consumer/README.md",
+      "sha256": "3ec33352ef4ceb2390b123aca85186be15a430a39cb6a2f05867aba4b4e3ebae",
+      "size": 2060,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/consumer/Sources/Consumer.swift",
+      "sha256": "df3fb7d272f6f7c9c4673ff8691a34c6af6eb3d890681b0affd19e1472986ad6",
+      "size": 14754,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/consumer/Sources/ConsumerUITests.swift",
+      "sha256": "fcb6f14ac9493ad350a92de427afd8ad00e8fc3c77feb48e770a6002f2dd6429",
+      "size": 8516,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/consumer/make-project.mjs",
+      "sha256": "0e3641a410060273210d7df0fc3d3cecce6857ee767db435dc607423803f0fb0",
+      "size": 6176,
+      "mode": "100644"
+    },
+    {
+      "path": "include/weapp_container_sdk.h",
+      "sha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b",
+      "size": 6842,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "88aa2f46daa885e20a97a0427f217a9f60fb155ac14d300bc5f03d11d49bd3fa",
+      "size": 546,
+      "mode": "100644"
+    },
+    {
+      "path": "runtime-artifacts.lock.json",
+      "sha256": "9e8edc773fae37d1a2a909f71b3b7aae5b289aa632941bd291d5b0119713808d",
+      "size": 3217,
+      "mode": "100644"
+    },
+    {
+      "path": "test/PresentationInputQueueTests.swift",
+      "sha256": "7af25939141b70a4484bc4acbcf7b64eafa8115c2e6b59230f4b4aa2a90ba7d9",
+      "size": 6614,
+      "mode": "100644"
+    },
+    {
+      "path": "test/native-input.test.mjs",
+      "sha256": "8c9b31c462c0a8ccf384d7479c3b498ba3c43ffe8f96fc241fb89143550b6902",
+      "size": 12959,
+      "mode": "100644"
+    },
+    {
+      "path": "test/provenance.test.mjs",
+      "sha256": "a0f94207c7901f62b8c28e1fab8586deaf6cfdba30fec449a61e91042a7b1458",
+      "size": 2460,
+      "mode": "100644"
+    },
+    {
+      "path": "test/source-inventory.test.mjs",
+      "sha256": "fa7f6e0fdcc6c99a9d03619b5d1925079afe38ffc67071f31462c89698474592",
+      "size": 4319,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/build.mjs",
+      "sha256": "a399623a66185ddd22034923f21b8a4e7eb6e410201b2e4e12ebaa6fdf189452",
+      "size": 5602,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check-origin.mjs",
+      "sha256": "6d0bcbffc098f454dbd9125a6490298f9d98cf6a4b8b6de52cd350d776d08e27",
+      "size": 806,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/native-input.mjs",
+      "sha256": "1e72f9dc75b99763fa4c32f3e45ac3b54d4461265445fcda4b6dcd78f45a9aef",
+      "size": 11274,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/pod-smoke.mjs",
+      "sha256": "ae50622bf2de13d419e60f1916a83f3395b26741056d98efeb120c498e9ef799",
+      "size": 3367,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/prepare-runtime.mjs",
+      "sha256": "d314aceabcea7a5dfcaef7502f0206f9f78c8661f22fd0dfe7c324ec35f43dc1",
+      "size": 4281,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/runtime-artifacts.mjs",
+      "sha256": "ea87525bd7589c62a100ba3ead7f33f8fdc5eb05d04e7b0ee829b99093b99818",
+      "size": 19111,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/simulator-smoke.mjs",
+      "sha256": "50d3f613464ebcc9902c0a44b26c7297738af1d7063d8dc6b8d93bf9b7b16b0a",
+      "size": 10141,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/source-inventory.mjs",
+      "sha256": "e648d5631263c47b2b2565deb4d10ddc45fdaef76599dbd6929431492400ecf7",
+      "size": 6698,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test-presentation-input.mjs",
+      "sha256": "9d608c08be647002233a9569c04c41bbdda169b930dc823067d44aa47a399993",
+      "size": 966,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/unpack-runtime.py",
+      "sha256": "d4f49e8aa2541ca01670a4fd10330e6bc4b470cf95452b0585605bae09f76f89",
+      "size": 9861,
+      "mode": "100644"
+    },
+    {
+      "path": "types/weapp-container.d.ts",
+      "sha256": "c951bcb61181a050f06049417d6db2b8e421b349092cce3bd19042426bb6080b",
+      "size": 1804,
+      "mode": "100644"
+    }
+  ]
+}
