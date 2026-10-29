@@ -133,6 +133,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             case .closed(let error): facts["closed"] = .bool(true); if let error { fail(error) }
             case .ready(let state): facts["ready"] = state
             case .navigation: facts["currentRoute"] = try? s.state()["page"]["route"]
+            case .chrome(let value): facts["chrome"] = value
             }
             publish()
         }

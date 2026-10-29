@@ -48,7 +48,7 @@ public struct WeappHostError: Error, Sendable {
 }
 
 public enum WeappContainerEvent: Sendable {
-    case ready(WeappJSON), navigation(WeappJSON), message(WeappJSON)
+    case ready(WeappJSON), navigation(WeappJSON), chrome(WeappJSON), message(WeappJSON)
     case error(WeappContainerError), closed(WeappContainerError?)
 }
 

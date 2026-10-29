@@ -29,6 +29,8 @@ import WeappContainerNative
     private var closing = false
     private var requestedForeground = true
     private var surfaceForeground = false
+    private var previewOccluded = false
+    private var hostChrome: [String: WeappJSON]?
     private var surface: MetalSurface?
     private var events: [WeappContainerEvent] = []
     private var eventDeliveryScheduled = false
@@ -59,14 +61,14 @@ import WeappContainerNative
 
     /// Waits for a view attached to a window with positive, measured bounds.
     /// Cancellation before that layout does not initialize the mini-program.
-    public func load(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:]) async throws {
-        _ = try await replacePack(packURL: packURL, route: route, options: options, development: false)
+    public func load(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil) async throws {
+        _ = try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, development: false)
     }
 
     /// Presentation-only updates retain the live session and Metal attachment.
     /// A restart drains and detaches the old target before invoking SDK load.
-    public func applyDevPack(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:]) async throws -> WeappJSON {
-        try await replacePack(packURL: packURL, route: route, options: options, development: true)
+    public func applyDevPack(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil) async throws -> WeappJSON {
+        try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, development: true)
     }
 
     public func devState() throws -> WeappJSON { try ensureAvailable(); return try command("devState") }
@@ -76,7 +78,7 @@ import WeappContainerNative
         try await flushStorage()
     }
 
-    private func replacePack(packURL: URL, route: String?, options: [String: WeappJSON], development: Bool) async throws -> WeappJSON {
+    private func replacePack(packURL: URL, route: String?, options: [String: WeappJSON], initialHostChrome: [String: WeappJSON]?, development: Bool) async throws -> WeappJSON {
         try ensureOpen()
         try await waitForMetrics()
         await acquireGate()
@@ -86,6 +88,7 @@ import WeappContainerNative
         guard packURL.isFileURL else { throw failure("ERR_INVALID_REQUEST", "load requires a verified local portable-pack directory") }
         var payload: [String: WeappJSON] = ["packPath": .string(packURL.path), "options": .object(options)]
         if let route { payload["route"] = .string(route) }
+        if let initialHostChrome { payload["initialHostChrome"] = .object(initialHostChrome) }
         var restart = true
         if development, isLoaded {
             let classification = try command("classifyDevPack", payload)
@@ -105,10 +108,15 @@ import WeappContainerNative
             if !isLoaded {
                 try native?.destroy()
                 native = try NativeOwner(config: makeConfig())
+                if let hostChrome { _ = try command("hostChrome", hostChrome) }
+                if previewOccluded { _ = try command("setPreviewOccluded", ["occluded": .bool(true)]) }
                 for name in methods.keys.sorted() { _ = try command("registerHostMethod", ["name": .string(name)]) }
                 startPump()
             }
             result = try command(development ? "applyDevPack" : "load", payload)
+            if let accepted = try? command("state")["hostChrome"], case .object(var geometry) = accepted {
+                geometry.removeValue(forKey: "sessionId");geometry.removeValue(forKey: "pageId");hostChrome=geometry
+            }
             isLoaded = true
             if restart {
                 if let metrics { _ = try command("windowMetrics", metrics.dictionary) }
@@ -130,6 +138,37 @@ import WeappContainerNative
         try ensureAvailable(); _ = try command("navigate", ["route": .string(route), "query": .object(query), "replace": .bool(replace)])
     }
     public func back() throws { try ensureAvailable(); _ = try command("back") }
+    public func switchTab(route: String) throws { try ensureAvailable(); _ = try command("switchTab", ["route": .string(route)]) }
+    /// Verified configuration preflight. The temporary empty owner executes no
+    /// App/Page code and never claims view metrics or presentation authority.
+    public func inspectPackChrome(packURL: URL, route: String? = nil) throws -> WeappJSON {
+        try ensureOpen()
+        guard packURL.isFileURL else { throw failure("ERR_INVALID_REQUEST", "inspectPackChrome requires a local directory") }
+        let owner = try NativeOwner(config: .object(["engine": .string("quickjs")]))
+        defer { do { try owner.destroy() } catch { report(error) } }
+        var payload: [String: WeappJSON] = ["packPath": .string(packURL.path)]
+        if let route { payload["route"] = .string(route) }
+        return try owner.command("inspectPackChrome", .object(payload))
+    }
+    public func updateHostChrome(_ value: [String: WeappJSON]) throws {
+        try ensureOpen()
+        if native != nil { _ = try command("hostChrome", value) }
+        else {
+            let owner = try NativeOwner(config: .object(["engine": .string("quickjs")]))
+            defer { do { try owner.destroy() } catch { report(error) } }
+            _ = try owner.command("hostChrome", .object(value))
+        }
+        hostChrome = value
+        surface?.invalidate()
+    }
+    /// Developer controls cover the view without changing app lifecycle.
+    public func setPreviewOccluded(_ value: Bool) throws {
+        try ensureOpen()
+        if native != nil { _ = try command("setPreviewOccluded", ["occluded": .bool(value)]) }
+        previewOccluded = value
+        if value { surface?.cancelInput?() }
+        surface?.invalidate()
+    }
     /// Allows a host feature or framework controller to suspend this session.
     /// Resuming also requires a visible view in an active scene. View polling
     /// cannot override an explicit host suspension; completion pumping continues.
@@ -151,6 +190,7 @@ import WeappContainerNative
         await acquireGate(); defer { releaseGate() }
         try ensureOpen(); try Task.checkCancellation()
         if native == nil { native = try NativeOwner(config: makeConfig()); startPump() }
+        if let hostChrome { _ = try command("hostChrome", hostChrome) }
         return try command("capabilities")
     }
 
@@ -245,7 +285,11 @@ import WeappContainerNative
             _ = try command("lifecycle", ["event": .string(active ? "show" : "hide")])
         }
     }
-    var canPresent: Bool { isLoaded && isForeground && !closing && !isClosed && !gate }
+    var canPresent: Bool {
+        guard isLoaded && isForeground && !previewOccluded && !closing && !isClosed && !gate, let native,
+              let state=try? native.command("state",.object([:])) else { return false }
+        return state["chromeGeometryReady"].bool != false
+    }
     func presentationIdentity() throws -> (generation: WeappJSON, revision: UInt64) {
         let value = try command("state")
         guard let generation = value["generation"].number, let revision = value["frameRevision"].number,
@@ -339,6 +383,7 @@ import WeappContainerNative
             case "frame": frameRevision = UInt64(event["revision"].number ?? 0)
             case "ready": enqueue(.ready(event["state"]))
             case "navigation": enqueue(.navigation(event))
+            case "chrome": enqueue(.chrome(event))
             case "message": enqueue(.message(event["message"]))
             case "error": enqueue(.error(WeappContainerError(event["error"])))
             case "hostCall": dispatchHostCall(event)
