@@ -76,6 +76,15 @@ import WeappContainerNative
     /// Attempt submission owns native/GPU reconciliation even if presentation fails.
     public func executeCommand(_ name: String, _ payload: [String: WeappJSON] = [:]) async throws -> WeappJSON {
         try ensureOpen()
+        if name == "queryDevPackAttempt" {
+            // Journal metadata remains readable for an existing empty or
+            // poisoned owner. A query must not create an owner, replay startup,
+            // change isLoaded or invalidate/acknowledge a Metal drawable.
+            guard let native else { throw failure("ERR_NOT_READY", "No native owner for development attempt query") }
+            await acquireGate(); defer { releaseGate() }
+            try ensureOpen(); try Task.checkCancellation()
+            return try native.command(name, .object(payload))
+        }
         if native == nil { _ = try await prepareView() }
         await acquireGate(); defer { releaseGate() }
         try ensureOpen(); try Task.checkCancellation()
@@ -107,12 +116,19 @@ import WeappContainerNative
             return result
         }
         let result = try command(name, payload)
-        if name == "queryDevPackAttempt", result["status"].string == "accepted" {
-            // A journal query must return even while the GPU is unavailable.
-            isLoaded = true
-        }
         surface?.invalidate()
         return result
+    }
+
+    /// Passive journal metadata on this owner actor, including while an async
+    /// GPU reconciliation holds its gate. This neither waits for that gate nor
+    /// creates a native owner; the Rust query is read-only and actor serialized.
+    public func queryDevPackAttemptForLayout(ownerId: String, attemptId: String) throws -> WeappJSON {
+        try ensureOpen()
+        guard let native else { throw failure("ERR_NOT_READY", "No native owner for development attempt query") }
+        let receipt = try native.command("queryDevPackAttempt", .object(["ownerId": .string(ownerId), "attemptId": .string(attemptId)]))
+        let state = try native.command("state", .object([:]))
+        return .object(["receipt": receipt, "state": state])
     }
 
     /// Requests another complete native measurement even if its dimensions match.
