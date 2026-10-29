@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.5",
-  "sourceBaseCommit": "1d80ea53622d2802574ebe762e95c84e8a74d791",
-  "review": "Reviewed preview.5 atomic host layout, fault-safe reload coordination and wrapper metadata; preserved historical ORIGIN and preview.4 artifact bytes.",
+  "sourceBaseCommit": "eb0b907c12c5216637b3434e91d45a109b4e6cdf",
+  "review": "Pin reviewed preview.5 binary archives and document separate native producer identity; retain historical releases and evidence.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -47,8 +47,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "431f9b249faf5feaeec74f36bb34849e0755e9ede5e19facd0ad8ef02451e169",
-      "size": 8515,
+      "sha256": "6db1c7b407901ba2c7f569f04f14948cea8ff59acd3ad68f03a04ad25cda3929",
+      "size": 8482,
       "mode": "100644"
     },
     {
@@ -125,7 +125,7 @@
     },
     {
       "path": "runtime-artifacts.lock.json",
-      "sha256": "418bd79ca6a60c3a654553ca22a70bafbf8d5a4b60beaff9e8fb9869b5d91797",
+      "sha256": "413ecc39ee09f19a807720716e8d8b0657eddeb4bc40e6bfd473b9527e81323d",
       "size": 3217,
       "mode": "100644"
     },
