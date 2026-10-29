@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'WeappContainer'
-  s.version = '0.1.0-preview.5.2'
+  s.version = '0.1.0-preview.5.3'
   s.summary = 'Native mini-program SDK with QuickJS and Skia Metal rendering.'
   s.homepage = 'https://github.com/weapp-container/sdk-ios'
   s.license = { :type => 'Apache-2.0', :file => 'LICENSE' }
