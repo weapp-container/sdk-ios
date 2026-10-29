@@ -31,6 +31,7 @@ import WeappContainerNative
     private var surfaceForeground = false
     private var previewOccluded = false
     private var hostChrome: [String: WeappJSON]?
+    private var hostSurfaceIdentity: [String: WeappJSON]?
     private var surface: MetalSurface?
     private var events: [WeappContainerEvent] = []
     private var eventDeliveryScheduled = false
@@ -61,14 +62,80 @@ import WeappContainerNative
 
     /// Waits for a view attached to a window with positive, measured bounds.
     /// Cancellation before that layout does not initialize the mini-program.
-    public func load(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil) async throws {
-        _ = try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, development: false)
+    public func load(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil, initialHostLayout: [String: WeappJSON]? = nil) async throws {
+        _ = try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, initialHostLayout: initialHostLayout, development: false)
     }
 
     /// Presentation-only updates retain the live session and Metal attachment.
     /// A restart drains and detaches the old target before invoking SDK load.
-    public func applyDevPack(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil) async throws -> WeappJSON {
-        try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, development: true)
+    public func applyDevPack(packURL: URL, route: String? = nil, options: [String: WeappJSON] = [:], initialHostChrome: [String: WeappJSON]? = nil, initialHostLayout: [String: WeappJSON]? = nil) async throws -> WeappJSON {
+        try await replacePack(packURL: packURL, route: route, options: options, initialHostChrome: initialHostChrome, initialHostLayout: initialHostLayout, development: true)
+    }
+
+    /// Versioned SDK command transport. Decimal identities remain JSON strings.
+    /// Attempt submission owns native/GPU reconciliation even if presentation fails.
+    public func executeCommand(_ name: String, _ payload: [String: WeappJSON] = [:]) async throws -> WeappJSON {
+        try ensureOpen()
+        if native == nil { _ = try await prepareView() }
+        await acquireGate(); defer { releaseGate() }
+        try ensureOpen(); try Task.checkCancellation()
+        if name == "applyDevPackAttempt" {
+            let receipt = try command("queryDevPackAttempt", ["ownerId": payload["ownerId"] ?? .null, "attemptId": payload["attemptId"] ?? .null])
+            let restart = receipt["reloadKind"].string == "restart" && receipt["status"].string == "prepared"
+            let current = surface
+            current?.cancelInput?(); await current?.drain()
+            if restart { try current?.detach() }
+            var result: WeappJSON = .null
+            var operationError: Error?
+            do {
+                result = try command(name, payload)
+                if result["status"].string == "accepted" { isLoaded = true }
+            } catch {
+                operationError = error
+                if let retained = try? command("queryDevPackAttempt", ["ownerId": payload["ownerId"] ?? .null, "attemptId": payload["attemptId"] ?? .null]), retained["status"].string == "accepted" {
+                    isLoaded = true
+                }
+            }
+            if isLoaded {
+                // An empty atomic owner has only a logical surface. After its
+                // first accepted attempt, attach even if a retried receipt is
+                // already terminal rather than classified as a new restart.
+                do { try applyForeground(synchronizeNative: true); try current?.attach(); current?.invalidate() }
+                catch { operationError = operationError ?? error; report(error) }
+            }
+            if let operationError { throw operationError }
+            return result
+        }
+        let result = try command(name, payload)
+        if name == "queryDevPackAttempt", result["status"].string == "accepted" {
+            // A journal query must return even while the GPU is unavailable.
+            isLoaded = true
+        }
+        surface?.invalidate()
+        return result
+    }
+
+    /// Requests another complete native measurement even if its dimensions match.
+    public func requestHostLayoutObservation() async throws -> WeappJSON {
+        _ = try await prepareView()
+        return try command("state")["pendingHostLayout"]
+    }
+
+    private func createNativeIfNeeded() throws {
+        guard native == nil else { return }
+        native = try NativeOwner(config: makeConfig())
+        for name in methods.keys.sorted() { _ = try command("registerHostMethod", ["name": .string(name)]) }
+        if previewOccluded { _ = try command("setPreviewOccluded", ["occluded": .bool(true)]) }
+        startPump()
+    }
+
+    private func observeAtomicLayout() throws {
+        guard configuration.atomicHostLayout, let metrics, native != nil else { return }
+        if hostSurfaceIdentity == nil {
+            hostSurfaceIdentity = try command("hostSurface", ["action": .string("attach")]).dictionary
+        }
+        guard let identity = hostSurfaceIdentity else { return }
+        _ = try command("observeHostLayout", identity.merging(["schemaVersion": .number(1), "windowMetrics": metrics]) { _, value in value })
     }
 
     public func devState() throws -> WeappJSON { try ensureAvailable(); return try command("devState") }
@@ -78,7 +145,7 @@ import WeappContainerNative
         try await flushStorage()
     }
 
-    private func replacePack(packURL: URL, route: String?, options: [String: WeappJSON], initialHostChrome: [String: WeappJSON]?, development: Bool) async throws -> WeappJSON {
+    private func replacePack(packURL: URL, route: String?, options: [String: WeappJSON], initialHostChrome: [String: WeappJSON]?, initialHostLayout: [String: WeappJSON]?, development: Bool) async throws -> WeappJSON {
         try ensureOpen()
         try await waitForMetrics()
         await acquireGate()
@@ -89,6 +156,7 @@ import WeappContainerNative
         var payload: [String: WeappJSON] = ["packPath": .string(packURL.path), "options": .object(options)]
         if let route { payload["route"] = .string(route) }
         if let initialHostChrome { payload["initialHostChrome"] = .object(initialHostChrome) }
+        if let initialHostLayout { payload["initialHostLayout"] = .object(initialHostLayout) }
         var restart = true
         if development, isLoaded {
             let classification = try command("classifyDevPack", payload)
@@ -105,7 +173,7 @@ import WeappContainerNative
         var loadError: Error?
         var result: WeappJSON = .null
         do {
-            if !isLoaded {
+            if !isLoaded && !configuration.atomicHostLayout {
                 try native?.destroy()
                 native = try NativeOwner(config: makeConfig())
                 if let hostChrome { _ = try command("hostChrome", hostChrome) }
@@ -119,8 +187,8 @@ import WeappContainerNative
             }
             isLoaded = true
             if restart {
-                if let metrics { _ = try command("windowMetrics", metrics.dictionary) }
-                _ = try command("lifecycle", ["event": .string(isForeground ? "show" : "hide")])
+                if !configuration.atomicHostLayout, let metrics { _ = try command("windowMetrics", metrics.dictionary) }
+                try applyForeground(synchronizeNative: true)
             }
         } catch { loadError = error }
         // Failed validation/startup keeps the previous runtime. A failure after
@@ -152,6 +220,7 @@ import WeappContainerNative
     }
     public func updateHostChrome(_ value: [String: WeappJSON]) throws {
         try ensureOpen()
+        guard !configuration.atomicHostLayout else { throw failure("ERR_UNSUPPORTED_CAPABILITY", "Atomic host layout requires a complete hostLayout") }
         if native != nil { _ = try command("hostChrome", value) }
         else {
             let owner = try NativeOwner(config: .object(["engine": .string("quickjs")]))
@@ -165,8 +234,10 @@ import WeappContainerNative
     public func setPreviewOccluded(_ value: Bool) throws {
         try ensureOpen()
         if native != nil { _ = try command("setPreviewOccluded", ["occluded": .bool(value)]) }
+        let wasOccluded = previewOccluded
         previewOccluded = value
         if value { surface?.cancelInput?() }
+        else if wasOccluded && isLoaded { try surface?.attach() }
         surface?.invalidate()
     }
     /// Allows a host feature or framework controller to suspend this session.
@@ -177,7 +248,7 @@ import WeappContainerNative
         surface?.observeVisibility?()
         if !active { surface?.cancelInput?() }
         requestedForeground = active
-        try applyForeground()
+        try applyForeground(synchronizeNative: true)
         surface?.observeVisibility?()
     }
     public func state() throws -> WeappJSON { try ensureOpen(); return try command("state") }
@@ -189,8 +260,9 @@ import WeappContainerNative
         try await waitForMetrics()
         await acquireGate(); defer { releaseGate() }
         try ensureOpen(); try Task.checkCancellation()
-        if native == nil { native = try NativeOwner(config: makeConfig()); startPump() }
-        if let hostChrome { _ = try command("hostChrome", hostChrome) }
+        try createNativeIfNeeded()
+        if configuration.atomicHostLayout { try observeAtomicLayout() }
+        else if let hostChrome { _ = try command("hostChrome", hostChrome) }
         return try command("capabilities")
     }
 
@@ -259,14 +331,26 @@ import WeappContainerNative
         oldSurface.cancelInput?()
         await oldSurface.drain()
         try oldSurface.detach()
-        if surface === oldSurface { surface = nil; metrics = nil; setSurfaceForeground(false) }
+        if surface === oldSurface {
+            if let identity = hostSurfaceIdentity, native != nil, !closing {
+                _ = try command("hostSurface", identity.merging(["action": .string("detach")]) { _, value in value })
+            }
+            hostSurfaceIdentity = nil; surface = nil; metrics = nil; setSurfaceForeground(false)
+        }
     }
     func updateMetrics(_ value: WeappJSON) {
-        guard !closing, !isClosed, metrics != value else { return }
+        guard !closing, !isClosed else { return }
+        if !configuration.atomicHostLayout && metrics == value { return }
         metrics = value
         let waiting = metricsWaiters.values; metricsWaiters.removeAll()
         for waiter in waiting { waiter.resume() }
-        if isLoaded, !gate {
+        if configuration.atomicHostLayout {
+            do {
+                try createNativeIfNeeded()
+                try observeAtomicLayout()
+                try surface?.attach()
+            } catch { report(error) }
+        } else if isLoaded, !gate {
             do { _ = try command("windowMetrics", value.dictionary) }
             catch { report(error) }
             // Geometry commits before onResize. A hook error must not revert it.
@@ -278,10 +362,14 @@ import WeappContainerNative
         surfaceForeground = active
         do { try applyForeground() } catch { report(error) }
     }
-    private func applyForeground() throws {
+    private func applyForeground(synchronizeNative: Bool = false) throws {
         let active = requestedForeground && surfaceForeground
         let changed = active != isForeground; isForeground = active
-        if changed, isLoaded, !gate {
+        guard isLoaded, synchronizeNative || (changed && !gate) else { return }
+        // SDK replacement may commit while the host changes visibility during
+        // a Metal drain. Synchronize actual desired lifecycle before reattach;
+        // developer occlusion is deliberately absent from this calculation.
+        if try command("state")["foreground"].bool != active {
             _ = try command("lifecycle", ["event": .string(active ? "show" : "hide")])
         }
     }
@@ -290,7 +378,7 @@ import WeappContainerNative
               let state=try? native.command("state",.object([:])) else { return false }
         return state["chromeGeometryReady"].bool != false
     }
-    func presentationIdentity() throws -> (generation: WeappJSON, revision: UInt64) {
+    func presentationIdentity() throws -> (generation: WeappJSON, revision: UInt64, layout: [String: WeappJSON]) {
         let value = try command("state")
         guard let generation = value["generation"].number, let revision = value["frameRevision"].number,
               generation >= 0, revision >= 0, generation.isFinite, revision.isFinite,
@@ -298,10 +386,12 @@ import WeappContainerNative
               revision < Double(UInt64.max) else {
             throw failure("ERR_RENDER", "Runtime returned an invalid presentation identity")
         }
-        return (.number(generation), UInt64(revision))
+        let accepted = value["acceptedLayout"]
+        let layout = configuration.atomicHostLayout ? Dictionary(uniqueKeysWithValues: ["ownerId", "surfaceGeneration", "observationId", "layoutRevision"].map { ($0, accepted[$0]) }) : [:]
+        return (.number(generation), UInt64(revision), layout)
     }
-    func acknowledgePresentation(generation: WeappJSON, revision: UInt64) throws {
-        _ = try command("presented", ["generation": generation, "revision": .number(Double(revision))])
+    func acknowledgePresentation(generation: WeappJSON, revision: UInt64, layout: [String: WeappJSON]) throws {
+        _ = try command("presented", layout.merging(["generation": generation, "revision": .number(Double(revision))]) { _, value in value })
     }
     func input(_ values: [WeappJSON], cancellation: Bool = false) throws {
         if cancellation { try ensureOpen(); guard isLoaded else { return } } else { try ensureAvailable() }
@@ -349,6 +439,7 @@ import WeappContainerNative
         ])]
         if let required = configuration.gpuRequired { config["gpuRequired"] = .bool(required) }
         if configuration.devDiagnostics { config["devDiagnostics"] = .bool(true) }
+        if configuration.atomicHostLayout { config["hostLayout"] = .object(["protocolVersion": .string("1.0"), "atomic": .bool(true)]) }
         if case .persistent(let key, let suppliedRoot) = configuration.storage {
             guard !key.isEmpty else { throw failure("ERR_INVALID_REQUEST", "Persistent storage requires a stable nonempty key") }
             let root = try suppliedRoot ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("WeappContainer", isDirectory: true)
@@ -400,7 +491,7 @@ import WeappContainerNative
                 let c = closeWaiter; closeWaiter = nil
                 if let error { c?.resume(throwing: error) } else { c?.resume() }
                 enqueue(.closed(error))
-            default: break
+            default: enqueue(.raw(event))
             }
         }
     }

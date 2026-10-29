@@ -50,6 +50,8 @@ public struct WeappHostError: Error, Sendable {
 public enum WeappContainerEvent: Sendable {
     case ready(WeappJSON), navigation(WeappJSON), chrome(WeappJSON), message(WeappJSON)
     case error(WeappContainerError), closed(WeappContainerError?)
+    /// Versioned SDK events not projected into an older typed wrapper.
+    case raw(WeappJSON)
 }
 
 public struct WeappContainerConfiguration: Sendable {
@@ -62,6 +64,8 @@ public struct WeappContainerConfiguration: Sendable {
     public var sessionID: String
     public var gpuRequired: Bool?
     public var devDiagnostics: Bool
+    /// Opt in before native creation; complete host layouts become mandatory.
+    public var atomicHostLayout: Bool = false
     public init(storageKey: String, storageRoot: URL? = nil, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false) {
         self.storage = .persistent(key: storageKey, root: storageRoot); self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics
     }

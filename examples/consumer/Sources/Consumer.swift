@@ -134,6 +134,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             case .ready(let state): facts["ready"] = state
             case .navigation: facts["currentRoute"] = try? s.state()["page"]["route"]
             case .chrome(let value): facts["chrome"] = value
+            case .raw: break
             }
             publish()
         }

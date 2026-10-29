@@ -29,6 +29,9 @@ import WeappContainerNative
     }
     func invalidate() { epoch &+= 1 }
     func attach() throws {
+        // Logical hostSurface ownership exists before App/Page execution, but
+        // the physical SDK renderer requires an accepted pack (ERR_NOT_LOADED
+        // otherwise). Preflight observations must not attach a Metal renderer.
         guard !attached, let session, session.isLoaded else { return }
         try session.metal { h, result in weapp_container_sdk_metal_attach(h, Unmanaged.passUnretained(device as AnyObject).toOpaque(), Unmanaged.passUnretained(queue as AnyObject).toOpaque(), &result) }
         attached = true; invalidate()
@@ -67,7 +70,7 @@ import WeappContainerNative
                     do {
                         // Completion of this drawable acknowledges only its
                         // captured frame; onReady may accept a newer frame.
-                        try session.acknowledgePresentation(generation: identity.generation, revision: revision)
+                        try session.acknowledgePresentation(generation: identity.generation, revision: revision, layout: identity.layout)
                         lastRevision = revision; lastEpoch = submittedEpoch; onPresented?(revision)
                     } catch let error as WeappContainerError where error.code == "ERR_CANCELLED" {
                         // Reload/resize superseded this drawable. Retry the
