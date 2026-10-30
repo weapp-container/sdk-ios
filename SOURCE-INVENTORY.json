@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "0.1.0-preview.5.5",
-  "sourceBaseCommit": "2522343ac290672f0f1143dbcf1fc4f9a09b70ed",
-  "review": "Reviewed preview.5.5 source version and installation guidance; typed iOS cancellation and diagnostic adapters; historical runtime locks and ORIGIN remain unchanged.",
+  "sdkVersion": "0.1.0-preview.5.6",
+  "sourceBaseCommit": "8b87c03d6ad231e70fa930cc03804c7fbc502cf1",
+  "review": "Reviewed preview.5.6 wrapper identity and new runtime requirement; historical runtime locks and ORIGIN remain unchanged.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -47,7 +47,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "a5525e289ea94f73a47932b9fca5dda7a33b7ac0941381ab72e3c61af8039531",
+      "sha256": "b00d9de0015d234635947820b2dd2aab8f2e1182d78f9e954a3a7746039e8a7d",
       "size": 10302,
       "mode": "100644"
     },
@@ -77,7 +77,7 @@
     },
     {
       "path": "WeappContainer.podspec",
-      "sha256": "7e1d73efea081d7a580c2dd4097f96ca8d2e3114f602b05cb48af83b7058c973",
+      "sha256": "a07f3b75a82ba134a6c0b3d3b607e5583711e69a3f6e2fa9e051177b9b0f293c",
       "size": 838,
       "mode": "100644"
     },
@@ -119,7 +119,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "f62ab92836e660d7f71ea1a5d5a8e24259f0fac1c7b9bfb4406d08b8dfb39401",
+      "sha256": "99d8cd63c0a9d20854a97695febda926b96ff23c2cc4c41750e0f55ecde0b387",
       "size": 548,
       "mode": "100644"
     },
@@ -143,8 +143,8 @@
     },
     {
       "path": "test/native-input.test.mjs",
-      "sha256": "223179b21290412ee27a734aab19bbbf444c004e10c1ad07b0d9e3048e65c552",
-      "size": 14334,
+      "sha256": "d84b1c152a3911c2d18dc7caf4f31c19ead2a76bcbb36b1471f2bf2f2630e360",
+      "size": 14376,
       "mode": "100644"
     },
     {
@@ -173,7 +173,7 @@
     },
     {
       "path": "tools/native-input.mjs",
-      "sha256": "dc40353d58610727c852306cd928f78189f2f9e3218fb0647da4a69c707c42ec",
+      "sha256": "66fe55cc367e44bc8707c615f74d1daa893513c2e94b28a3ccd8945e99ec6be3",
       "size": 11462,
       "mode": "100644"
     },
@@ -191,7 +191,7 @@
     },
     {
       "path": "tools/runtime-artifacts.mjs",
-      "sha256": "eca88880c2e6fe954c580da9328afbf9b03699113490a503c2fc83695f899912",
+      "sha256": "04062504e3fdf569aef12419f7a643e412b0c4c92faa7cd246024aae1a6fe172",
       "size": 19113,
       "mode": "100644"
     },
