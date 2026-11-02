@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "f168f39f9f9fef4c88a3427e1a33db4a9086c104",
-  "review": "Review native system, network, recorder, audio lease rollback and awaited retryable owner retirement; full Swift module/sample and executable payload tests",
+  "sourceBaseCommit": "a9d590fbf53ef91aed98f36374a8afc5ec6e99cb",
+  "review": "Native foreground location lifecycle and server-registered purpose/version consent; current full Swift compile evidence",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "bfea2904e3ab7bb225c602827b7b9908b3dc4877bb93781300e473b51abea125",
-      "size": 7783,
+      "sha256": "c775105d934bfd497e92b2724028017174b9a97b958a03d891bea41950ef1845",
+      "size": 8751,
       "mode": "100644"
     },
     {
@@ -77,14 +77,14 @@
     },
     {
       "path": "Sources/WeappContainer/DeviceApis.swift",
-      "sha256": "048531c51c9c6af704aeb240beabc7f1969f4e781a390d301e05302290b6c254",
-      "size": 23190,
+      "sha256": "a87193a35ee6e4bf2ab18c003f78ee2811bce5e49eee83f8cfbbd54a0000a4e3",
+      "size": 30274,
       "mode": "100644"
     },
     {
       "path": "Sources/WeappContainer/HostServicesClient.swift",
-      "sha256": "fb245039236ac276367fb2df25b0002eac93f17fa9f7ef8d0caee771d2b51263",
-      "size": 13618,
+      "sha256": "2b9e81f848e2678974472494729e8786f140b88d56b6d6b61f09b5d0bc12999c",
+      "size": 14696,
       "mode": "100644"
     },
     {
@@ -247,6 +247,12 @@
       "path": "test/evidence/host-services-development.json",
       "sha256": "3de4c7183b01faa29b32646816de23464dc3a6b7de6e3dbfc1ead78e70397545",
       "size": 4031,
+      "mode": "100644"
+    },
+    {
+      "path": "test/evidence/host-services-location-policy-development.json",
+      "sha256": "d447e9b4e03a62d753af60fbc344aae203f1204de301365eeee7fb829fbf0e84",
+      "size": 5114,
       "mode": "100644"
     },
     {

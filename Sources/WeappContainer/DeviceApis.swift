@@ -6,6 +6,17 @@ import UIKit
 @preconcurrency import AVFoundation
 import AudioToolbox
 
+/// Coalesce native location callbacks before scheduling work on the main actor.
+private final class LocationCallbackIngress: @unchecked Sendable {
+    private let lock = NSLock()
+    private var values: [CLLocation]?
+    private var error: Error?
+    private var scheduled = false
+    func offer(_ locations: [CLLocation]?, _ failure: Error?) -> Bool { lock.lock(); defer { lock.unlock() }; if let locations { values = locations.suffix(1).map { $0 } }; if let failure { error = failure }; if scheduled { return false }; scheduled = true; return true }
+    func take() -> ([CLLocation]?, Error?) { lock.lock(); defer { lock.unlock() }; let result = (values, error); values = nil; error = nil; scheduled = false; return result }
+    func clear() { lock.lock(); values = nil; error = nil; lock.unlock() }
+}
+
 /// Explicit native implementations. Install after trusted configuration and before load.
 /// Keep this adapter alive and close it when the host feature/scene is retired.
 @MainActor public final class WeappDeviceApis: NSObject, CLLocationManagerDelegate {
@@ -20,6 +31,12 @@ import AudioToolbox
     private var sequences: [String: UInt64] = [:]
     private var locations: [String: (Bool, CheckedContinuation<WeappJSON, Error>)] = [:]
     private var locationAuthorization: [String: CheckedContinuation<Bool, Never>] = [:]
+    private nonisolated let locationIngress = LocationCallbackIngress()
+    private var locationStreamOwner: WeappHostApiCall?
+    private var locationStreamStart: WeappHostApiCall?
+    private var locationGeneration: UInt64 = 0
+    private var locationVisible = true
+    private var locationObservers: [NSObjectProtocol] = []
     private var toast: UIView?
     private var loading: UIView?
     private var brightnessBefore: CGFloat?
@@ -30,15 +47,22 @@ import AudioToolbox
         "wx.getBatteryInfo", "wx.getScreenBrightness", "wx.setScreenBrightness", "wx.setKeepScreenOn", "wx.vibrateLong", "wx.vibrateShort",
         "wx.showToast", "wx.hideToast", "wx.showLoading", "wx.hideLoading", "wx.showModal", "wx.showActionSheet", "wx.makePhoneCall",
         "wx.openAppAuthorizeSetting", "wx.getSetting", "wx.authorize", "wx.getLocation", "wx.getFuzzyLocation",
+        "wx.startLocationUpdate", "wx.stopLocationUpdate", "wx.onLocationChange", "wx.offLocationChange", "wx.onLocationChangeError", "wx.offLocationChangeError",
         "wx.startAccelerometer", "wx.stopAccelerometer", "wx.onAccelerometerChange", "wx.offAccelerometerChange",
         "wx.startGyroscope", "wx.stopGyroscope", "wx.onGyroscopeChange", "wx.offGyroscopeChange",
         "wx.startCompass", "wx.stopCompass", "wx.onCompassChange", "wx.offCompassChange",
     ]
     public init(presenter: UIViewController) { self.presenter = presenter; super.init(); location.delegate = self }
+    deinit { for observer in locationObservers { NotificationCenter.default.removeObserver(observer) } }
     public func install(in target: WeappContainerSession) throws {
         guard session == nil else { throw WeappHostError(code: .invalidRequest, message: "Device adapter already installed") }
         session = target; scopes.bind(target)
-        try target.registerHostResourceCleanup("device-\(UUID().uuidString)") { [weak self] in self?.resetResources() }
+        try target.registerHostResourceCleanup("device-\(UUID().uuidString)") { self.resetResources() }
+        try target.registerHostVisibilityHandler("location-\(UUID().uuidString)") { [weak self] visible in self?.locationVisible = visible; if visible { self?.reconcileLocation() } else { self?.pauseLocations() } }
+        locationObservers = [
+            NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in Task { @MainActor in self?.pauseLocations() } },
+            NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in Task { @MainActor in self?.reconcileLocation() } }
+        ]
         for api in supportedApis.sorted() {
             try target.registerApiHandler(api) { [weak self] call in
                 guard let self else { throw WeappHostError(code: .cancelled, message: "Device adapter retired") }
@@ -129,15 +153,36 @@ import AudioToolbox
             guard granted else { throw failure(api, "auth deny", code: .permissionDenied) }; return ok(api)
         case "wx.getLocation", "wx.getFuzzyLocation":
             guard value["type"].string ?? "wgs84" == "wgs84" else { throw failure(api, "GCJ-02 requires a coordinate adapter", code: .unsupported) }
+            let accepted = locationGeneration
             guard await authorizeLocation(call) else { throw failure(api, "auth deny", code: .permissionDenied) }
+            guard accepted == locationGeneration, locationForeground, !call.cancellation.isCancelled else { throw CancellationError() }
             return try await withCheckedThrowingContinuation { continuation in
                 locations[call.id] = (api == "wx.getFuzzyLocation", continuation)
                 call.cancellation.onCancel { [weak self] in
                     self?.locations.removeValue(forKey: call.id)?.1.resume(throwing: CancellationError())
-                    if self?.locations.isEmpty == true { self?.location.stopUpdatingLocation() }
+                    self?.reconcileLocation()
                 }
-                location.desiredAccuracy = api == "wx.getFuzzyLocation" ? kCLLocationAccuracyKilometer : kCLLocationAccuracyBest; location.startUpdatingLocation()
+                reconcileLocation()
             }
+        case "wx.startLocationUpdate":
+            guard value["type"].string ?? "wgs84" == "wgs84" else { throw failure(api, "GCJ-02 requires a coordinate adapter", code: .unsupported) }
+            guard locationStreamStart == nil, locationForeground else { throw failure(api, "location start is pending or outside foreground") }
+            locationStreamStart = call; let accepted = locationGeneration
+            defer { if locationStreamStart?.id == call.id { locationStreamStart = nil } }
+            guard await authorizeLocation(call) else { throw failure(api, "auth deny", code: .permissionDenied) }
+            try Task.checkCancellation(); guard accepted == locationGeneration, locationStreamStart?.id == call.id, locationForeground, !call.cancellation.isCancelled else { throw CancellationError() }
+            if locationStreamOwner == nil {
+                // No object handle is returned by this API; the registered
+                // adapter cleanup owns its continuing native producer.
+                locationStreamOwner = call
+            }
+            reconcileLocation(); return ok(api)
+        case "wx.stopLocationUpdate": stopLocationStream(); return ok(api)
+        case "wx.onLocationChange", "wx.onLocationChangeError":
+            guard subscriptions.values.filter({ ["wx.onLocationChange", "wx.onLocationChangeError"].contains($0.method) }).count < 32 else { throw failure(api, "location subscription limit") }
+            try retain(call) {}; return ok(api)
+        case "wx.offLocationChange", "wx.offLocationChangeError":
+            if let id = value["subscriptionId"].string { remove(id) }; return ok(api)
         case "wx.startAccelerometer", "wx.startGyroscope":
             guard value["interval"].string ?? "normal" == "normal" else { throw failure(api, "this adapter supports normal sampling only", code: .unsupported) }
             if api == "wx.startAccelerometer" {
@@ -202,23 +247,49 @@ import AudioToolbox
         guard manager.authorizationStatus != .notDetermined else { return }
         let pending = locationAuthorization; locationAuthorization.removeAll()
         for continuation in pending.values { continuation.resume(returning: [.authorizedAlways, .authorizedWhenInUse].contains(manager.authorizationStatus)) }
+        if [.authorizedAlways, .authorizedWhenInUse].contains(manager.authorizationStatus) { reconcileLocation() }
+        else if locationStreamOwner != nil || !locations.isEmpty { failedLocation(manager, NSError(domain: kCLErrorDomain, code: CLError.denied.rawValue)) }
     }
     nonisolated public func locationManager(_ manager: CLLocationManager, didUpdateLocations values: [CLLocation]) {
-        Task { @MainActor [weak self] in self?.receivedLocations(manager, values) }
+        if locationIngress.offer(values, nil) { Task { @MainActor [weak self] in self?.drainLocationCallbacks() } }
     }
     private func receivedLocations(_ manager: CLLocationManager, _ values: [CLLocation]) {
-        guard let value = values.last, value.horizontalAccuracy >= 0 else { return }
-        let pending = locations; locations.removeAll(); manager.stopUpdatingLocation()
+        guard locationForeground, let value = values.last, value.horizontalAccuracy >= 0 else { return }
+        let pending = locations; locations.removeAll()
         for (fuzzy, continuation) in pending.values {
             let data: [String: WeappJSON] = fuzzy ? ["latitude": .number((value.coordinate.latitude * 100).rounded() / 100), "longitude": .number((value.coordinate.longitude * 100).rounded() / 100)] : ["latitude": .number(value.coordinate.latitude), "longitude": .number(value.coordinate.longitude), "accuracy": .number(value.horizontalAccuracy), "horizontalAccuracy": .number(value.horizontalAccuracy), "verticalAccuracy": .number(value.verticalAccuracy), "speed": .number(value.speed), "altitude": .number(value.altitude)]
             continuation.resume(returning: ok(fuzzy ? "wx.getFuzzyLocation" : "wx.getLocation", data))
         }
+        if let owner = locationStreamOwner, !owner.cancellation.isCancelled {
+            emitLocation("wx.onLocationChange", owner: owner, ["latitude": .number(value.coordinate.latitude), "longitude": .number(value.coordinate.longitude), "accuracy": .number(value.horizontalAccuracy), "horizontalAccuracy": .number(value.horizontalAccuracy), "verticalAccuracy": .number(value.verticalAccuracy), "speed": .number(value.speed), "altitude": .number(value.altitude)])
+        }
+        reconcileLocation()
     }
     nonisolated public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        Task { @MainActor [weak self] in self?.failedLocation(manager, error) }
+        if locationIngress.offer(nil, error) { Task { @MainActor [weak self] in self?.drainLocationCallbacks() } }
     }
     private func failedLocation(_ manager: CLLocationManager, _ error: Error) {
-        let pending = locations; locations.removeAll(); manager.stopUpdatingLocation(); for (_, continuation) in pending.values { continuation.resume(throwing: error) }
+        let pending = locations; locations.removeAll(); for (_, continuation) in pending.values { continuation.resume(throwing: error) }
+        if let owner = locationStreamOwner, locationForeground, !owner.cancellation.isCancelled { let native = error as NSError; emitLocation("wx.onLocationChangeError", owner: owner, ["errMsg": .string("startLocationUpdate:fail \(native.localizedDescription)"), "errCode": .number(Double(native.code)), "nativeDomain": .string(native.domain)]) }
+        if (error as? CLError)?.code == .denied { manager.stopUpdatingLocation() } else { reconcileLocation() }
+    }
+    private var locationForeground: Bool { locationVisible && UIApplication.shared.applicationState != .background && presenter?.viewIfLoaded?.window != nil }
+    private func reconcileLocation() {
+        if locationStreamOwner?.cancellation.isCancelled == true { locationStreamOwner = nil }
+        guard locationForeground, locationStreamOwner != nil || !locations.isEmpty else { location.stopUpdatingLocation(); return }
+        guard CLLocationManager.locationServicesEnabled(), [.authorizedAlways, .authorizedWhenInUse].contains(location.authorizationStatus) else { location.stopUpdatingLocation(); return }
+        location.desiredAccuracy = locationStreamOwner != nil || locations.values.contains(where: { !$0.0 }) ? kCLLocationAccuracyBest : kCLLocationAccuracyKilometer
+        location.startUpdatingLocation()
+    }
+    private func stopLocationStream() { let pending = locationStreamStart; locationStreamStart = nil; pending?.cancellation.cancel(); locationStreamOwner = nil; reconcileLocation() }
+    private func pauseLocations() {
+        locationGeneration += 1; locationIngress.clear(); location.stopUpdatingLocation()
+        let start = locationStreamStart; locationStreamStart = nil; start?.cancellation.cancel()
+        let pending = locations; locations.removeAll(); for (_, continuation) in pending.values { continuation.resume(throwing: CancellationError()) }
+    }
+    private func drainLocationCallbacks() { let (values, error) = locationIngress.take(); if let error { failedLocation(location, error) }; if let values { receivedLocations(location, values) } }
+    private func emitLocation(_ method: String, owner: WeappHostApiCall, _ values: [String: WeappJSON]) {
+        for call in subscriptions.values where call.method == method && call.context["sessionId"] == owner.context["sessionId"] && call.context["application"] == owner.context["application"] && call.context["account"] == owner.context["account"] { emit(call, values) }
     }
     nonisolated public func locationManager(_ manager: CLLocationManager, didUpdateHeading heading: CLHeading) {
         Task { @MainActor [weak self] in self?.emitFamily("Compass", ["direction": .number(heading.magneticHeading), "accuracy": .number(heading.headingAccuracy)]) }
@@ -257,6 +328,7 @@ import AudioToolbox
         }
     }
     private func resetResources() {
+        pauseLocations(); locationStreamOwner = nil
         consent.reset()
         for id in Array(resources.keys) { remove(id) }; motion.stopAccelerometerUpdates(); motion.stopGyroUpdates(); location.stopUpdatingLocation(); location.stopUpdatingHeading()
         let pending = locations; locations.removeAll(); for (_, continuation) in pending.values { continuation.resume(throwing: CancellationError()) }
@@ -264,5 +336,5 @@ import AudioToolbox
         toast?.removeFromSuperview(); loading?.removeFromSuperview(); restoreDisplay()
         if let batteryMonitoringBefore { UIDevice.current.isBatteryMonitoringEnabled = batteryMonitoringBefore }; batteryMonitoringBefore = nil
     }
-    public func close() { resetResources(); session = nil }
+    public func close() { resetResources(); for observer in locationObservers { NotificationCenter.default.removeObserver(observer) }; locationObservers.removeAll(); session = nil }
 }

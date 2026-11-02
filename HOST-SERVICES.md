@@ -27,6 +27,10 @@ Info.plist 条目。CoreBluetooth 不开放任意未发现的 peripheral，也�
 
 真实系统服务包括剪贴板、网络状态、电池、亮度、常亮、震动、原生 UI、WGS84 定位
 及传感器。传感器支持 normal 采样；GCJ-02、后台定位及未实现的系统能力不冒充成功。
+前台持续定位使用同一个 CLLocationManager，提供 start/stopLocationUpdate、
+on/offLocationChange 与 on/offLocationChangeError；小程序隐藏或应用进入后台暂停，
+回到前台按原 owner 恢复，换号与关闭删除订阅。单次定位完成不停止仍有效的持续
+定位，native 回调只保留最新位置/错误，串行交付有界订阅。
 
 toolkit 统一拥有文件、设备、BLE、媒体、网络、录音和系统适配器，也可独立安装。
 `try await session.close()` 等待原生清理，再释放核心与文件 lease；并发 close
@@ -85,6 +89,9 @@ try identity.install(in: session)
 
 应用后端用独立 confidential client 兑换短时、单次且绑定 app/pack 的 code。
 小程序得不到宿主 bearer 和应用后端密钥。手机号与昵称头像分别提示和授权。
+原生提示先从可信后端取得授权政策，展示登记 purpose，并在授权和 code 中绑定
+purpose 与 permissionVersion。guest desc 不决定用途；拒绝同步服务端并刷新状态，
+取消仍作为取消处理，服务端政策变更使旧授权失效。
 `wx.checkSession` 检查真实已兑换的应用会话，签发 code 本身不会把 appLoggedIn
 置为 true。宿主在兑换、撤权、凭据刷新及前台恢复后调用
 `identity.refreshState(in:trustedContext:)`，更新同步 getState 和 onChange。
@@ -111,3 +118,7 @@ WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官�
 启用两个官方 SDK 的 `canImport` 分支，再针对该模块编译示例，均无编译诊断。
 这是编译证据；实际 iOS 二进制链接、设备交互、相机/蓝牙、官方钱包和商户交易仍需
 各自对应的运行验证。
+
+[前台定位与授权政策编译记录](test/evidence/host-services-location-policy-development.json)
+另行绑定本批全部生产 Swift 源码与 sample，在官方支付头文件可见时完整发射模块、
+编译示例且无诊断；定位订阅与授权 UI 的 iOS 实际交互仍待运行验收。

@@ -127,9 +127,21 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
                 case "weappContainer.identity.logout": result = try await self.backend.request(call, path: "/v1/host/app-logout", body: selection)
                 default:
                     let phone = api == "weappContainer.identity.authorizePhone"
-                    try await self.confirm(call, phone: phone)
-                    selection["kind"] = .string(phone ? "phone" : "profile"); selection["granted"] = .bool(true)
+                    let kind = phone ? "phone" : "profile"
+                    selection["kind"] = .string(kind)
+                    let policy = try await self.backend.request(call, path: "/v1/host/authorization-policy", body: selection)
+                    guard policy["kind"].string == kind, let purpose = policy["purpose"].string, !purpose.isEmpty, purpose.count <= 512,
+                          let version = policy["permissionVersion"].string, !version.isEmpty, version.count <= 64 else {
+                        throw WeappHostError(code: .invalidRequest, message: "Invalid registered authorization policy")
+                    }
+                    try Task.checkCancellation(); guard !call.cancellation.isCancelled else { throw CancellationError() }
+                    let granted = try await self.confirm(call, phone: phone, purpose: purpose)
+                    selection["granted"] = .bool(granted); selection["purpose"] = .string(purpose); selection["permissionVersion"] = .string(version)
                     _ = try await self.backend.request(call, path: "/v1/host/consents", body: selection)
+                    if !granted {
+                        _ = try await self.refresh(session, call)
+                        throw WeappHostError(code: .permissionDenied, message: "User denied consent", details: ["errMsg": .string("\(api):fail auth deny"), "errCode": .number(2001)])
+                    }
                     let app = try self.backend.selection(call)
                     if phone { result = try await self.backend.request(call, path: "/v1/host/phone-codes", body: app) }
                     else { result = .object(["userInfo": try await self.backend.request(call, path: "/v1/host/profile", body: app)]) }
@@ -139,14 +151,15 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
             }
         }
     }
-    private func confirm(_ call: WeappHostApiCall, phone: Bool) async throws {
+    private func confirm(_ call: WeappHostApiCall, phone: Bool, purpose: String) async throws -> Bool {
         guard let presenter, presenter.viewIfLoaded?.window != nil, presenter.presentedViewController == nil else { throw WeappHostError(code: .invalidRequest, message: "Visible idle presenter required for consent") }
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
             var settled = false
-            let alert = UIAlertController(title: phone ? "授权手机号" : "授权昵称和头像", message: phone ? "允许此小程序获取宿主账号已验证的手机号？" : "允许此小程序获取宿主账号的昵称和头像？", preferredStyle: .alert)
-            let finish: (Result<Void, Error>) -> Void = { result in guard !settled else { return }; settled = true; continuation.resume(with: result) }
-            alert.addAction(UIAlertAction(title: "允许", style: .default) { _ in finish(.success(())) })
-            alert.addAction(UIAlertAction(title: "拒绝", style: .cancel) { _ in finish(.failure(WeappHostError(code: .permissionDenied, message: "User denied consent", details: ["errMsg": .string("\(call.method):fail auth deny"), "errCode": .number(2001)]))) })
+            let question = phone ? "允许此小程序获取宿主账号已验证的手机号？" : "允许此小程序获取宿主账号的昵称和头像？"
+            let alert = UIAlertController(title: phone ? "授权手机号" : "授权昵称和头像", message: question + "\n\n用途：" + purpose, preferredStyle: .alert)
+            let finish: (Result<Bool, Error>) -> Void = { result in guard !settled else { return }; settled = true; continuation.resume(with: result) }
+            alert.addAction(UIAlertAction(title: "允许", style: .default) { _ in finish(.success(true)) })
+            alert.addAction(UIAlertAction(title: "拒绝", style: .cancel) { _ in finish(.success(false)) })
             call.cancellation.onCancel { alert.dismiss(animated: false); finish(.failure(CancellationError())) }
             presenter.present(alert, animated: true)
         }
