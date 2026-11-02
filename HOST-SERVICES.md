@@ -18,7 +18,7 @@ try toolkit.install(in: session)
 registerApiHandler。未安装的方法保持不支持。
 
 `WeappHostServicesClient.identityState` 在可信账号明确为 `principalId: null` 且 epoch
-为精确十进制 u64（包含默认值 `"0"`）时准备未登录快照，不再读取已撤销的宿主 bearer。初始准备、
+为精确十进制 u64（快照辅助层接受 `"0"`，公开 owner 配置仍要求正数）时准备未登录快照，不再读取已撤销的宿主 bearer。初始准备、
 换号清理准备与前台刷新都使用同一入口；已登录 principal 仍必须查询真实后端，
 网络、权限或凭据失败继续传递，不会回退为成功。快照不包含旧用户资料或手机号授权。
 
@@ -124,6 +124,10 @@ purpose 与 permissionVersion。guest desc 不决定用途；拒绝同步服务�
 `wx.checkSession` 检查真实已兑换的应用会话，签发 code 本身不会把 appLoggedIn
 置为 true。宿主在兑换、撤权、凭据刷新及前台恢复后调用
 `identity.refreshState(in:trustedContext:)`，更新同步 getState 和 onChange。
+刷新在后端请求前读取 native state，核对可信 application/account 并冻结实际内部
+sessionId；响应完成后继续使用同一身份，不会重贴到新 owner。API 回调的原始
+ApiCallContext 继续透传，运行时按完整应用/包、账号 epoch 和内部会话拒绝旧快照；
+人工 native refresh 不需要伪装成 pending API call。
 换号清理 hook 应先准备新宿主凭据，再等待
 `identity.prepareAccountState(in:operationID:trustedContext:)`，最后返回清理成功；
 旧账号快照不能用于新 owner。

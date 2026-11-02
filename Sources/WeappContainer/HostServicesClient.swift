@@ -86,7 +86,8 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
     }
     /// Refresh after server code redemption, revocation, token refresh and foreground resume.
     @discardableResult public func refreshState(in session: WeappContainerSession, trustedContext: [String: WeappJSON]) async throws -> WeappJSON {
-        try await refresh(session, nativeCall(trustedContext))
+        let context = try WeappHostIdentitySnapshot.refreshContext(.object(trustedContext), nativeState: session.state())
+        return try await refresh(session, nativeCall(context))
     }
     /// Run inside onAccountCleanup after installing the new native host token, before cleanup ACK.
     @discardableResult public func prepareAccountState(in session: WeappContainerSession, operationID: String, trustedContext: [String: WeappJSON]) async throws -> WeappJSON {

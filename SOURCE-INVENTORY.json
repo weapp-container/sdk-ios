@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "73aab9447790ac5b58afff426d1fd655e076e01c",
-  "review": "Align signed-out identity snapshots with core canonical u64 epochs including the default epoch zero",
+  "sourceBaseCommit": "b7e50a509674d010b11ac37b59cf53f24e9a6414",
+  "review": "Freeze actual native snapshot incarnation before asynchronous identity refresh and reject mismatched trusted application/account before I/O",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "d58ee3fd74b25e197019d87d1d2c7d0a8d850efb8ad5c843f67efb35cd80b9de",
-      "size": 12195,
+      "sha256": "1c39e8a5896711d9282367f6891879877b8659ea7b4b887670da271d662c48e3",
+      "size": 12609,
       "mode": "100644"
     },
     {
@@ -95,14 +95,14 @@
     },
     {
       "path": "Sources/WeappContainer/HostIdentitySnapshot.swift",
-      "sha256": "e2934b6ab584faad3def627e2eca49ebe1ec915863ab4b24392812117409908d",
-      "size": 1089,
+      "sha256": "50aadd02f605c6063ebd0edee92321618d095087fa41065b6567bf2d37bfd8b5",
+      "size": 1866,
       "mode": "100644"
     },
     {
       "path": "Sources/WeappContainer/HostServicesClient.swift",
-      "sha256": "411cdcc7189df1f9ae43c60361897b1d468c5a462808ff66299ad3765e1c206d",
-      "size": 15074,
+      "sha256": "fa9a47e105d74136964c844d4c8fd49a3e4a1c5d071bff19764f06f76561e743",
+      "size": 15196,
       "mode": "100644"
     },
     {
@@ -317,8 +317,8 @@
     },
     {
       "path": "test/HostIdentitySnapshotTests.swift",
-      "sha256": "85e78ba68dd8b17b0f76d7c7ac8518ba5e557e1a23b15d3c448826bd1f79f594",
-      "size": 1651,
+      "sha256": "60bf32e74ad5aff0a42e3575cf6f6900610eada01d8165aefef0442d49bd96c0",
+      "size": 3762,
       "mode": "100644"
     },
     {
