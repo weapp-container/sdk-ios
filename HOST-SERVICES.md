@@ -1,0 +1,91 @@
+# iOS 宿主能力
+
+适配器要求匹配当前 host-services 协议的 native runtime。所有配置、安装、清理和
+宿主回调在 MainActor 上执行；旧 preview framework 不包含新协议。
+
+```swift
+let device = WeappDeviceApis(presenter: presenter)
+let bluetooth = WeappBluetoothApis(presenter: presenter)
+let files = try WeappManagedFiles()
+let media = WeappNativeMedia(presenter: presenter, files: files,
+    allowedMediaOrigins: ["https://media.example.com"])
+try session.configureHostServices(trustedConfiguration)
+try device.install(in: session)
+try bluetooth.install(in: session)
+try files.install(in: session)
+try media.install(in: session)
+// 此后才 load pack；宿主持有这些对象直至 session 关闭。
+```
+
+可信配置必须来自宿主已验证的安装与账号，包含发行者、应用、实际 pack root、
+环境、principal 和十进制 epoch。业务方法用 registerHostMethod；微信方法用
+registerApiHandler。未安装的方法保持不支持。
+
+小程序授权和操作系统权限分别检查。即使宿主已有系统授权，每个应用与账号仍须
+经过独立 native 提示；持久记录按可信应用、发行者、账号及 epoch 隔离，
+`getSetting` 不把未询问过的作用域伪装为已授权。宿主按实际能力配置
+NSCameraUsageDescription、NSMicrophoneUsageDescription、
+NSLocationWhenInUseUsageDescription、NSBluetoothAlwaysUsageDescription 等
+Info.plist 条目。CoreBluetooth 不开放任意未发现的 peripheral，也不能设置
+系统 MTU；未实现的方法不注册。
+
+真实系统服务包括剪贴板、网络状态、电池、亮度、常亮、震动、原生 UI、WGS84 定位
+及传感器。传感器支持 normal 采样；GCJ-02、后台定位及未实现的系统能力不冒充成功。
+
+`WeappManagedFiles` 提供基础异步文件方法及受管 `wxfile://user/` 路径。同步
+FileSystemManager 方法由核心直接执行，双方使用同一目录与真实 flock 操作锁。读写块最多 1 MiB、单文件 8 MiB、单账号应用 32 MiB。写入等待
+原子替换及文件同步；guest 拒绝并隐藏 `.weapp-*` 内部锁文件；guest 永远得不到 Application Support 的原生路径。
+SDK 创建 native session 时总是设置 app-private `managedFilesRoot`，独立于键值存储
+配置。文件与授权记录只使用 core `managedFileScope` 返回并经应用/账号身份核验的
+`root` 和 `auxiliaryRoot`；资源清理完成前保留共享 lease。账号删除统一调用 core
+`deleteAccountData`，在清理 ACK 与 surface detach 后同时移除文件和授权记录。
+
+相机通过 AVCaptureVideoDataOutput 取得真实帧，视频通过 AVPlayerItemVideoOutput
+解码。320×240、最多 5 fps 的 RGBA 预览进入原 Skia PaintPlan 对应节点，沿用
+真实裁剪、变换、层级及透明度，使用有界的最新帧队列，不创建浮动播放器或覆盖
+整个容器。视频只接受受管文件和明确允许的 HTTPS origin。上下文创建需要 runtime
+签发的 componentTarget。拍照保存当前捕获帧，不提供独立高分辨率静态拍摄。
+直播、DRM、录制、全屏、弹幕和逐相机原始帧订阅尚未实现，不注册相应 API。
+后台、节点卸载、换号及 close 停止流、播放器和旧对象。
+
+参考身份服务通过 native closure 读取宿主已有安全凭据：
+
+```swift
+let backend = try WeappHostServicesClient(endpoint: URL(string: "https://accounts.example.com")!) {
+    call in try secureHostSession.token(for: call.context)
+}
+let identity = WeappHostIdentity(presenter: presenter, backend: backend)
+let prepared = try await identity.prepareConfiguration(trustedConfiguration)
+try session.configureHostServices(prepared)
+try identity.install(in: session)
+// 配置和安装完成后再 load。
+```
+
+应用后端用独立 confidential client 兑换短时、单次且绑定 app/pack 的 code。
+小程序得不到宿主 bearer 和应用后端密钥。手机号与昵称头像分别提示和授权。
+`wx.checkSession` 检查真实已兑换的应用会话，签发 code 本身不会把 appLoggedIn
+置为 true。宿主在兑换、撤权、凭据刷新及前台恢复后调用
+`identity.refreshState(in:trustedContext:)`，更新同步 getState 和 onChange。
+换号清理 hook 应先准备新宿主凭据，再等待
+`identity.prepareAccountState(in:operationID:trustedContext:)`，最后返回清理成功；
+旧账号快照不能用于新 owner。
+
+`WeappAppPayments` 同时注册 `wx.requestPayment` 与 `weappContainer.payment.request`，只接受服务端 orderId。官方渠道为
+WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官方 SDK
+须作为该集成 target 的实际可见依赖，canImport 不成立时渠道明确不可用。SPM 宿主
+也可以在自己的 target 中实现 WeappNativeAppPayChannel；仅在宿主 target 链接一个
+库，并不自动使另一个独立 target 能 import 它。宿主处理官方 URL/Universal Link
+回调，服务器验签和订单归属、金额、商户及交易校验后确认 paid，才报告支付成功。
+取消等待不表示退款或交易关闭。
+
+官方公开头文件 WechatOpenSDK 2.0.9 与 AlipaySDK-iOS 15.8.30 已用于 Swift 类型
+检查，验证调用的选择器和字段。类型检查、后端本地测试、源码清单均不表示已经
+链接运行官方钱包或完成真实商户、相机、外设和账号切换验收。
+## 编译验证记录
+
+[当前开发记录](test/evidence/host-services-development.json) 记录完整 Swift 模块和
+`ReferenceHostServices.swift` 的源码哈希，以及实际微信 OpenSDK 2.0.9、支付宝
+15.8.30 官方包的来源和哈希。本轮以 `arm64-apple-ios16.0-simulator` 发射生产模块，
+启用两个官方 SDK 的 `canImport` 分支，再针对该模块编译示例，均无编译诊断。
+这是编译证据；实际 iOS 二进制链接、设备交互、相机/蓝牙、官方钱包和商户交易仍需
+各自对应的运行验证。

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "0.1.0-preview.5.7",
-  "sourceBaseCommit": "f5ac0b364bf637ed30cf20992e68667d9e05f759",
-  "review": "Reviewed preview.5.7 source metadata with App17 retirement-owner diagnostics; preserve historical ORIGIN and preview.5.3 artifact lock.",
+  "sdkVersion": "0.1.0-preview.6.0",
+  "sourceBaseCommit": "54bdf020280f4ba5e661816ca06b588701ebb754",
+  "review": "Review native host identity and explicit app-payment adapters, managed file/consent scopes, account retirement, device/BLE and Skia media integration; source inventory only, emulator development and Swift compile evidence are separately scoped.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -28,6 +28,12 @@
       "mode": "100644"
     },
     {
+      "path": "HOST-SERVICES.md",
+      "sha256": "13176112f9132ddb1c6a39e0f1158073ddc84a3713946e32f315bfaadfb142aa",
+      "size": 6015,
+      "mode": "100644"
+    },
+    {
       "path": "LICENSE",
       "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
       "size": 10847,
@@ -41,14 +47,62 @@
     },
     {
       "path": "Package.swift",
-      "sha256": "b0180c6c70996a45df263d990c744d9eb6d869a28c98f4993ce6816418a55d5c",
-      "size": 824,
+      "sha256": "016d2e0424611e1b3e2c2e718c5ce42cc8dc073fc6ed6c9e94aa7662e0042717",
+      "size": 1120,
       "mode": "100644"
     },
     {
       "path": "README.md",
-      "sha256": "2102d6bbfe6079d5c80fc9e6ceb98a2ac2cf8e9584c8d08869cf29221d0add37",
-      "size": 10302,
+      "sha256": "8f30ca1a0f8492d7d1057f35691dc30c051e8281936c820041c34ce288a94bcc",
+      "size": 10526,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/AppPayments.swift",
+      "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91",
+      "size": 9819,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/AppPermissionConsent.swift",
+      "sha256": "c1d98c951a712eeed087ac7c0c8384aec2aff49c64082c2fcaad5d592340432e",
+      "size": 4733,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/BluetoothApis.swift",
+      "sha256": "bc44718d58569a1226fea55f49b7652673c64b097e5cb3a4d07df41651e7bd6b",
+      "size": 21600,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/DeviceApis.swift",
+      "sha256": "048531c51c9c6af704aeb240beabc7f1969f4e781a390d301e05302290b6c254",
+      "size": 23190,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/HostServicesClient.swift",
+      "sha256": "fb245039236ac276367fb2df25b0002eac93f17fa9f7ef8d0caee771d2b51263",
+      "size": 13618,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFileScope.swift",
+      "sha256": "6520899422290970ae4f5afec47e8bc72a20c0750e2211d44fa6724a97f54e33",
+      "size": 1724,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFiles.swift",
+      "sha256": "6b2ac9bd518d39fadcad2fa8d750b4f344a5310237b31cfcb362f69cc35c61aa",
+      "size": 12421,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeMedia.swift",
+      "sha256": "33b3bc73fd448e4f6c60c45d2a288d328eea145680d958556d9b05551ab60098",
+      "size": 20870,
       "mode": "100644"
     },
     {
@@ -59,26 +113,26 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "327a66f313f9d1cbfa64ecfc20c84069a3411d4ab17757a437d28e2acc16763a",
-      "size": 33688,
+      "sha256": "ddcfa731180148879e389ec1bc6f3151e92e7ac25bffac55e54d28ffc64f7931",
+      "size": 45395,
       "mode": "100644"
     },
     {
       "path": "Sources/WeappContainer/Types.swift",
-      "sha256": "39aed0fd3504deb05ff3ec08d03489ae054d65ba2fcfe5800e86b0fb5f92ca78",
-      "size": 4055,
+      "sha256": "e43bd927e5313336c18848fb78ab426a503248b039d37a97f72893c09771fa54",
+      "size": 5927,
       "mode": "100644"
     },
     {
       "path": "Sources/WeappContainer/View.swift",
-      "sha256": "b7c508d71bd63a7dafd930064e0a15d36a4fd56a05b161eb63ae97583c991e1d",
-      "size": 21331,
+      "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf",
+      "size": 22764,
       "mode": "100644"
     },
     {
       "path": "WeappContainer.podspec",
-      "sha256": "ca24246e3929333707b8ac891431a86a9577020792ef13b0530dd4f49f69b312",
-      "size": 838,
+      "sha256": "af591da688f11b9015acbdcf95ebbf81b973c592ac6436554013dd321c79e95a",
+      "size": 954,
       "mode": "100644"
     },
     {
@@ -112,6 +166,18 @@
       "mode": "100644"
     },
     {
+      "path": "examples/host-services/README.md",
+      "sha256": "961ef69d0aade513965354d5124a1af7566170411cdbc5faaa350f09958786fd",
+      "size": 2833,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/host-services/ReferenceHostServices.swift",
+      "sha256": "b1d71e3700da15c2d7cae63d81205b4c0371e5b150705d1baf04f844cd27c040",
+      "size": 8514,
+      "mode": "100644"
+    },
+    {
       "path": "include/weapp_container_sdk.h",
       "sha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b",
       "size": 6842,
@@ -119,7 +185,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "74aa3922926a01558a0685766bcd8f804035e4841d1b36bc7d75d8862a0db4ca",
+      "sha256": "624b3dadd420bfa269e1419b35bca810cfd6fdada980fc8c8ea8a83f480c2780",
       "size": 548,
       "mode": "100644"
     },
@@ -136,6 +202,12 @@
       "mode": "100644"
     },
     {
+      "path": "test/evidence/host-services-development.json",
+      "sha256": "3de4c7183b01faa29b32646816de23464dc3a6b7de6e3dbfc1ead78e70397545",
+      "size": 4031,
+      "mode": "100644"
+    },
+    {
       "path": "test/metadata-query.test.mjs",
       "sha256": "9caca93b119eb946aa1b3292245c6db01b4998d6f8dd06855244866340882f48",
       "size": 2396,
@@ -143,7 +215,7 @@
     },
     {
       "path": "test/native-input.test.mjs",
-      "sha256": "c4752ef7e9ef178cbabc2d11bebbc09973bd472f5d5dce9f258224367290b81d",
+      "sha256": "422e478f279b8cd243cb804f9f891d9ecb047b38250986fbe40a0edfb881ff06",
       "size": 14397,
       "mode": "100644"
     },
@@ -173,7 +245,7 @@
     },
     {
       "path": "tools/native-input.mjs",
-      "sha256": "9228ba326416fb16ea6105dbed7138344f10e2865987625fed52bb2d125c15fe",
+      "sha256": "d0daec2d38980166d28075b3b05fe3e243b7e9cdf07f3c384e18bca85cfeae50",
       "size": 11462,
       "mode": "100644"
     },
@@ -191,7 +263,7 @@
     },
     {
       "path": "tools/runtime-artifacts.mjs",
-      "sha256": "8308dde0d9df836f37311e3d64035d80aaff638db02e0eb32c0e2388f796c1bf",
+      "sha256": "7731d018ce4c349c2c97a843e82a1d9029711f15a41fd7594cbf4f1a1c7b156c",
       "size": 19113,
       "mode": "100644"
     },

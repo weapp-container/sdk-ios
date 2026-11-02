@@ -10,7 +10,10 @@ let package = Package(
             .linkedLibrary("c++"), .linkedLibrary("z"), .linkedLibrary("iconv"),
             .linkedFramework("UIKit"), .linkedFramework("Metal"), .linkedFramework("QuartzCore"),
             .linkedFramework("CoreGraphics"), .linkedFramework("CoreText"), .linkedFramework("CoreFoundation"),
-            .linkedFramework("Security"), .linkedFramework("SystemConfiguration")
+            .linkedFramework("Security"), .linkedFramework("SystemConfiguration"),
+            .linkedFramework("AVFoundation"), .linkedFramework("CoreImage"), .linkedFramework("CoreBluetooth"),
+            .linkedFramework("CoreLocation"), .linkedFramework("CoreMotion"), .linkedFramework("Network"),
+            .linkedFramework("AudioToolbox"), .linkedFramework("CryptoKit")
         ])
     ]
 )

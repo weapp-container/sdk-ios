@@ -6,8 +6,10 @@ import WeappContainerNative
 /// Keep the session for reattachment, and await close() to persist and release it.
 @MainActor public final class WeappContainerSession {
     public typealias HostMethod = @MainActor (WeappJSON) async throws -> WeappJSON
+    public typealias HostApiHandler = @MainActor (WeappHostApiCall) async throws -> WeappJSON
     public let configuration: WeappContainerConfiguration
     public var onEvent: ((WeappContainerEvent) -> Void)?
+    public var onAccountCleanup: (@MainActor (String) async throws -> Void)?
     public private(set) var isClosed = false
     public private(set) var isLoaded = false
     public private(set) var frameRevision: UInt64 = 0
@@ -18,7 +20,17 @@ import WeappContainerNative
     private var metrics: WeappJSON?
     private var metricsWaiters: [UUID: CheckedContinuation<Void, Error>] = [:]
     private var methods: [String: HostMethod] = [:]
+    private var apiHandlers: [String: HostApiHandler] = [:]
+    private var hostServicesConfig: [String: WeappJSON]?
+    private var authorizedApplications: [String: [String: WeappJSON]] = [:]
+    private var resourceCleanups: [String: () -> Void] = [:]
+    private var accountSwitchBlocked = false
+    private var accountDetachTask: Task<Void, Never>?
+    private var accountSwitchOperationID: String?
+    private var accountCleanupTaskID: String?
+    private var accountNativeCleanupID: String?
     private var jobs: [String: Task<Void, Never>] = [:]
+    private var apiCancellations: [String: WeappHostApiCancellation] = [:]
     private var timer: Timer?
     private var flushes: [UInt64: CheckedContinuation<Void, Error>] = [:]
     private var closeWaiter: CheckedContinuation<Void, Error>?
@@ -40,8 +52,10 @@ import WeappContainerNative
     deinit {
         timer?.invalidate(); for task in jobs.values { task.cancel() }
         let p = surface, owner = native
+        let cancellations = Array(apiCancellations.values), cleanups = Array(resourceCleanups.values)
         // Retain both GPU and native owners through asynchronous final cleanup.
         Task { @MainActor in
+            for cancellation in cancellations { cancellation.cancel() }; for cleanup in cleanups { cleanup() }
             await p?.drain()
             do {
                 if p?.attached == true, let owner {
@@ -57,7 +71,56 @@ import WeappContainerNative
         try ensureOpen()
         guard !isLoaded, !gate else { throw failure("ERR_INVALID_STATE", "Register host methods before loading") }
         guard !name.isEmpty, !name.hasPrefix("wx.") else { throw failure("ERR_INVALID_REQUEST", "Host method names must be nonempty and cannot use wx.*") }
+        if native != nil { _ = try command("registerHostMethod", ["name": .string(name)]) }
         methods[name] = handler
+    }
+    /// Trusted metadata from the verified installation; credentials stay in the host/backend.
+    public func configureHostServices(_ value: [String: WeappJSON]) throws {
+        try ensureOpen()
+        guard !isLoaded, !gate else { throw failure("ERR_INVALID_STATE", "Configure host services before loading") }
+        if native != nil { _ = try command("configureHostServices", value) }
+        hostServicesConfig = value
+    }
+    public func registerHostResourceCleanup(_ key: String, cleanup: @escaping () -> Void) throws {
+        try ensureOpen()
+        guard resourceCleanups[key] == nil else { throw failure("ERR_INVALID_REQUEST", "Native resource cleanup key already registered") }
+        resourceCleanups[key] = cleanup
+    }
+    public func registerApiHandler(_ name: String, handler: @escaping HostApiHandler) throws {
+        try ensureOpen()
+        guard !isLoaded, !gate, hostServicesConfig != nil else { throw failure("ERR_INVALID_STATE", "Configure trusted services and register APIs before loading") }
+        guard !name.isEmpty, apiHandlers[name] == nil else { throw failure("ERR_INVALID_REQUEST", "Native API must be nonempty and unique") }
+        if native != nil { _ = try command("registerApiHandler", ["name": .string(name)]) }
+        apiHandlers[name] = handler
+    }
+    /// Allowlisted host-service transport shared by native, Flutter and React Native hosts.
+    public func hostServicesCommand(_ operation: String, _ payload: [String: WeappJSON] = [:]) throws -> WeappJSON {
+        let allowed = ["configureHostServices", "registerApiHandler", "updateHostServiceSnapshots", "authorizeInstalledPack", "migrateLegacyStorage", "deleteAccountData", "hostApiEvent", "hostComponents", "managedFileScope", "hostComponentEvent", "authorizePhoneButton", "acknowledgeAccountCleanup", "retryAccountCleanup", "switchAccount", "queryAccountSwitch", "updateAccountSwitchLaunch", "retryAccountSwitch", "cancelAccountSwitch", "createHostBinary", "readHostBinary", "retainHostBinary", "releaseHostBinary"]
+        try ensureOpen()
+        guard allowed.contains(operation) || ["hostComponentFrame", "prepareAccountHostServiceSnapshots"].contains(operation) else { throw failure("ERR_INVALID_REQUEST", "Not a host-services command") }
+        if operation == "configureHostServices" { try configureHostServices(payload); return .null }
+        try createNativeIfNeeded()
+        if operation == "retryAccountCleanup" { beginAccountCleanup(); return try command("queryAccountSwitch") }
+        if operation == "updateHostServiceSnapshots", let context = payload["context"] {
+            guard !accountSwitchBlocked, context["account"] == hostServicesConfig?["account"], context["application"] == hostServicesConfig?["application"] else { throw failure("ERR_IDENTITY_SWITCHING", "Stale native snapshot owner") }
+        }
+        let result = try command(operation, payload)
+        if operation == "authorizeInstalledPack", let root = payload["packRoot"]?.string {
+            guard authorizedApplications[root] != nil || authorizedApplications.count < 64 else { throw failure("ERR_INVALID_REQUEST", "Authorized pack limit reached") }
+            authorizedApplications[root] = payload
+        }
+        if operation == "updateHostServiceSnapshots" || operation == "prepareAccountHostServiceSnapshots" {
+            let values = payload["values"]?.dictionary ?? [:]
+            let snapshots = (hostServicesConfig?["syncValues"]?.dictionary ?? [:]).merging(values) { _, value in value }
+            hostServicesConfig?["syncValues"] = .object(snapshots)
+        }
+        if operation == "switchAccount", result["phase"].string != "complete" { accountSwitchBlocked = true }
+        surface?.invalidate(); return result
+    }
+    public func emitHostApiEvent(_ event: [String: WeappJSON]) throws -> WeappJSON { try hostServicesCommand("hostApiEvent", event) }
+    public func createHostBinary(_ bytes: Data) throws -> WeappJSON {
+        guard bytes.count <= 1024 * 1024 else { throw failure("ERR_INVALID_REQUEST", "Host binary chunks are bounded to 1 MiB") }
+        return try hostServicesCommand("createHostBinary", ["bytes": .array(bytes.map { .number(Double($0)) })])
     }
 
     /// Waits for a view attached to a window with positive, measured bounds.
@@ -141,6 +204,8 @@ import WeappContainerNative
         guard native == nil else { return }
         native = try NativeOwner(config: makeConfig())
         for name in methods.keys.sorted() { _ = try command("registerHostMethod", ["name": .string(name)]) }
+        for name in apiHandlers.keys.sorted() { _ = try command("registerApiHandler", ["name": .string(name)]) }
+        for application in authorizedApplications.values { _ = try command("authorizeInstalledPack", application) }
         if previewOccluded { _ = try command("setPreviewOccluded", ["occluded": .bool(true)]) }
         startPump()
     }
@@ -195,6 +260,8 @@ import WeappContainerNative
                 if let hostChrome { _ = try command("hostChrome", hostChrome) }
                 if previewOccluded { _ = try command("setPreviewOccluded", ["occluded": .bool(true)]) }
                 for name in methods.keys.sorted() { _ = try command("registerHostMethod", ["name": .string(name)]) }
+                for name in apiHandlers.keys.sorted() { _ = try command("registerApiHandler", ["name": .string(name)]) }
+                for application in authorizedApplications.values { _ = try command("authorizeInstalledPack", application) }
                 startPump()
             }
             result = try command(development ? "applyDevPack" : "load", payload)
@@ -304,6 +371,8 @@ import WeappContainerNative
         if let closeResult { return try closeResult.get() }
         surface?.cancelInput?()
         closing = true
+        for cancellation in apiCancellations.values { cancellation.cancel() }; apiCancellations.removeAll()
+        for cleanup in resourceCleanups.values { cleanup() }; resourceCleanups.removeAll()
         let waiting = metricsWaiters.values; metricsWaiters.removeAll()
         for waiter in waiting { waiter.resume(throwing: failure("ERR_CLOSED", "Session closed before layout")) }
         await acquireGate()
@@ -381,7 +450,7 @@ import WeappContainerNative
     private func applyForeground(synchronizeNative: Bool = false) throws {
         let active = requestedForeground && surfaceForeground
         let changed = active != isForeground; isForeground = active
-        guard isLoaded, synchronizeNative || (changed && !gate) else { return }
+        guard isLoaded, !accountSwitchBlocked, synchronizeNative || (changed && !gate) else { return }
         // SDK replacement may commit while the host changes visibility during
         // a Metal drain. Synchronize actual desired lifecycle before reattach;
         // developer occlusion is deliberately absent from this calculation.
@@ -422,6 +491,7 @@ import WeappContainerNative
     private func ensureOpen() throws { if closing || isClosed { throw failure("ERR_CLOSED", "Session is closing or closed") } }
     private func ensureAvailable() throws {
         try ensureOpen()
+        guard !accountSwitchBlocked else { throw failure("ERR_IDENTITY_SWITCHING", "Account replacement is not presented") }
         guard isLoaded, !gate else { throw failure("ERR_NOT_READY", "Session is loading or has no app") }
     }
     private func failure(_ code: String, _ message: String) -> WeappContainerError { WeappContainerError(code: code, message: message) }
@@ -453,9 +523,12 @@ import WeappContainerNative
             "user_agent": .string("WeappContainer/\(Self.version) iOS"),
             "windowWidth": metrics["windowWidth"], "windowHeight": metrics["windowHeight"], "displayMetrics": .object(display)
         ])]
+        let managedRoot = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("WeappContainer/managed-files", isDirectory: true)
+        config["managedFilesRoot"] = .string(managedRoot.path)
         if let required = configuration.gpuRequired { config["gpuRequired"] = .bool(required) }
         if configuration.devDiagnostics { config["devDiagnostics"] = .bool(true) }
         if configuration.atomicHostLayout { config["hostLayout"] = .object(["protocolVersion": .string("1.0"), "atomic": .bool(true)]) }
+        if let hostServicesConfig { config["hostServices"] = .object(hostServicesConfig) }
         if case .persistent(let key, let suppliedRoot) = configuration.storage {
             guard !key.isEmpty else { throw failure("ERR_INVALID_REQUEST", "Persistent storage requires a stable nonempty key") }
             let root = try suppliedRoot ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("WeappContainer", isDirectory: true)
@@ -488,13 +561,17 @@ import WeappContainerNative
         for event in list {
             switch event["type"].string {
             case "frame": frameRevision = UInt64(event["revision"].number ?? 0)
-            case "ready": enqueue(.ready(event["state"]))
+            case "ready": retainTrustedState(event["state"]); enqueue(.ready(event["state"]))
+            case "devReload":
+                if let state = try? native.command("state", .object([:])) { retainTrustedState(state) }
+                enqueue(.raw(event))
             case "navigation": enqueue(.navigation(event))
             case "chrome": enqueue(.chrome(event))
             case "message": enqueue(.message(event["message"]))
             case "error": enqueue(.error(WeappContainerError(event["error"])))
             case "hostCall": dispatchHostCall(event)
-            case "hostCallCancelled": if let id = event["callId"].string { jobs.removeValue(forKey: id)?.cancel() }
+            case "hostCallCancelled": if let id = event["callId"].string { jobs.removeValue(forKey: id)?.cancel(); apiCancellations.removeValue(forKey: id)?.cancel() }
+            case "accountSwitch": handleAccountSwitch(event); enqueue(.raw(event))
             case "storageFlushed":
                 if let ticket = event["ticket"].number, let c = flushes.removeValue(forKey: UInt64(ticket)) {
                     if event["ok"].bool == true { c.resume() } else { c.resume(throwing: WeappContainerError(event["error"])) }
@@ -502,6 +579,8 @@ import WeappContainerNative
             case "closed":
                 isClosed = true; isLoaded = false; isForeground = false
                 for job in jobs.values { job.cancel() }; jobs.removeAll()
+                for cancellation in apiCancellations.values { cancellation.cancel() }; apiCancellations.removeAll()
+                for cleanup in resourceCleanups.values { cleanup() }; resourceCleanups.removeAll()
                 let error = event["ok"].bool == false ? WeappContainerError(event["error"]) : nil
                 nativeCloseResult = error.map { .failure($0) } ?? .success(())
                 let c = closeWaiter; closeWaiter = nil
@@ -514,17 +593,89 @@ import WeappContainerNative
     private func dispatchHostCall(_ event: WeappJSON) {
         guard let id = event["callId"].string, let name = event["method"].string else { return }
         let handler = methods[name]
+        let apiHandler = apiHandlers[name]
+        let cancellation = WeappHostApiCancellation()
+        cancellation.retained = event["retainUntilCancelled"].bool == true
+        apiCancellations[id] = cancellation
         jobs[id] = Task { @MainActor [weak self] in
             var response: [String: WeappJSON] = ["callId": .string(id)]
             do {
-                guard let handler else { throw WeappHostError(code: .unsupported, message: "No handler registered for \(name)") }
-                response["result"] = try await handler(event["payload"])
+                if event["context"] != .null {
+                    guard let apiHandler else { throw WeappHostError(code: .unsupported, message: "No native API handler registered for \(name)") }
+                    response["result"] = try await apiHandler(WeappHostApiCall(event: event, cancellation: cancellation))
+                } else {
+                    guard let handler else { throw WeappHostError(code: .unsupported, message: "No handler registered for \(name)") }
+                    response["result"] = try await handler(event["payload"])
+                }
             } catch {
                 let e = error as? WeappHostError ?? WeappHostError(code: error is CancellationError ? .cancelled : .invalidRequest, message: error.localizedDescription)
-                response["error"] = .object(["code": .string(e.code.rawValue), "message": .string(e.message), "retryable": .bool(e.retryable)])
+                response["error"] = .object(["code": .string(e.code.rawValue), "message": .string(e.message), "retryable": .bool(e.retryable), "details": .object(e.details)])
             }
-            guard !Task.isCancelled, let self, self.jobs.removeValue(forKey: id) != nil, !self.closing else { return }
+            guard !Task.isCancelled, let self, !self.accountSwitchBlocked, self.jobs.removeValue(forKey: id) != nil, !self.closing else { return }
+            if !cancellation.retained || response["error"] != nil { self.apiCancellations.removeValue(forKey: id) }
             do { _ = try self.command("completeHostCall", response) } catch { self.report(error) }
+        }
+    }
+    private func retainTrustedState(_ state: WeappJSON) {
+        let trusted = state["hostServicesState"]
+        if trusted["application"] != .null { hostServicesConfig?["application"] = trusted["application"] }
+        if trusted["account"] != .null { hostServicesConfig?["account"] = trusted["account"] }
+    }
+    private func handleAccountSwitch(_ event: WeappJSON) {
+        let receipt = event["receipt"]
+        if event["account"] != .null { hostServicesConfig?["account"] = event["account"] }
+        if event["syncValues"] != .null { hostServicesConfig?["syncValues"] = event["syncValues"] }
+        switch receipt["phase"].string {
+        case "revoking":
+            accountSwitchBlocked = true; isLoaded = false; hostChrome = nil
+            accountSwitchOperationID = receipt["operationId"].string
+            for job in jobs.values { job.cancel() }; jobs.removeAll()
+            for cancellation in apiCancellations.values { cancellation.cancel() }; apiCancellations.removeAll()
+            for cleanup in resourceCleanups.values { cleanup() }
+            surface?.cancelInput?(); surface?.layer.opacity = 0
+            beginAccountCleanup()
+        case "awaitingPresentation":
+            isLoaded = receipt["sessionId"].string != nil
+            if isLoaded { do { try surface?.attach(); surface?.invalidate() } catch { report(error) } }
+        case "complete":
+            accountSwitchBlocked = false; isLoaded = receipt["sessionId"].string != nil
+            if isLoaded { do { try applyForeground(synchronizeNative: true); try surface?.attach(); surface?.invalidate() } catch { report(error) } }
+        case "failed", "superseded": accountSwitchBlocked = true; isLoaded = false
+        default: break
+        }
+    }
+    private func beginAccountCleanup() {
+        guard accountSwitchBlocked, let operationID = accountSwitchOperationID, accountCleanupTaskID != operationID else { return }
+        accountDetachTask?.cancel(); accountCleanupTaskID = operationID
+        accountDetachTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            var ownsGate = false
+            defer {
+                if ownsGate { self.releaseGate() }
+                if self.accountCleanupTaskID == operationID { self.accountCleanupTaskID = nil; self.accountDetachTask = nil }
+            }
+            do {
+                await self.acquireGate(); ownsGate = true
+                try self.ensureOpen(); try Task.checkCancellation()
+                if self.accountNativeCleanupID != operationID {
+                    await self.surface?.drain(); try Task.checkCancellation(); try self.surface?.detach()
+                    try await self.surface?.clear(); try Task.checkCancellation()
+                    guard self.accountSwitchOperationID == operationID else { return }
+                    self.hostSurfaceIdentity = nil
+                    if self.configuration.atomicHostLayout { try self.observeAtomicLayout() }
+                    self.accountNativeCleanupID = operationID
+                }
+                // Custom toolkit cleanup may await its own UI actor. Keep native commands
+                // and close available while the revoked identity remains blocked in Rust.
+                self.releaseGate(); ownsGate = false
+                try await self.onAccountCleanup?(operationID); try Task.checkCancellation()
+                await self.acquireGate(); ownsGate = true
+                try self.ensureOpen()
+                guard self.accountSwitchOperationID == operationID else { return }
+                _ = try self.command("acknowledgeAccountCleanup", ["operationId": .string(operationID)])
+                self.surface?.layer.opacity = 1
+                if self.isLoaded { try self.surface?.attach(); self.surface?.invalidate() }
+            } catch { if !(error is CancellationError), !self.closing, self.accountSwitchOperationID == operationID { self.report(error) } }
         }
     }
     private func enqueue(_ event: WeappContainerEvent) {

@@ -45,6 +45,29 @@ import WeappContainerNative
     func drain() async {
         if inFlight { await withCheckedContinuation { waiters.append($0) } }
     }
+    /// Clear retained pixels without acknowledging an application frame.
+    func clear() async throws {
+        guard layer.drawableSize.width > 0, layer.drawableSize.height > 0 else { return }
+        guard let drawable = layer.nextDrawable(), let buffer = queue.makeCommandBuffer() else {
+            throw WeappContainerError(code: "ERR_METAL", message: "Cannot clear revoked account pixels")
+        }
+        let pass = MTLRenderPassDescriptor()
+        pass.colorAttachments[0].texture = drawable.texture
+        pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
+        pass.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 1)
+        guard let encoder = buffer.makeRenderCommandEncoder(descriptor: pass) else {
+            throw WeappContainerError(code: "ERR_METAL", message: "Cannot encode account revocation clear")
+        }
+        encoder.endEncoding(); buffer.present(drawable)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            buffer.addCompletedHandler { command in
+                if command.status == .completed { continuation.resume() }
+                else { continuation.resume(throwing: WeappContainerError(code: "ERR_METAL", message: "Account revocation clear failed")) }
+            }
+            buffer.commit()
+        }
+        lastRevision = nil; lastEpoch = nil; invalidate()
+    }
     func present() throws {
         guard attached, !inFlight, let session, session.canPresent,
               lastRevision != session.frameRevision || lastEpoch != epoch,

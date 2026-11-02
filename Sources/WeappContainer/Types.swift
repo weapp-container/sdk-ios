@@ -44,7 +44,48 @@ public struct WeappHostError: Error, Sendable {
     public let code: Code
     public let message: String
     public let retryable: Bool
-    public init(code: Code, message: String, retryable: Bool = false) { self.code = code; self.message = message; self.retryable = retryable }
+    /// Exact API failure fields, including numeric errCode and original errMsg.
+    public let details: [String: WeappJSON]
+    public init(code: Code, message: String, retryable: Bool = false, details: [String: WeappJSON] = [:]) {
+        self.code = code; self.message = message; self.retryable = retryable; self.details = details
+    }
+}
+
+/// Native-minted call metadata, kept independently of guest payload and mapped method names.
+public struct WeappHostApiCall: Sendable {
+    public let id: String
+    public let method: String
+    public let payload: WeappJSON
+    public let context: WeappJSON
+    public let deadlineNs: String?
+    public let cancelToken: String?
+    public let cancellation: WeappHostApiCancellation
+    public let keepsResourceAlive: Bool
+    init(event: WeappJSON, cancellation: WeappHostApiCancellation) {
+        id = event["callId"].string ?? ""; method = event["method"].string ?? ""
+        payload = event["payload"]; context = event["context"]
+        deadlineNs = event["deadlineNs"].string ?? event["deadlineNs"].number.flatMap { value in
+            value >= 0 && value <= 9007199254740991 && value.rounded(.down) == value ? String(UInt64(value)) : nil
+        }
+        cancelToken = event["cancelToken"].string
+        self.cancellation = cancellation
+        keepsResourceAlive = event["retainUntilCancelled"].bool == true
+    }
+}
+
+/// Native resource lifetime, independent of the async setup handler returning.
+@MainActor public final class WeappHostApiCancellation {
+    public private(set) var isCancelled = false
+    private var callbacks: [() -> Void] = []
+    var retained = false
+    public func retainUntilCancelled() { retained = true }
+    public func onCancel(_ callback: @escaping () -> Void) {
+        if isCancelled { callback() } else { callbacks.append(callback) }
+    }
+    func cancel() {
+        guard !isCancelled else { return }; isCancelled = true
+        let pending = callbacks; callbacks.removeAll(); for callback in pending { callback() }
+    }
 }
 
 public enum WeappContainerEvent: Sendable {
