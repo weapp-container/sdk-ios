@@ -42,7 +42,7 @@ try {
   run('xcrun', ['lipo', '-create', ...inputs.slice(1).map(input => resolve(input.directory, 'libweapp_container_sdk.a')), '-output', simulator]);
   const staged = resolve(work, 'WeappContainer'); mkdirSync(resolve(staged, 'Frameworks'), { recursive: true });
   run('xcodebuild', ['-create-xcframework', '-library', resolve(inputs[0].directory, 'libweapp_container_sdk.a'), '-headers', headers, '-library', simulator, '-headers', headers, '-output', resolve(staged, 'Frameworks/WeappContainerNative.xcframework')]);
-  for (const name of ['Package.swift', 'WeappContainer.podspec', 'README.md', 'Sources', 'LICENSE', 'CONTRACT.md', 'ORIGIN.json']) copyVerifiedTree(resolve(root, name), resolve(staged, name));
+  for (const name of ['Package.swift', 'WeappContainer.podspec', 'README.md', 'Sources', 'docs', 'LICENSE', 'CONTRACT.md', 'ORIGIN.json']) copyVerifiedTree(resolve(root, name), resolve(staged, name));
   cpSync(inputs[0].runtimeLicense, resolve(staged, 'RUNTIME-LICENSE'));
   for (let index = 0; index < targets.length; index++) copyVerifiedTree(inputs[index].notices, resolve(staged, 'licenses', targets[index]));
   const hashes = path => readdirSync(path, { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? hashes(resolve(path, entry.name)) : [{ file: relative(staged, resolve(path, entry.name)), sha256: createHash('sha256').update(readFileSync(resolve(path, entry.name))).digest('hex') }]);

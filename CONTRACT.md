@@ -164,6 +164,14 @@ supply native `windowMetrics` and `hostChrome`, then `load`. `windowMetrics` is
 also accepted before load; it remains the sole viewport/display update boundary.
 The content rectangle's dimensions must match initial window metrics.
 
+The UIKit wrapper rounds only the container viewport and current-orientation
+screen extents to integer logical pixels. Pixel ratio, status-bar height and
+`screenTop` retain their actual observations. `safeArea` is the owning window's
+safe region converted to `UIScreen.fixedCoordinateSpace` (portrait-up), with
+fractional edges preserved; it is not clipped to an embedded container or scaled
+to its rounded viewport. See [window metrics](docs/window-metrics.md) for sources,
+retry boundaries and the separate simulator acceptance entry.
+
 `state.chrome` and `{type:"chrome",generation,chrome}` events contain the
 `PageChrome` observation defined in the declarations. App window defaults,
 page overrides and per-page dynamic title/color have a single runtime resolver.

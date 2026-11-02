@@ -457,6 +457,10 @@ import WeappContainerNative
             hostSurfaceIdentity = nil; surface = nil; metrics = nil; setSurfaceForeground(false)
         }
     }
+    /// A detached/reassigned window must not seed a later owner or load from
+    /// its old observations. Existing native snapshots remain historical while
+    /// the surface is paused; only a complete new observation can resume it.
+    func invalidateMetrics() { metrics = nil }
     func updateMetrics(_ value: WeappJSON) {
         guard !closing, !isClosed else { return }
         if !configuration.atomicHostLayout && metrics == value { return }

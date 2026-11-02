@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "9614d5c1de968da9346b38a10fff45fc041d7c90",
-  "review": "Expose gated read-only API resource chunks while preserving exact native call context and account revocation",
+  "sourceBaseCommit": "1b9afb0faf5c750cc0d5debfbef6a2bdec99a43e",
+  "review": "Review portrait-screen UIKit observations, invalidation and independent consumer metrics gates; retain historical artifact evidence identities",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -23,8 +23,8 @@
     },
     {
       "path": "CONTRACT.md",
-      "sha256": "dce2228bf7704101dbc0e6873a860dcb7a1883edf1a10e43f8742cd9b913f5db",
-      "size": 13457,
+      "sha256": "58af6606492f7416f12584e3daac6e175899b4ffaa4cc7bd31a2abac4bab6d64",
+      "size": 13995,
       "mode": "100644"
     },
     {
@@ -155,8 +155,8 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "1626cbdb7e507962b7b3839acb31f48b6f9ab872dc681676be7feb5edc72ab0c",
-      "size": 50357,
+      "sha256": "cc7b03e4e4e8f48dbfd8728130d8117c2babbce8b4e8afdb15f4fefcc376117e",
+      "size": 50640,
       "mode": "100644"
     },
     {
@@ -179,8 +179,8 @@
     },
     {
       "path": "Sources/WeappContainer/View.swift",
-      "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf",
-      "size": 22764,
+      "sha256": "092edbb92c6392f2a9dfba7c7eef99f879dbbe3347901f01d1832b454aa38bb1",
+      "size": 23011,
       "mode": "100644"
     },
     {
@@ -196,6 +196,12 @@
       "mode": "100644"
     },
     {
+      "path": "Sources/WeappContainer/WindowMetricsObservation.swift",
+      "sha256": "782e17ae04b63328ea90b4793ee120df8da13b8508d271711771e86677b47497",
+      "size": 3977,
+      "mode": "100644"
+    },
+    {
       "path": "WeappContainer.podspec",
       "sha256": "ad6a083af430e09c325c3f1b856d7bf5cab9970f10a4dfc5cff8dfbcfb7cbc75",
       "size": 1075,
@@ -208,21 +214,27 @@
       "mode": "100644"
     },
     {
+      "path": "docs/window-metrics.md",
+      "sha256": "faf189d5a0200ba2a9d59736e0979b17440e4bd13b8e3f9a63fd1759af8cef8f",
+      "size": 4452,
+      "mode": "100644"
+    },
+    {
       "path": "examples/consumer/README.md",
-      "sha256": "3ec33352ef4ceb2390b123aca85186be15a430a39cb6a2f05867aba4b4e3ebae",
-      "size": 2060,
+      "sha256": "8c0584796fe550a992ec24449637360eaf823121f7daa0eca91ca0ad172bb9a8",
+      "size": 2598,
       "mode": "100644"
     },
     {
       "path": "examples/consumer/Sources/Consumer.swift",
-      "sha256": "083d96bf2ecae11abdbcac054be9c97c9c33ca198a8175a6ed85774415cdd3c8",
-      "size": 14783,
+      "sha256": "e846e4fd488642968a3659ee5a850027d27bce7120938e51df451d20d6ee6d87",
+      "size": 18290,
       "mode": "100644"
     },
     {
       "path": "examples/consumer/Sources/ConsumerUITests.swift",
-      "sha256": "fcb6f14ac9493ad350a92de427afd8ad00e8fc3c77feb48e770a6002f2dd6429",
-      "size": 8516,
+      "sha256": "9d710849680f7d5620414ff258261049453fc144a990794170bb6becef10279d",
+      "size": 11549,
       "mode": "100644"
     },
     {
@@ -275,8 +287,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "6d785b1a6f12d93cf3c64e6dfc335fa6c84be6e253f1e2d21b8d43241d653586",
-      "size": 615,
+      "sha256": "47e31b11c2ed4c47bd8af08370bbf43c575f4b6d5771ede1f2902b0076c7e995",
+      "size": 680,
       "mode": "100644"
     },
     {
@@ -319,6 +331,12 @@
       "path": "test/WifiPayloadTests.swift",
       "sha256": "d381c66f0e1caf890871f5acf2197dc1f9ef2a830ee30ecb06f14a141011d55b",
       "size": 977,
+      "mode": "100644"
+    },
+    {
+      "path": "test/WindowMetricsObservationTests.swift",
+      "sha256": "3dfd820d19dfcb1b9ed96a15c00e72f0671f571aa0e913686a6776be5c53dc80",
+      "size": 4726,
       "mode": "100644"
     },
     {
@@ -389,8 +407,8 @@
     },
     {
       "path": "tools/build.mjs",
-      "sha256": "a399623a66185ddd22034923f21b8a4e7eb6e410201b2e4e12ebaa6fdf189452",
-      "size": 5602,
+      "sha256": "2acbdc3b423ad2cca705722a7f0264a0cdaf573fee1b5c68466f9e7be482dc7e",
+      "size": 5610,
       "mode": "100644"
     },
     {
@@ -425,8 +443,8 @@
     },
     {
       "path": "tools/simulator-smoke.mjs",
-      "sha256": "50d3f613464ebcc9902c0a44b26c7297738af1d7063d8dc6b8d93bf9b7b16b0a",
-      "size": 10141,
+      "sha256": "67f0574ae8ebee86db521725bdb55d2a4836baeecc2af0666b414a0addea4152",
+      "size": 10629,
       "mode": "100644"
     },
     {
@@ -469,6 +487,12 @@
       "path": "tools/test-wifi-payloads.mjs",
       "sha256": "e3893dc8e14b4b366111c3afa0614788ee2ec771c3282894682cfa5b92efda62",
       "size": 894,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test-window-metrics.mjs",
+      "sha256": "8b968789bf099c252e2245fca68a78ffe323511468ad195cc5db1eba7caeb906",
+      "size": 975,
       "mode": "100644"
     },
     {

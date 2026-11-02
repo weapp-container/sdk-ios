@@ -34,6 +34,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var events: [WeappJSON] = []
     private var featurePaused = false
     private var orientationMask: UIInterfaceOrientationMask = .allButUpsideDown
+    private var useOtherLandscape = false
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { orientationMask }
     private var pack: URL { Bundle.main.resourceURL!.appendingPathComponent("portable-pack") }
     override func viewDidLoad() {
@@ -60,11 +61,11 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
         if nested {
             hostScroll.frame = area; hostScroll.contentSize = CGSize(width: area.width, height: 1400)
             parentDragArea.frame = CGRect(x: 0, y: 0, width: area.width, height: 120)
-            surfaceHost.frame = CGRect(x: 0, y: 120, width: area.width, height: 380)
+            surfaceHost.frame = CGRect(x: 0.125, y: 120.375, width: area.width - 0.25, height: 380.25)
         } else {
-            let half = max(1, (view.bounds.width - 12) / 2)
-            surfaceHost.frame = CGRect(x: 0, y: area.minY, width: half, height: area.height)
-            secondHost.frame = CGRect(x: half + 12, y: area.minY, width: half, height: area.height)
+            let half = max(1, (view.bounds.width - 12) / 2 - 0.25)
+            surfaceHost.frame = CGRect(x: 0.125, y: area.minY + 0.125, width: half, height: area.height - 0.25)
+            secondHost.frame = CGRect(x: half + 12.125, y: area.minY + 0.125, width: half, height: area.height - 0.25)
         }
         container?.frame = surfaceHost.bounds
         secondContainer?.frame = secondHost.bounds
@@ -72,7 +73,9 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     @objc private func rotateScene() {
         guard let scene = view.window?.windowScene else { return }
-        orientationMask = scene.interfaceOrientation.isLandscape ? .portrait : .landscapeRight
+        if scene.effectiveGeometry.interfaceOrientation.isLandscape {
+            orientationMask = .portrait; useOtherLandscape.toggle()
+        } else { orientationMask = useOtherLandscape ? .landscapeLeft : .landscapeRight }
         facts["requestedOrientationMask"] = .number(Double(orientationMask.rawValue))
         setNeedsUpdateOfSupportedInterfaceOrientations()
         scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationMask)) { [weak self] error in
@@ -117,6 +120,9 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             case .message(let message):
                 events.append(message)
                 if let type = message["kind"].string { facts[type] = message }
+                if let type = message["kind"].string, ["initial", "resize", "geometry"].contains(type) {
+                    facts[type + "NativeWindow"] = nativeWindowWitness(v)
+                }
                 if message["kind"].string == "hiddenDone" {
                     if featurePaused {
                         facts["hostPausePreserved"] = .bool(v.window != nil && !surfaceHost.isHidden && !s.isForeground)
@@ -150,6 +156,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             guard let self else { return }
             do {
                 try await s.load(packURL: pack)
+                try await verifyUnmeasuredView()
                 facts["capabilities"] = try s.capabilities()
                 facts["loaded"] = .bool(true)
                 try s.sendMessage(.object(["kind": .string("echo"), "value": .string("host-to-js")]))
@@ -166,11 +173,13 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             facts["secondCompletedFrames"] = .number(Double(v.presentedFrameCount))
             facts["secondStateAfterPresentation"] = try? s.state(); publish()
         }
-        s.onEvent = { [weak self] event in
-            guard let self else { return }
+        s.onEvent = { [weak self, weak v] event in
+            guard let self, let v else { return }
             switch event {
             case .message(let value):
-                if value["kind"].string == "initial" { facts["secondInitial"] = value }
+                if value["kind"].string == "initial" {
+                    facts["secondInitial"] = value; facts["secondInitialNativeWindow"] = nativeWindowWitness(v)
+                }
                 if value["kind"].string == "tap" { facts["secondTap"] = value }
             case .error(let error): fail(error)
             default: break
@@ -249,6 +258,48 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     private func fail(_ error: Error) { facts["failure"] = .string(error.localizedDescription); publish() }
+    private func verifyUnmeasuredView() async throws {
+        let unmeasured = WeappContainerSession(configuration: .init(storage: .memoryOnly))
+        let view = try WeappContainerView(session: unmeasured)
+        view.frame = CGRect(x: 0, y: 0, width: 100, height: 200); view.layoutIfNeeded()
+        let pending = Task { try await unmeasured.prepareView() }
+        try await Task.sleep(nanoseconds: 30_000_000)
+        do {
+            _ = try unmeasured.state()
+            throw WeappContainerError(code: "ERR_TEST", message: "A view without a window invented display metrics")
+        } catch let error as WeappContainerError where error.code == "ERR_NOT_READY" {}
+        pending.cancel()
+        do {
+            _ = try await pending.value
+            throw WeappContainerError(code: "ERR_TEST", message: "An unmeasured prepareView unexpectedly completed")
+        } catch is CancellationError {}
+        try await view.close()
+        facts["unmeasuredObservationRejected"] = .bool(true)
+    }
+    /// Independent UIKit witness for the public JS snapshot. Deliberately uses
+    /// window insets and fixed-space conversion, rather than SDK helpers or the
+    /// mini-program view's inherited/clipped safeAreaInsets.
+    private func nativeWindowWitness(_ surface: UIView) -> WeappJSON {
+        guard let window = surface.window, let scene = window.windowScene else { return .null }
+        let screen = scene.screen, insets = window.safeAreaInsets
+        let windowSafe = CGRect(x: window.bounds.minX + insets.left, y: window.bounds.minY + insets.top,
+                                width: window.bounds.width - insets.left - insets.right,
+                                height: window.bounds.height - insets.top - insets.bottom)
+        let safe = screen.fixedCoordinateSpace.convert(windowSafe, from: window)
+        return .object([
+            "windowWidth": .number(Double(max(1, surface.bounds.width.rounded()))),
+            "windowHeight": .number(Double(max(1, surface.bounds.height.rounded()))),
+            "pixelRatio": .number(Double(screen.scale)),
+            "screenWidth": .number(Double(screen.bounds.width.rounded())),
+            "screenHeight": .number(Double(screen.bounds.height.rounded())),
+            "statusBarHeight": .number(Double(scene.statusBarManager?.statusBarFrame.height ?? 0)),
+            "screenTop": .number(Double(screen.coordinateSpace.convert(surface.bounds, from: surface).minY)),
+            "deviceOrientation": .string(scene.effectiveGeometry.interfaceOrientation.isLandscape ? "landscape" : "portrait"),
+            "safeArea": .object(["left": .number(Double(safe.minX)), "right": .number(Double(safe.maxX)),
+                                 "top": .number(Double(safe.minY)), "bottom": .number(Double(safe.maxY)),
+                                 "width": .number(Double(safe.width)), "height": .number(Double(safe.height))])
+        ])
+    }
     private func publish() {
         facts["surfaceWidth"] = .number(Double(container?.bounds.width.rounded() ?? 0))
         facts["surfaceHeight"] = .number(Double(container?.bounds.height.rounded() ?? 0))

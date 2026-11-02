@@ -14,6 +14,7 @@
     "build": "node tools/build.mjs",
     "test": "node --test test/*.test.mjs",
     "test:input": "node tools/test-presentation-input.mjs",
+    "test:window-metrics": "node tools/test-window-metrics.mjs",
     "test:account-cleanup": "node tools/test-account-cleanup.mjs",
     "check:origin": "node tools/check-origin.mjs"
   }

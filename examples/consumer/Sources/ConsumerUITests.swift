@@ -13,6 +13,7 @@ import XCTest
         app.launch()
         let initial = try wait { $0["loaded"] as? Bool == true && ($0["completedFrames"] as? Int ?? 0) > 0 && $0["hostResult"] != nil && $0["geometry"] != nil && $0["secondLoaded"] as? Bool == true && ($0["secondCompletedFrames"] as? Int ?? 0) > 0 }
         XCTAssertEqual(initial["singleViewRejected"] as? Bool, true)
+        XCTAssertEqual(initial["unmeasuredObservationRejected"] as? Bool, true)
         XCTAssertEqual((initial["stateAfterPresentation"] as? [String: Any])?["presentationRequired"] as? Bool, true)
         XCTAssertEqual((initial["stateAfterPresentation"] as? [String: Any])?["inputEnabled"] as? Bool, true)
         XCTAssertEqual((initial["secondStateAfterPresentation"] as? [String: Any])?["inputEnabled"] as? Bool, true)
@@ -22,6 +23,11 @@ import XCTest
         XCTAssertEqual(launched["windowWidth"] as? Double, initial["surfaceWidth"] as? Double)
         XCTAssertEqual(launched["windowHeight"] as? Double, initial["surfaceHeight"] as? Double)
         XCTAssertGreaterThan(launched["pixelRatio"] as? Double ?? 0, 1)
+        try assertWindowMetrics(initial, snapshot: "initial")
+        try assertWindowMetrics(initial, snapshot: "geometry")
+        try assertWindowMetrics(initial, snapshot: "secondInitial")
+        let safe = try XCTUnwrap(launched["safeArea"] as? [String: Any])
+        XCTAssertGreaterThan(try XCTUnwrap(safe["width"] as? Double), try XCTUnwrap(launched["windowWidth"] as? Double), "The embedded view must not clip the public screen safe area")
         capture("initial")
         let surface = app.otherElements["sdk-surface"]
         surface.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 40, dy: 80)).tap()
@@ -57,10 +63,19 @@ import XCTest
         _ = try wait { (($0["show"] as? [String: Any])?["shows"] as? Int ?? 0) > showCount }
         let sceneRotation = "__SDK_ROTATION_MODE__" == "scene"
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .landscapeLeft }
-        _ = try wait { ($0["surfaceWidth"] as? Double) != (initial["surfaceWidth"] as? Double) && $0["resize"] != nil && [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) }
+        let rotated = try wait { ($0["surfaceWidth"] as? Double) != (initial["surfaceWidth"] as? Double) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "landscape" && [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) }
+        try assertWindowMetrics(rotated, snapshot: "resize")
         capture("rotation")
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .portrait }
-        _ = try wait { ($0["surfaceWidth"] as? Double) == (initial["surfaceWidth"] as? Double) && $0["interfaceOrientation"] as? Int == 1 }
+        let upright = try wait { ($0["surfaceWidth"] as? Double) == (initial["surfaceWidth"] as? Double) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "portrait" && $0["interfaceOrientation"] as? Int == 1 }
+        try assertWindowMetrics(upright, snapshot: "resize")
+        if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .landscapeRight }
+        let otherLandscape = try wait { [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) && ($0["interfaceOrientation"] as? Int) != (rotated["interfaceOrientation"] as? Int) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "landscape" }
+        try assertWindowMetrics(otherLandscape, snapshot: "resize")
+        capture("opposite-landscape")
+        if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .portrait }
+        let restored = try wait { $0["interfaceOrientation"] as? Int == 1 && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "portrait" }
+        try assertWindowMetrics(restored, snapshot: "resize")
         app.buttons["Reload"].tap()
         let reload = try wait { $0["reloaded"] as? Bool == true && ($0["completedFrames"] as? Int ?? 0) > 1 }
         XCTAssertEqual(reload["failedLoadPreservedGeneration"] as? Bool, true)
@@ -68,6 +83,7 @@ import XCTest
         app.buttons["Reopen"].tap()
         let reopened = try wait { $0["reopened"] as? Bool == true && $0["durableClose"] as? Bool == true && ($0["initial"] as? [String: Any])?["stored"] as? Int == 1 && ($0["completedFrames"] as? Int ?? 0) > 0 }
         XCTAssertNil(reopened["failure"])
+        try assertWindowMetrics(reopened, snapshot: "initial")
         capture("reopened-persistent")
         app.buttons["Embed"].tap()
         _ = try wait { $0["nested"] as? Bool == true && $0["geometry"] != nil }
@@ -76,6 +92,7 @@ import XCTest
         _ = try wait { ($0["parentOffset"] as? Double ?? 0) > 30 }
         app.buttons["Reset"].tap()
         let reset = try wait { abs($0["parentOffset"] as? Double ?? 0) < 1 }
+        try assertWindowMetrics(reset, snapshot: "geometry")
         let nestedGeometry = try XCTUnwrap((reset["geometry"] as? [String: Any])?["scroll"] as? [String: Any])
         let nestedX = try XCTUnwrap(nestedGeometry["left"] as? Double) + 50
         let nestedY = try XCTUnwrap(nestedGeometry["top"] as? Double) + 130
@@ -90,6 +107,19 @@ import XCTest
         capture("native-nested-scroll-and-multitouch")
         app.buttons["Close"].tap()
         _ = try wait { $0["pairClosed"] as? Bool == true }
+    }
+    private func assertWindowMetrics(_ facts: [String: Any], snapshot: String, file: StaticString = #filePath, line: UInt = #line) throws {
+        let observed = try XCTUnwrap(facts[snapshot] as? [String: Any], file: file, line: line)
+        let native = try XCTUnwrap(facts[snapshot + "NativeWindow"] as? [String: Any], file: file, line: line)
+        for field in ["windowWidth", "windowHeight", "pixelRatio", "screenWidth", "screenHeight", "screenTop", "statusBarHeight"] {
+            XCTAssertEqual(try XCTUnwrap(observed[field] as? Double), try XCTUnwrap(native[field] as? Double), accuracy: 0.000001, "\(snapshot).\(field)", file: file, line: line)
+        }
+        XCTAssertEqual(observed["deviceOrientation"] as? String, native["deviceOrientation"] as? String, file: file, line: line)
+        let safe = try XCTUnwrap(observed["safeArea"] as? [String: Any], file: file, line: line)
+        let nativeSafe = try XCTUnwrap(native["safeArea"] as? [String: Any], file: file, line: line)
+        for field in ["left", "right", "top", "bottom", "width", "height"] {
+            XCTAssertEqual(try XCTUnwrap(safe[field] as? Double), try XCTUnwrap(nativeSafe[field] as? Double), accuracy: 0.000001, "\(snapshot).safeArea.\(field)", file: file, line: line)
+        }
     }
     private func wait(_ condition: @escaping ([String: Any]) -> Bool) throws -> [String: Any] {
         var value: [String: Any] = [:]

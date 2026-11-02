@@ -84,9 +84,10 @@ try {
     const container=(await run('xcrun',['simctl','get_app_container',simulator,bundle,'data'],'container')).output.trim();
     cpSync(resolve(container,'Documents/result.json'),resolve(out,'consumer-result.json'));
     const result=JSON.parse(readFileSync(resolve(out,'consumer-result.json')));
-    if(result.failure||!result.reopened||!result.durableClose||result.initial?.stored!==1||!result.failedLoadPreservedGeneration||!result.hiddenCompletionWhileAttached||!result.hiddenPresentationStopped||!result.hostPausePreserved||!result.hostPausePresentationStopped||!result.pairClosed||result.secondTap?.count!==2||!(result.scroll?.scrollTop>0)||result.currentRoute!=='pages/home/index')throw Error('Consumer result contract failed');
+    if(result.failure||!result.unmeasuredObservationRejected||!result.reopened||!result.durableClose||result.initial?.stored!==1||!result.failedLoadPreservedGeneration||!result.hiddenCompletionWhileAttached||!result.hiddenPresentationStopped||!result.hostPausePreserved||!result.hostPausePresentationStopped||!result.pairClosed||result.secondTap?.count!==2||!(result.scroll?.scrollTop>0)||result.currentRoute!=='pages/home/index')throw Error('Consumer result contract failed');
     if(!result.nested||!(result.scroll?.scrollTop>30)||Math.abs(result.parentOffset??0)>=1||result.tap?.count!==2)throw Error('Native parent/embedded scrolling or multi-touch recovery contract failed');
     receipt.checks.push({name:'simulator-arm64',status:'passed',evidence:`xctest-dual-instances-os-touch-scroll-navigation-background-${rotationMode}-rotation-and-completed-metal-frames`,result:'consumer-result.json',xcresult:'Consumer.xcresult'});
+    receipt.windowMetricsAcceptance={witness:'independent-UIKit-window-insets-to-fixed-screen-coordinate-space',snapshots:['initial','secondInitial','geometry','both-landscape-resizes','portrait-restoration','persistent-reopen','nested-geometry'],unmeasuredPreflight:'no-owner-and-cancellation',result:'consumer-result.json',limitations:['external-display','interactive-multiwindow','status-bar-less-scene','upside-down-device','physical-device']};
   }
   receipt.status='passed';
 } catch(error){receipt.status='failed';receipt.error=error.message;process.exitCode=1;console.error(error.message);}
