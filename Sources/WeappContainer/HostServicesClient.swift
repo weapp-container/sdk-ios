@@ -56,6 +56,14 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
         guard orderID.range(of: "^[A-Za-z0-9-]{1,128}$", options: .regularExpression) != nil else { throw WeappHostError(code: .invalidRequest, message: "Invalid server order ID") }
         return try await request(call, path: "/v1/payments/orders/\(orderID)/launch", body: selection(call))
     }
+    /// Native logout has no bearer. Only an explicitly null trusted principal
+    /// projects a signed-out snapshot; signed-in failures are never hidden.
+    public func identityState(_ call: WeappHostApiCall) async throws -> WeappJSON {
+        try Task.checkCancellation()
+        guard !call.cancellation.isCancelled else { throw CancellationError() }
+        if let state = try WeappHostIdentitySnapshot.signedOut(call.context) { return state }
+        return try await request(call, path: "/v1/host/identity-state", body: selection(call))
+    }
     public func close() { transport.invalidateAndCancel() }
 }
 
@@ -70,7 +78,7 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
     public func prepareConfiguration(_ configuration: [String: WeappJSON]) async throws -> [String: WeappJSON] {
         var configuration = configuration
         let call = nativeCall(["application": configuration["application"] ?? .null, "account": configuration["account"] ?? .null, "sessionId": .string("native-preflight")])
-        let state = try await backend.request(call, path: "/v1/host/identity-state", body: backend.selection(call))
+        let state = try await backend.identityState(call)
         configuration["syncValues"] = .object((configuration["syncValues"]?.dictionary ?? [:]).merging(["weappContainer.identity.getState": state]) { _, value in value })
         var apis = configuration["apis"]?.array ?? []
         if !apis.contains(.string("weappContainer.identity.getState")) { apis.append(.string("weappContainer.identity.getState")) }
@@ -83,7 +91,7 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
     /// Run inside onAccountCleanup after installing the new native host token, before cleanup ACK.
     @discardableResult public func prepareAccountState(in session: WeappContainerSession, operationID: String, trustedContext: [String: WeappJSON]) async throws -> WeappJSON {
         let call = nativeCall(trustedContext)
-        let state = try await backend.request(call, path: "/v1/host/identity-state", body: backend.selection(call))
+        let state = try await backend.identityState(call)
         _ = try session.hostServicesCommand("prepareAccountHostServiceSnapshots", ["operationId": .string(operationID), "values": .object(["weappContainer.identity.getState": state])])
         return state
     }
@@ -91,7 +99,7 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
         WeappHostApiCall(event: .object(["callId": .string("native-identity-\(UUID().uuidString)"), "method": .string("weappContainer.identity.getState"), "payload": .object([:]), "context": .object(context)]), cancellation: WeappHostApiCancellation())
     }
     private func refresh(_ session: WeappContainerSession, _ call: WeappHostApiCall) async throws -> WeappJSON {
-        let state = try await backend.request(call, path: "/v1/host/identity-state", body: backend.selection(call))
+        let state = try await backend.identityState(call)
         try Task.checkCancellation(); guard !call.cancellation.isCancelled else { throw CancellationError() }
         _ = try session.hostServicesCommand("updateHostServiceSnapshots", ["context": call.context, "values": .object(["weappContainer.identity.getState": state])])
         for (id, subscription) in subscriptions where !subscription.cancellation.isCancelled && subscription.context["application"] == call.context["application"] && subscription.context["account"] == call.context["account"] {
