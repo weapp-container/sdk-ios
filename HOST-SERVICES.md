@@ -71,6 +71,10 @@ poweredOff，不绕过系统拒绝授权。最多 20 UUID、每 UUID 64 个最�
 accuracy 为 -1。隐藏/后台停止自己的 ranging，前台恢复；每次恢复创建独立 manager，
 迟到回调不能进入新一代或新账号。未开始搜索时 getBeacons 明确报 11004。
 
+Wi-Fi 默认不安装。宿主按真实签名 capabilities 传入 `wifiConfiguration`，公共
+joinOnce/current SSID 子集、部分信息契约和 iOS 扫描限制见
+[Wi-Fi 接入](examples/host-services/WIFI-APIS.md)。
+
 `WeappManagedFiles` 提供基础异步文件方法及受管 `wxfile://user/` 路径。同步
 FileSystemManager 方法由核心直接执行，双方使用同一目录与真实 flock 操作锁。读写块最多 1 MiB、单文件 8 MiB、单账号应用 32 MiB。写入等待
 原子替换及文件同步；guest 拒绝并隐藏 `.weapp-*` 内部锁文件；guest 永远得不到 Application Support 的原生路径。

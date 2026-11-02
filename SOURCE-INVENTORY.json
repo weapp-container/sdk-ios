@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "92c660a978b36d046af60b5e757d7e5cf170aecf",
-  "review": "Foreground CoreLocation iBeacon ranging; official recorder defaults and output validation; completed cancellation-capture retirement with executed weak-reference test",
+  "sourceBaseCommit": "80edef82916c8fd751045b7ec0a67f3bf9845fea",
+  "review": "Opt-in public iOS temporary Wi-Fi join/current SSID subset with genuine OS entitlement enforcement, truthful platform limits, awaited cleanup and complete Swift compile evidence",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "79b3d2fe4dde33734216990a3c800c9845331cf92f9e887aef67ee80987e1f38",
-      "size": 10442,
+      "sha256": "c75d236dcc4c169b0505e867ca890dea81fdd525cef5ca75dee6f9d9d9e29f49",
+      "size": 10666,
       "mode": "100644"
     },
     {
@@ -65,8 +65,8 @@
     },
     {
       "path": "Sources/WeappContainer/AppPermissionConsent.swift",
-      "sha256": "c1d98c951a712eeed087ac7c0c8384aec2aff49c64082c2fcaad5d592340432e",
-      "size": 4733,
+      "sha256": "3aa0bea622688e7df56c6da9eaca632038e979134ea3e2ef0660cfd9045d7da5",
+      "size": 4746,
       "mode": "100644"
     },
     {
@@ -107,8 +107,8 @@
     },
     {
       "path": "Sources/WeappContainer/NativeDeviceServices.swift",
-      "sha256": "ce16ff2ed3ad3cdb6809e0db08831e02e585565b126fd1794ab4af8c491accea",
-      "size": 2654,
+      "sha256": "a369a3060d93466f780e48006808c7deb04d28759a23c65888913044edb9a26e",
+      "size": 2911,
       "mode": "100644"
     },
     {
@@ -166,6 +166,12 @@
       "mode": "100644"
     },
     {
+      "path": "Sources/WeappContainer/WifiApis.swift",
+      "sha256": "bfa22f69a5bb7bd01d412284f97e12650097fac4726203f8ea3b9338cebdd208",
+      "size": 17719,
+      "mode": "100644"
+    },
+    {
       "path": "WeappContainer.podspec",
       "sha256": "ad6a083af430e09c325c3f1b856d7bf5cab9970f10a4dfc5cff8dfbcfb7cbc75",
       "size": 1075,
@@ -217,6 +223,12 @@
       "path": "examples/host-services/SYSTEM-APIS.md",
       "sha256": "c82dec550e2d6b26c375b48e1c4184d7b0599fba569c7482480bee61ea65c13f",
       "size": 3153,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/host-services/WIFI-APIS.md",
+      "sha256": "cb0f7177ec11db0dbb9d183b802c6c50446f66c1c8096bbe37527559dcd9a345",
+      "size": 3536,
       "mode": "100644"
     },
     {
@@ -277,6 +289,12 @@
       "path": "test/evidence/host-services-network-system-development.json",
       "sha256": "0a8c13015ade0838abd5350f4e8c7691db5dd81d55849442a0df3642fec63e5d",
       "size": 5326,
+      "mode": "100644"
+    },
+    {
+      "path": "test/evidence/host-services-wifi-development.json",
+      "sha256": "e0ded4e2c212e2d0f612280d2a8f836cb9e0960b1a7fc6055436d0208f3188d3",
+      "size": 8207,
       "mode": "100644"
     },
     {

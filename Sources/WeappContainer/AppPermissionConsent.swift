@@ -43,9 +43,9 @@ import CryptoKit
             var settled = false
             let app = call.context["application"]
             let alert = UIAlertController(title: "小程序权限申请", message: "\(app["appId"].string ?? "")（\(app["publisherId"].string ?? "")）申请使用 \(scope)。此授权仅适用于当前账号和此小程序。", preferredStyle: .alert)
-            let finish: (Result<Bool, Error>, Bool) -> Void = { [weak self] result, remember in
+            let finish: (Result<Bool, Error>, Bool) -> Void = { [weak self, weak alert] result, remember in
                 guard !settled else { return }; settled = true; self?.pending.removeValue(forKey: call.id)
-                alert.dismiss(animated: false)
+                alert?.dismiss(animated: false)
                 if remember, case .success(let granted) = result {
                     do { guard let self else { throw CancellationError() }; try self.write(record, granted) }
                     catch { continuation.resume(throwing: error); return }
