@@ -20,7 +20,7 @@ OS 前台精确位置授权分别核验。系统允许 app 配置的当前网络
 | API | 公共实现与限制 |
 | --- | --- |
 | startWifi / stopWifi | 初始化/停止当前 owner 的服务；不切系统开关。stop 保留独立注册的订阅。 |
-| getConnectedWifi | 必须 partialInfo:true，只返回 fetchCurrent 的真实 SSID。nil 明确失败。 |
+| getConnectedWifi | 必须 partialInfo:true，返回 fetchCurrent 的真实 SSID、BSSID。nil、空值或隐私占位 BSSID 明确失败。 |
 | onWifiConnectedWithPartialInfo / offWifiConnectedWithPartialInfo | NWPathMonitor 触发有界查询，前台报告真实 SSID 变化；最多 32 个订阅。 |
 | connectWifi | 每次原生确认后，真实 apply open/WPA/WPA2 配置，固定 joinOnce=true。必须由 fetchCurrent 确认实际 SSID 才成功；最多等待 10 秒关联。配置成功本身不等于连接成功。 |
 

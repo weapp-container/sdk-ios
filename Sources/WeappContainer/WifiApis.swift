@@ -87,7 +87,7 @@ public struct WeappWifiConfiguration: Sendable {
             guard value["partialInfo"].bool == true else { throw failure(api, "Public iOS current-network API supplies no valid frequency/signalStrength; request partialInfo:true", 12001) }
             let accepted = generation, network = await currentNetwork(); try ensure(call, accepted)
             guard let network else { throw failure(api, "No current network information; Access Wi-Fi Information entitlement and OS eligibility are required", 12007) }
-            return ok(api, ["wifi": .object(["SSID": .string(network.ssid)])])
+            return ok(api, ["wifi": try WeappWifiPayloads.partialNetwork(ssid: network.ssid, bssid: network.bssid)])
         }
         return try await connect(api, call)
     }

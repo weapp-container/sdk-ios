@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.1.0-preview.6.0",
+  "date": "2026-11-02",
+  "target": "arm64-apple-ios16.0-simulator",
+  "xcode": "Xcode 27.2\nBuild version 27B52",
+  "swift": "Apple Swift version 6.4.2 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)\nTarget: arm64-apple-macosx27.0.0",
+  "officialHeaderPackages": [
+    {
+      "name": "wechat",
+      "source": "https://dldir1.qq.com/WechatWebDev/opensdk/cocoapods/OpenSDK2.0.9.zip",
+      "archiveSha256": "f40037787bb9ca8742d90b945cc82163bb123e156f9330316dd5df43782d351d"
+    },
+    {
+      "name": "alipay",
+      "source": "https://mdn.alipayobjects.com/mobilecashier_res/afts/file/lEoLQ64WOGAAAAAAAAAAAAAADnW6AQBr",
+      "archiveSha256": "9391ce3555c86321d19a67eaf6b8a04702582476a90e19e3b75e141a33d98e70"
+    }
+  ],
+  "status": "passed",
+  "scope": "Complete current Swift module/sample compilation and host-executed iOS partial query identifier boundary tests",
+  "checks": [
+    "All current production Swift sources emitted with official payment headers and zero diagnostics",
+    "ReferenceHostServices.swift sample typechecked with zero diagnostics",
+    "Host Swift executable verifies partialInfo query SSID+BSSID and missing/malformed/redacted identifier rejection"
+  ],
+  "sources": [
+    {
+      "path": "Sources/WeappContainer/AppPayments.swift",
+      "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91"
+    },
+    {
+      "path": "Sources/WeappContainer/AppPermissionConsent.swift",
+      "sha256": "3aa0bea622688e7df56c6da9eaca632038e979134ea3e2ef0660cfd9045d7da5"
+    },
+    {
+      "path": "Sources/WeappContainer/BeaconApis.swift",
+      "sha256": "6d3c4e5ce80590b81bfe343855eded72b2a08429274f783b1df324f5bb8bef68"
+    },
+    {
+      "path": "Sources/WeappContainer/BluetoothApis.swift",
+      "sha256": "bc44718d58569a1226fea55f49b7652673c64b097e5cb3a4d07df41651e7bd6b"
+    },
+    {
+      "path": "Sources/WeappContainer/DeviceApis.swift",
+      "sha256": "a87193a35ee6e4bf2ab18c003f78ee2811bce5e49eee83f8cfbbd54a0000a4e3"
+    },
+    {
+      "path": "Sources/WeappContainer/HostServicesClient.swift",
+      "sha256": "2b9e81f848e2678974472494729e8786f140b88d56b6d6b61f09b5d0bc12999c"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFileScope.swift",
+      "sha256": "6520899422290970ae4f5afec47e8bc72a20c0750e2211d44fa6724a97f54e33"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFiles.swift",
+      "sha256": "b6a6b6df8506c1604165ad45e1afa8503262a4248711a60c37c4488fd44caa22"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeDeviceServices.swift",
+      "sha256": "a369a3060d93466f780e48006808c7deb04d28759a23c65888913044edb9a26e"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeMedia.swift",
+      "sha256": "33b3bc73fd448e4f6c60c45d2a288d328eea145680d958556d9b05551ab60098"
+    },
+    {
+      "path": "Sources/WeappContainer/NetworkApis.swift",
+      "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb"
+    },
+    {
+      "path": "Sources/WeappContainer/PresentationInputQueue.swift",
+      "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0"
+    },
+    {
+      "path": "Sources/WeappContainer/RecorderApis.swift",
+      "sha256": "007015abe91701b39de1edc6131f8a9ec19b7812c94b61c46a07f2f01b0e52f3"
+    },
+    {
+      "path": "Sources/WeappContainer/Session.swift",
+      "sha256": "f46df4ebab0475538feac8e468eca916234c9fa1208f65932e810cff2b8ff0fa"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApiPayloads.swift",
+      "sha256": "de4ebd06288f0df51b22f8724b5c84c404fead51ae2d45f756bdb91027cc013b"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApis.swift",
+      "sha256": "a512e997a6ff80571f1ff4372ad662a2f15d52f14cb87aa987e24660f106abd2"
+    },
+    {
+      "path": "Sources/WeappContainer/Types.swift",
+      "sha256": "6c6a82f48912d352010eb9f08b213b608eb55d61588a6187c5f6a2fb2523d23e"
+    },
+    {
+      "path": "Sources/WeappContainer/View.swift",
+      "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf"
+    },
+    {
+      "path": "Sources/WeappContainer/WifiApis.swift",
+      "sha256": "8330d0d8e0775b6cbf027e5ff93b26ffa544965b2556cd8c3256ed91fa8681c0"
+    },
+    {
+      "path": "Sources/WeappContainer/WifiPayloads.swift",
+      "sha256": "7ef859d5774f96a1759864cd0f55208fb9a991d8fa4fef712c6d4b611c626569"
+    },
+    {
+      "path": "examples/host-services/ReferenceHostServices.swift",
+      "sha256": "b1d71e3700da15c2d7cae63d81205b4c0371e5b150705d1baf04f844cd27c040"
+    },
+    {
+      "path": "test/WifiPayloadTests.swift",
+      "sha256": "d381c66f0e1caf890871f5acf2197dc1f9ef2a830ee30ecb06f14a141011d55b"
+    },
+    {
+      "path": "tools/test-wifi-payloads.mjs",
+      "sha256": "e3893dc8e14b4b366111c3afa0614788ee2ec771c3282894682cfa5b92efda62"
+    }
+  ],
+  "sourceStability": {
+    "status": "passed",
+    "count": 23
+  },
+  "compileLogSha256": [
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "externalArtifacts": {
+    "directory": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-host-services-swift-wifi-bssid-p_apkewq",
+    "commandsSha256": "3105975b1336a9f2a83ece91d53d90dba76ad8a2a7fb920a48ef459cd9ab6bd9"
+  },
+  "limitations": [
+    "No iOS native binary linked or simulator/device application launched in this check",
+    "No native contacts/calendar editor, QR camera/photo recognition, NFC tag, microphone or biometric interaction acceptance",
+    "No native HTTP/WebSocket runtime or production TLS endpoint test",
+    "SOTER requires real host attestation provider; ordinary LocalAuthentication success is not a signature",
+    "No official payment wallet or merchant transaction performed",
+    "Foreground location subscription, pause/resume and authorization UI not executed on iOS device/simulator",
+    "Wi-Fi compile evidence only; no signed Hotspot Configuration/Access Wi-Fi Information entitlement, system join dialog, actual network association or owner cleanup acceptance",
+    "Public NEHotspotNetwork.fetchCurrent guarantees SSID/BSSID/security type only; full WifiInfo frequency/signalStrength are unsupported, partialInfo:true required",
+    "General Wi-Fi scanning and setWifiList are not registered; Apple TN3111 restricts HotspotHelper to approved hotspot integration"
+  ],
+  "officialApiContract": {
+    "package": "miniprogram-api-typings@5.2.3",
+    "file": "types/wx/lib.wx.api.d.ts",
+    "sha256": "25e9e6fdab1b4282ee5231d8f8de7a31a177d2edc690ec834e0da479cc166245",
+    "setWifiListScope": "Locked official declaration documents iOS-only"
+  },
+  "officialPlatformDocuments": [
+    {
+      "url": "https://developer.apple.com/documentation/technotes/tn3111-ios-wifi-api-overview",
+      "rawUrl": "https://developer.apple.com/tutorials/data/documentation/technotes/tn3111-ios-wifi-api-overview.json",
+      "rawSha256": "e3cb71ba40c13486db28bb0846c9178ca71b4e46b627958b1f70bbac5f24f6c9",
+      "rawFile": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-native-wifi-docs-oswiw0rv/apple-overview.json",
+      "observedText": "iOS does not have a general-purpose API for Wi-Fi scanning and configuration; HotspotHelper only useful for approved hotspot integration"
+    }
+  ],
+  "officialSDKHeaders": [
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk/System/Library/Frameworks/NetworkExtension.framework/Headers/NEHotspotNetwork.h",
+      "sha256": "b6ce405e46d780dd025962e7147208f55038cb9192491d7dbb7cd05423575c8e"
+    },
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk/System/Library/Frameworks/NetworkExtension.framework/Headers/NEHotspotConfigurationManager.h",
+      "sha256": "7b1a5ec3cb62b78bd27d9df5ea03964d42bec2590d19c9e2a6e031c4c79904e3"
+    },
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.2.sdk/System/Library/Frameworks/NetworkExtension.framework/Headers/NEHotspotHelper.h",
+      "sha256": "32c4497b96022b2a2eb240b252f0d060c5829aab6c85a915f0135869e5eb0e35"
+    }
+  ],
+  "platformConstraints": {
+    "unregistered": [
+      "wx.getWifiList",
+      "wx.onGetWifiList",
+      "wx.offGetWifiList",
+      "wx.setWifiList",
+      "wx.onWifiConnected",
+      "wx.offWifiConnected"
+    ],
+    "partialOnly": {
+      "wx.getConnectedWifi": "partialInfo:true returns actual SSID and BSSID; partial connection event remains SSID-only; full frequency/signalStrength unsupported"
+    },
+    "entitlements": "Host opt-in config does not prove signed entitlement; actual OS apply/fetch enforce it"
+  },
+  "payloadTestsLogSha256": "6ee2f72e6cdd7e5d54673ab42ec3e4abe54f0ca87a6130e0f7f754675e756148"
+}

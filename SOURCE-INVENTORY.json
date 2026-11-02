@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "80edef82916c8fd751045b7ec0a67f3bf9845fea",
-  "review": "Opt-in public iOS temporary Wi-Fi join/current SSID subset with genuine OS entitlement enforcement, truthful platform limits, awaited cleanup and complete Swift compile evidence",
+  "sourceBaseCommit": "620030e1d942d40c1e590e9281a85cf98e35bc02",
+  "review": "Correct iOS partial Wi-Fi query SSID and BSSID contract with native identifier boundary tests and development compile evidence",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -167,8 +167,14 @@
     },
     {
       "path": "Sources/WeappContainer/WifiApis.swift",
-      "sha256": "bfa22f69a5bb7bd01d412284f97e12650097fac4726203f8ea3b9338cebdd208",
-      "size": 17719,
+      "sha256": "8330d0d8e0775b6cbf027e5ff93b26ffa544965b2556cd8c3256ed91fa8681c0",
+      "size": 17757,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/WifiPayloads.swift",
+      "sha256": "7ef859d5774f96a1759864cd0f55208fb9a991d8fa4fef712c6d4b611c626569",
+      "size": 918,
       "mode": "100644"
     },
     {
@@ -227,8 +233,8 @@
     },
     {
       "path": "examples/host-services/WIFI-APIS.md",
-      "sha256": "cb0f7177ec11db0dbb9d183b802c6c50446f66c1c8096bbe37527559dcd9a345",
-      "size": 3536,
+      "sha256": "3125e0d556d33b9f8ff3a760c358aef59a34ba16fdff3096b340b2a1d9622010",
+      "size": 3571,
       "mode": "100644"
     },
     {
@@ -268,6 +274,12 @@
       "mode": "100644"
     },
     {
+      "path": "test/WifiPayloadTests.swift",
+      "sha256": "d381c66f0e1caf890871f5acf2197dc1f9ef2a830ee30ecb06f14a141011d55b",
+      "size": 977,
+      "mode": "100644"
+    },
+    {
       "path": "test/evidence/host-services-beacon-recorder-development.json",
       "sha256": "7ce782407203aadf8f4818f9afa2e0c81069ac64aa88a2508ed826c166335b74",
       "size": 6268,
@@ -289,6 +301,12 @@
       "path": "test/evidence/host-services-network-system-development.json",
       "sha256": "0a8c13015ade0838abd5350f4e8c7691db5dd81d55849442a0df3642fec63e5d",
       "size": 5326,
+      "mode": "100644"
+    },
+    {
+      "path": "test/evidence/host-services-wifi-bssid-development.json",
+      "sha256": "41272baaf0f8f429b5192339e140cccf1c169e7423d73fffe99b4a32ed07ee16",
+      "size": 8874,
       "mode": "100644"
     },
     {
@@ -385,6 +403,12 @@
       "path": "tools/test-system-api-payloads.mjs",
       "sha256": "c28511c5bf5b146cd299ce48a907d1a7241df280677ed3ce9dfe732a287ef6c4",
       "size": 908,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test-wifi-payloads.mjs",
+      "sha256": "e3893dc8e14b4b366111c3afa0614788ee2ec771c3282894682cfa5b92efda62",
+      "size": 894,
       "mode": "100644"
     },
     {
