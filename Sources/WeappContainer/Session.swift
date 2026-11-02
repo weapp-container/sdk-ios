@@ -31,6 +31,7 @@ import WeappContainerNative
     private var accountSwitchOperationID: String?
     private var accountCleanupTaskID: String?
     private var accountNativeCleanupID: String?
+    private let accountCleanupQueue = AccountCleanupQueue()
     private var jobs: [String: Task<Void, Never>] = [:]
     private var apiCancellations: [String: WeappHostApiCancellation] = [:]
     private var timer: Timer?
@@ -393,7 +394,7 @@ import WeappContainerNative
     private func finishClose() async throws {
         surface?.cancelInput?()
         accountDetachTask?.cancel()
-        if let accountDetachTask { await accountDetachTask.value }
+        await accountCleanupQueue.drain()
         for cancellation in apiCancellations.values { cancellation.cancel() }; apiCancellations.removeAll()
         for cleanup in resourceCleanups.values { cleanup() }; resourceCleanups.removeAll()
         try await drainAsyncResources(retire: true)
@@ -674,7 +675,7 @@ import WeappContainerNative
     private func beginAccountCleanup() {
         guard accountSwitchBlocked, let operationID = accountSwitchOperationID, accountCleanupTaskID != operationID else { return }
         accountDetachTask?.cancel(); accountCleanupTaskID = operationID
-        accountDetachTask = Task { @MainActor [weak self] in
+        accountDetachTask = accountCleanupQueue.enqueue { [weak self] in
             guard let self else { return }
             var ownsGate = false
             defer {

@@ -116,6 +116,12 @@ purpose 与 permissionVersion。guest desc 不决定用途；拒绝同步服务�
 `identity.prepareAccountState(in:operationID:trustedContext:)`，最后返回清理成功；
 旧账号快照不能用于新 owner。
 
+连续换号会取消旧操作的 Task，但下一轮清理仍等待旧 Task 的实际终结，再执行
+当前 hook 和 ACK。尚未开始的过时操作跳过；close 等待包括已过时任务的完整队列。
+宿主 hook 必须在准确的设备、文件及后台任务真正释放后才返回，不能把发出取消
+请求当成释放完成。`node tools/test-account-cleanup.mjs` 在 Swift 实际并发调度中
+验证旧清理迟到、取消、连续换号、重试和关闭屏障；它不构成设备验收。
+
 `WeappAppPayments` 同时注册 `wx.requestPayment` 与 `weappContainer.payment.request`，只接受服务端 orderId。官方渠道为
 WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官方 SDK
 须作为该集成 target 的实际可见依赖，canImport 不成立时渠道明确不可用。SPM 宿主
