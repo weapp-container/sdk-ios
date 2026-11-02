@@ -53,8 +53,8 @@ public extension WeappRecordingAudioSession { func recoverFailedAcquisition() th
     private struct Subscription { let call: WeappHostApiCall; let object: String; let event: String; var sequence: UInt64 = 0 }
     private var subscriptions: [String: Subscription] = [:]
     private final class Recording {
-        let object: String; let owner: WeappHostApiCall; let recorder: AVAudioRecorder; let file: URL; var release: (@MainActor () throws -> Void)?; var stopped = false; var duration = 0.0; var published = false
-        init(_ object: String, _ owner: WeappHostApiCall, _ recorder: AVAudioRecorder, _ file: URL, _ release: @escaping @MainActor () throws -> Void) { self.object = object; self.owner = owner; self.recorder = recorder; self.file = file; self.release = release }
+        let object: String; let owner: WeappHostApiCall; let recorder: AVAudioRecorder; let file: URL; let sampleRate: Double; let channels: Int; var release: (@MainActor () throws -> Void)?; var stopped = false; var duration = 0.0; var published = false
+        init(_ object: String, _ owner: WeappHostApiCall, _ recorder: AVAudioRecorder, _ file: URL, _ release: @escaping @MainActor () throws -> Void, sampleRate: Double, channels: Int) { self.object = object; self.owner = owner; self.recorder = recorder; self.file = file; self.release = release; self.sampleRate = sampleRate; self.channels = channels }
     }
     private var recording: Recording?
     private final class FailedStart {
@@ -108,13 +108,16 @@ public extension WeappRecordingAudioSession { func recoverFailedAcquisition() th
     }
     private func start(_ object: String, _ owner: WeappHostApiCall, _ value: WeappJSON) throws {
         guard recording == nil, foreground, !owner.cancellation.isCancelled, (value["format"].string ?? "aac") == "aac" else { throw failure("This recorder supports AAC in foreground only") }
-        let rate = value["sampleRate"].number ?? 44100, channels = value["numberOfChannels"].number ?? 1, bitrate = value["encodeBitRate"].number ?? 64000, duration = value["duration"].number ?? 60000
-        guard [8000, 16000, 44100].contains(rate), [1, 2].contains(channels), (16000...128000).contains(bitrate), (100...60000).contains(duration), bitrate.rounded(.down) == bitrate else { throw failure("Recorder option outside supported bounds") }
+        guard value["audioSource"] == .null || value["audioSource"].string == "auto", value["audioMode"] == .null || value["audioMode"].string == "default", value["frameSize"] == .null else { throw failure("AAC recorder supports auto audioSource, default audioMode and no frameSize") }
+        func integer(_ key: String, _ fallback: Double) throws -> Double { if value[key] == .null { return fallback }; guard let number = value[key].number, number.isFinite, number.rounded(.down) == number else { throw failure("\(key) must be an integer") }; return number }
+        let rate = try integer("sampleRate", 8000), channels = try integer("numberOfChannels", 2), bitrate = try integer("encodeBitRate", 48000), duration = try integer("duration", 60000)
+        let ranges: [Double: ClosedRange<Double>] = [8000: 16000...48000, 11025: 16000...48000, 12000: 24000...64000, 16000: 24000...96000, 22050: 32000...128000, 24000: 32000...128000, 32000: 48000...192000, 44100: 64000...320000, 48000: 64000...320000]
+        guard let range = ranges[rate], range.contains(bitrate), [1, 2].contains(channels), (100...60000).contains(duration) else { throw failure("Recorder option outside supported bounds or bitrate incompatible with sampleRate") }
         let file = try files.auxiliaryRoot(owner.context).appendingPathComponent("recording-\(UUID().uuidString).m4a"), release = try audioSession.acquireRecording()
         do {
             let recorder = try AVAudioRecorder(url: file, settings: [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: rate, AVNumberOfChannelsKey: Int(channels), AVEncoderBitRateKey: Int(bitrate)])
             recorder.delegate = self; guard recorder.prepareToRecord(), recorder.record(forDuration: duration / 1000) else { throw failure("Native recorder rejected recording") }
-            recording = Recording(object, owner, recorder, file, release); emit(object, "Start")
+            recording = Recording(object, owner, recorder, file, release, sampleRate: rate, channels: Int(channels)); emit(object, "Start")
         } catch {
             // A failed native start can still own a host audio lease. Retain
             // that lease and staging path until actual rollback succeeds.
@@ -131,6 +134,12 @@ public extension WeappRecordingAudioSession { func recoverFailedAcquisition() th
         if let release = active.release { try release(); active.release = nil }
         if publish, !active.published, !active.owner.cancellation.isCancelled, !closed {
             let properties = try active.file.resourceValues(forKeys: [.fileSizeKey]); guard let size = properties.fileSize, size > 0, size <= 4 * 1048576 else { throw failure("Recorder output byte limit") }
+            let format = try AVAudioFile(forReading: active.file).processingFormat
+            guard format.sampleRate == active.sampleRate, Int(format.channelCount) == active.channels else {
+                let error = failure("Native encoder format differs from requested sampleRate/numberOfChannels")
+                if FileManager.default.fileExists(atPath: active.file.path) { try FileManager.default.removeItem(at: active.file) }; recording = nil
+                emit(active.object, "Error", .object(["errMsg": .string(error.message), "errCode": .number(-1)])); throw error
+            }
             let path = try files.importTemporary(Data(contentsOf: active.file), extension: "m4a", context: active.owner.context)
             emit(active.object, "Stop", .object(["tempFilePath": .string(path), "duration": .number(active.duration * 1000), "fileSize": .number(Double(size))])); active.published = true
         }

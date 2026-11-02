@@ -637,6 +637,7 @@ import WeappContainerNative
                 let e = error as? WeappHostError ?? WeappHostError(code: error is CancellationError ? .cancelled : .invalidRequest, message: error.localizedDescription)
                 response["error"] = .object(["code": .string(e.code.rawValue), "message": .string(e.message), "retryable": .bool(e.retryable), "details": .object(e.details)])
             }
+            cancellation.finishSetup(failed: response["error"] != nil)
             guard !Task.isCancelled, let self, !self.accountSwitchBlocked, self.jobs.removeValue(forKey: id) != nil, !self.closing else { return }
             if !cancellation.retained || response["error"] != nil { self.apiCancellations.removeValue(forKey: id) }
             do { _ = try self.command("completeHostCall", response) } catch { self.report(error) }

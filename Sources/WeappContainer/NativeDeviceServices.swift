@@ -6,6 +6,7 @@ import UIKit
     private let files: WeappManagedFiles
     private let device: WeappDeviceApis
     private let bluetooth: WeappBluetoothApis?
+    private let beacon: WeappBeaconApis?
     private let media: WeappNativeMedia
     private let network: WeappNetworkApis
     private let recorder: WeappRecorderApis?
@@ -18,6 +19,7 @@ import UIKit
         let files = try WeappManagedFiles(); self.files = files
         self.device = WeappDeviceApis(presenter: presenter)
         self.bluetooth = enableBluetooth ? WeappBluetoothApis(presenter: presenter) : nil
+        self.beacon = enableBluetooth ? WeappBeaconApis(presenter: presenter) : nil
         self.media = WeappNativeMedia(presenter: presenter, files: files, allowedMediaOrigins: Set(allowedMediaOrigins))
         self.network = try WeappNetworkApis(files: files, allowedOrigins: networkOrigins, allowLoopbackForDevelopment: allowLoopbackForDevelopment)
         self.recorder = recordingAudioSession.map { WeappRecorderApis(presenter: presenter, files: files, audioSession: $0) }
@@ -25,8 +27,8 @@ import UIKit
     }
     public func install(in session: WeappContainerSession) throws {
         guard !installed, !closed else { throw WeappHostError(code: .invalidRequest, message: "Device toolkit already installed or closed") }; installed = true
-        try files.install(in: session); try device.install(in: session); try bluetooth?.install(in: session); try media.install(in: session); try network.install(in: session); try recorder?.install(in: session); try system.install(in: session)
+        try files.install(in: session); try device.install(in: session); try bluetooth?.install(in: session); try beacon?.install(in: session); try media.install(in: session); try network.install(in: session); try recorder?.install(in: session); try system.install(in: session)
     }
     /// Await session.close() first. Network and audio cleanup failures remain available for retry.
-    public func close() async throws { guard !closed else { return }; try await network.close(); try await system.close(); try recorder?.close(); media.close(); bluetooth?.close(); device.close(); closed = true }
+    public func close() async throws { guard !closed else { return }; try await network.close(); try await system.close(); try recorder?.close(); media.close(); bluetooth?.close(); beacon?.close(); device.close(); closed = true }
 }

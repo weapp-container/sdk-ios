@@ -82,6 +82,11 @@ public struct WeappHostApiCall: Sendable {
     public func onCancel(_ callback: @escaping () -> Void) {
         if isCancelled { callback() } else { callbacks.append(callback) }
     }
+    /// Completed setup hooks have no remaining cancellation source. Drop their
+    /// captures without marking continuing adapter-owned producers cancelled.
+    func finishSetup(failed: Bool) {
+        if failed { cancel() } else if !retained { callbacks.removeAll() }
+    }
     func cancel() {
         guard !isCancelled else { return }; isCancelled = true
         let pending = callbacks; callbacks.removeAll(); for callback in pending { callback() }

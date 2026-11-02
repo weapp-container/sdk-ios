@@ -49,14 +49,27 @@ Cookie/cache、不跟随重定向，显式开发选项仅放行 loopback HTTP/WS
 如何与宿主已有 AVAudioSession 共存；明确没有其他音频 owner 时，才选择
 `WeappExclusiveRecordingAudioSession()`。默认 nil 不接管宿主共享音频。
 RecorderManager 使用真实 AVAudioRecorder，独立小程序/OS 授权，支持 AAC m4a、
-100–60000ms、最多 4 MiB、8000/16000/44100Hz、1/2 声道、16–128kbps，完成后
+100–60000ms、最多 4 MiB，默认 8000Hz、双声道、48000bps、60000ms。支持官方九档
+8000–48000Hz，按各采样率分别校验官方编码码率范围；仅接受 auto audioSource、
+default audioMode，其他输入源、模式与 frameSize 明确拒绝。完成后
 导入受管文件。隐藏/后台/换号停止录音；音频 lease 恢复或 staging 删除失败时
 保留资源供重试。
+导入前以 AVAudioFile 的真实格式核对请求的采样率与声道，native encoder 降级时
+发出 Error 并拒绝交付该文件，避免把不同格式的录音作为成功结果。
 
 通讯录、日历、VisionKit/照片扫码、CoreNFC NDEF 与可信 SOTER 注入的配置和实际
 支持范围见 [系统能力](examples/host-services/SYSTEM-APIS.md)。NFC 仅显式
 `enableNfc: true` 并具备设备、Info.plist 和 entitlement 配置时安装；SOTER signer
 始终由 native 宿主注入。
+
+iBeacon 由独立 CLLocationManager 实际 ranging，提供 start/stopBeaconDiscovery、
+getBeacons、on/offBeaconUpdate 与 on/offBeaconServiceChange。仅在设备支持 ranging、
+并同时声明位置和蓝牙用途时安装；操作还需独立小程序位置/蓝牙授权、前台精确位置
+OS 权限和可用 Bluetooth 状态。ignoreBluetoothAvailable 只允许按官方契约忽略
+poweredOff，不绕过系统拒绝授权。最多 20 UUID、每 UUID 64 个最新读数、对 guest
+最多 64 个结果和 32 个订阅。proximity/accuracy/rssi 来自 CLBeacon，unknown 的
+accuracy 为 -1。隐藏/后台停止自己的 ranging，前台恢复；每次恢复创建独立 manager，
+迟到回调不能进入新一代或新账号。未开始搜索时 getBeacons 明确报 11004。
 
 `WeappManagedFiles` 提供基础异步文件方法及受管 `wxfile://user/` 路径。同步
 FileSystemManager 方法由核心直接执行，双方使用同一目录与真实 flock 操作锁。读写块最多 1 MiB、单文件 8 MiB、单账号应用 32 MiB。写入等待
@@ -122,3 +135,10 @@ WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官�
 [前台定位与授权政策编译记录](test/evidence/host-services-location-policy-development.json)
 另行绑定本批全部生产 Swift 源码与 sample，在官方支付头文件可见时完整发射模块、
 编译示例且无诊断；定位订阅与授权 UI 的 iOS 实际交互仍待运行验收。
+
+[Beacon 与录音编译记录](test/evidence/host-services-beacon-recorder-development.json)
+保留本批完整模块与 sample 的源码哈希和零诊断日志。真实 Beacon、权限转换、
+前后台 ranging 和 iOS 麦克风录音仍待独立运行验收。
+已完成且未保留的 host call 会释放 setup 取消回调的捕获对象，保留资源的调用仍
+等待取消，失败则运行一次清理；`tools/test-host-cancellation.mjs` 用实际 Swift
+弱引用检查这三个生命周期边界。
