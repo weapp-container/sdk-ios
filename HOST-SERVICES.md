@@ -17,6 +17,13 @@ try toolkit.install(in: session)
 环境、principal 和十进制 epoch。业务方法用 registerHostMethod；微信方法用
 registerApiHandler。未安装的方法保持不支持。
 
+`readHostApiResource(context:offset:length:)` 透传资源 setter 的原始可信 context，
+返回 `{bytes,totalBytes}`；单块最多 1 MiB。先检查 runtime 的
+`hostServices.apiResourceChunks == "1.0"`，保留 context 中的十进制 epoch、deadline
+和 session/call ID，不用 transport ID 替换。只读命令仍受运行时账号、期限与调用
+存活检查；换号、结算、取消或超时后拒绝，旧 runtime 明确不支持。它不会创建
+owner、进入 JS 或触发表面呈现，也不赋予任意路径读取权限。
+
 小程序授权和操作系统权限分别检查。即使宿主已有系统授权，每个应用与账号仍须
 经过独立 native 提示；持久记录按可信应用、发行者、账号及 epoch 隔离，
 `getSetting` 不把未询问过的作用域伪装为已授权。宿主按实际能力配置

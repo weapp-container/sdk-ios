@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "1db04d53f2ed398cbdc0c403263f3ff12cfcaa1e",
-  "review": "Serialize account cleanup actual terminals across rapid switches and close; preserve cancellation, retry and historical runtime locks",
+  "sourceBaseCommit": "9614d5c1de968da9346b38a10fff45fc041d7c90",
+  "review": "Expose gated read-only API resource chunks while preserving exact native call context and account revocation",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "b062b7533964931208187b04b82aa407d878b27dd06f5d0e59bbd5f05c4581f1",
-      "size": 11188,
+      "sha256": "0d18de7464a90665e2d9575cdab0c641e888371341c25f13cfbe593a7faa252c",
+      "size": 11738,
       "mode": "100644"
     },
     {
@@ -155,8 +155,8 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "51892dbe8a5100d4ec02b920b8087321eb9ac5dc486b1c0ac2c177dcf01325ed",
-      "size": 49777,
+      "sha256": "1626cbdb7e507962b7b3839acb31f48b6f9ab872dc681676be7feb5edc72ab0c",
+      "size": 50357,
       "mode": "100644"
     },
     {
@@ -365,8 +365,8 @@
     },
     {
       "path": "test/metadata-query.test.mjs",
-      "sha256": "9caca93b119eb946aa1b3292245c6db01b4998d6f8dd06855244866340882f48",
-      "size": 2396,
+      "sha256": "96f683abe07047d408e7699800a57c4077570682073d92c5cde88ac9e0a01365",
+      "size": 3228,
       "mode": "100644"
     },
     {

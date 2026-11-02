@@ -108,9 +108,13 @@ import WeappContainerNative
     }
     /// Allowlisted host-service transport shared by native, Flutter and React Native hosts.
     public func hostServicesCommand(_ operation: String, _ payload: [String: WeappJSON] = [:]) throws -> WeappJSON {
-        let allowed = ["configureHostServices", "registerApiHandler", "updateHostServiceSnapshots", "authorizeInstalledPack", "migrateLegacyStorage", "deleteAccountData", "hostApiEvent", "hostComponents", "managedFileScope", "hostComponentEvent", "authorizePhoneButton", "acknowledgeAccountCleanup", "retryAccountCleanup", "switchAccount", "queryAccountSwitch", "updateAccountSwitchLaunch", "retryAccountSwitch", "cancelAccountSwitch", "createHostBinary", "readHostBinary", "retainHostBinary", "releaseHostBinary"]
+        let allowed = ["configureHostServices", "registerApiHandler", "updateHostServiceSnapshots", "authorizeInstalledPack", "migrateLegacyStorage", "deleteAccountData", "hostApiEvent", "hostComponents", "managedFileScope", "hostComponentEvent", "authorizePhoneButton", "acknowledgeAccountCleanup", "retryAccountCleanup", "switchAccount", "queryAccountSwitch", "updateAccountSwitchLaunch", "retryAccountSwitch", "cancelAccountSwitch", "hostApiResource", "createHostBinary", "readHostBinary", "retainHostBinary", "releaseHostBinary"]
         try ensureOpen()
         guard allowed.contains(operation) || ["hostComponentFrame", "prepareAccountHostServiceSnapshots"].contains(operation) else { throw failure("ERR_INVALID_REQUEST", "Not a host-services command") }
+        if operation == "hostApiResource" {
+            guard let native else { throw failure("ERR_NOT_READY", "A live API call owner is required") }
+            return try native.command(operation, .object(payload))
+        }
         if operation == "configureHostServices" { try configureHostServices(payload); return .null }
         try createNativeIfNeeded()
         if operation == "retryAccountCleanup" { beginAccountCleanup(); return try command("queryAccountSwitch") }
@@ -131,6 +135,10 @@ import WeappContainerNative
         surface?.invalidate(); return result
     }
     public func emitHostApiEvent(_ event: [String: WeappJSON]) throws -> WeappJSON { try hostServicesCommand("hostApiEvent", event) }
+    /// Read the asset of an exact live API call; requires apiResourceChunks 1.0.
+    public func readHostApiResource(context: WeappJSON, offset: Int = 0, length: Int) throws -> WeappJSON {
+        try hostServicesCommand("hostApiResource", ["context":context,"offset":.number(Double(offset)),"length":.number(Double(length))])
+    }
     public func createHostBinary(_ bytes: Data) throws -> WeappJSON {
         guard bytes.count <= 1024 * 1024 else { throw failure("ERR_INVALID_REQUEST", "Host binary chunks are bounded to 1 MiB") }
         return try hostServicesCommand("createHostBinary", ["bytes": .array(bytes.map { .number(Double($0)) })])
