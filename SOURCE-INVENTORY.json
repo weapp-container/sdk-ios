@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "54bdf020280f4ba5e661816ca06b588701ebb754",
-  "review": "Review native host identity and explicit app-payment adapters, managed file/consent scopes, account retirement, device/BLE and Skia media integration; source inventory only, emulator development and Swift compile evidence are separately scoped.",
+  "sourceBaseCommit": "f168f39f9f9fef4c88a3427e1a33db4a9086c104",
+  "review": "Review native system, network, recorder, audio lease rollback and awaited retryable owner retirement; full Swift module/sample and executable payload tests",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "13176112f9132ddb1c6a39e0f1158073ddc84a3713946e32f315bfaadfb142aa",
-      "size": 6015,
+      "sha256": "bfea2904e3ab7bb225c602827b7b9908b3dc4877bb93781300e473b51abea125",
+      "size": 7783,
       "mode": "100644"
     },
     {
@@ -47,8 +47,8 @@
     },
     {
       "path": "Package.swift",
-      "sha256": "016d2e0424611e1b3e2c2e718c5ce42cc8dc073fc6ed6c9e94aa7662e0042717",
-      "size": 1120,
+      "sha256": "4c201a804c57867ca5dcf15bf9b96453f4e4b669a127b64b4d11a67fa9ba569f",
+      "size": 1427,
       "mode": "100644"
     },
     {
@@ -95,8 +95,14 @@
     },
     {
       "path": "Sources/WeappContainer/ManagedFiles.swift",
-      "sha256": "6b2ac9bd518d39fadcad2fa8d750b4f344a5310237b31cfcb362f69cc35c61aa",
-      "size": 12421,
+      "sha256": "b6a6b6df8506c1604165ad45e1afa8503262a4248711a60c37c4488fd44caa22",
+      "size": 13159,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeDeviceServices.swift",
+      "sha256": "b50f95dac1c891a48a4e05254f7b5edaa9c0f7d3688230a61a9be56647250d72",
+      "size": 2478,
       "mode": "100644"
     },
     {
@@ -106,15 +112,39 @@
       "mode": "100644"
     },
     {
+      "path": "Sources/WeappContainer/NetworkApis.swift",
+      "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb",
+      "size": 26184,
+      "mode": "100644"
+    },
+    {
       "path": "Sources/WeappContainer/PresentationInputQueue.swift",
       "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0",
       "size": 2420,
       "mode": "100644"
     },
     {
+      "path": "Sources/WeappContainer/RecorderApis.swift",
+      "sha256": "90bfc38bd7233894260c84b3830c37e3381c354d4476d2baf76a628b4a0a8417",
+      "size": 15248,
+      "mode": "100644"
+    },
+    {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "ddcfa731180148879e389ec1bc6f3151e92e7ac25bffac55e54d28ffc64f7931",
-      "size": 45395,
+      "sha256": "fdb3e40ef23b6c873eeeeb9199a464eeb2e57d78739bea9714a5d5a9e1d96885",
+      "size": 49659,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApiPayloads.swift",
+      "sha256": "de4ebd06288f0df51b22f8724b5c84c404fead51ae2d45f756bdb91027cc013b",
+      "size": 2148,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApis.swift",
+      "sha256": "a512e997a6ff80571f1ff4372ad662a2f15d52f14cb87aa987e24660f106abd2",
+      "size": 46911,
       "mode": "100644"
     },
     {
@@ -131,8 +161,8 @@
     },
     {
       "path": "WeappContainer.podspec",
-      "sha256": "af591da688f11b9015acbdcf95ebbf81b973c592ac6436554013dd321c79e95a",
-      "size": 954,
+      "sha256": "ad6a083af430e09c325c3f1b856d7bf5cab9970f10a4dfc5cff8dfbcfb7cbc75",
+      "size": 1075,
       "mode": "100644"
     },
     {
@@ -178,6 +208,12 @@
       "mode": "100644"
     },
     {
+      "path": "examples/host-services/SYSTEM-APIS.md",
+      "sha256": "c82dec550e2d6b26c375b48e1c4184d7b0599fba569c7482480bee61ea65c13f",
+      "size": 3153,
+      "mode": "100644"
+    },
+    {
       "path": "include/weapp_container_sdk.h",
       "sha256": "2a4761c0650c72ccd8d0a791fb66ee48888e1ce182ba99f0c92673a2c44a8e9b",
       "size": 6842,
@@ -202,9 +238,21 @@
       "mode": "100644"
     },
     {
+      "path": "test/SystemApiPayloadTests.swift",
+      "sha256": "805252e725df321498c91ae371a58839d9bbb8a249168adeafb5babac439d27f",
+      "size": 2842,
+      "mode": "100644"
+    },
+    {
       "path": "test/evidence/host-services-development.json",
       "sha256": "3de4c7183b01faa29b32646816de23464dc3a6b7de6e3dbfc1ead78e70397545",
       "size": 4031,
+      "mode": "100644"
+    },
+    {
+      "path": "test/evidence/host-services-network-system-development.json",
+      "sha256": "0a8c13015ade0838abd5350f4e8c7691db5dd81d55849442a0df3642fec63e5d",
+      "size": 5326,
       "mode": "100644"
     },
     {
@@ -283,6 +331,12 @@
       "path": "tools/test-presentation-input.mjs",
       "sha256": "9d608c08be647002233a9569c04c41bbdda169b930dc823067d44aa47a399993",
       "size": 966,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test-system-api-payloads.mjs",
+      "sha256": "c28511c5bf5b146cd299ce48a907d1a7241df280677ed3ce9dfe732a287ef6c4",
+      "size": 908,
       "mode": "100644"
     },
     {

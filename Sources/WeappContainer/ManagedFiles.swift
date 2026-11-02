@@ -29,6 +29,12 @@ import Darwin
         guard fileExtension.range(of: "^[a-z0-9]{1,8}$", options: .regularExpression) != nil else { throw error("Invalid file extension") }
         return try withOperationLock(context) { let path = "wxfile://user/tmp/\(UUID().uuidString).\(fileExtension)"; try write(data, path, context); return path }
     }
+    internal func readForNative(_ path: String, context: WeappJSON) throws -> Data {
+        try withOperationLock(context) { let url = try resolve(path, context: context); let size = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey]); guard size.isRegularFile == true, size.fileSize ?? Int.max <= 8 * 1048576 else { throw error("Managed native input exceeds file limit") }; return try Data(contentsOf: url) }
+    }
+    internal func writeFromNative(_ data: Data, path: String?, extension fileExtension: String, context: WeappJSON) throws -> String {
+        try withOperationLock(context) { let path = path ?? "wxfile://user/tmp/\(UUID().uuidString).\(fileExtension)"; try write(data, path, context); return path }
+    }
     private func withOperationLock<T>(_ context: WeappJSON, _ action: () throws -> T) throws -> T {
         let path = try directory(context).appendingPathComponent(".weapp-operations.lock").path
         let fd = Darwin.open(path, O_RDWR | O_CREAT | O_CLOEXEC | O_NOFOLLOW, S_IRUSR | S_IWUSR)

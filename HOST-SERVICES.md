@@ -4,17 +4,13 @@
 宿主回调在 MainActor 上执行；旧 preview framework 不包含新协议。
 
 ```swift
-let device = WeappDeviceApis(presenter: presenter)
-let bluetooth = WeappBluetoothApis(presenter: presenter)
-let files = try WeappManagedFiles()
-let media = WeappNativeMedia(presenter: presenter, files: files,
-    allowedMediaOrigins: ["https://media.example.com"])
+let toolkit = try WeappNativeDeviceServices(presenter: presenter,
+    networkOrigins: ["https://api.example.com", "wss://api.example.com"],
+    allowedMediaOrigins: ["https://media.example.com"],
+    recordingAudioSession: hostRecordingAudioBroker)
 try session.configureHostServices(trustedConfiguration)
-try device.install(in: session)
-try bluetooth.install(in: session)
-try files.install(in: session)
-try media.install(in: session)
-// 此后才 load pack；宿主持有这些对象直至 session 关闭。
+try toolkit.install(in: session)
+// 此后才 load pack；宿主持有 toolkit 直至 session 关闭。
 ```
 
 可信配置必须来自宿主已验证的安装与账号，包含发行者、应用、实际 pack root、
@@ -31,6 +27,32 @@ Info.plist 条目。CoreBluetooth 不开放任意未发现的 peripheral，也�
 
 真实系统服务包括剪贴板、网络状态、电池、亮度、常亮、震动、原生 UI、WGS84 定位
 及传感器。传感器支持 normal 采样；GCJ-02、后台定位及未实现的系统能力不冒充成功。
+
+toolkit 统一拥有文件、设备、BLE、媒体、网络、录音和系统适配器，也可独立安装。
+`try await session.close()` 等待原生清理，再释放核心与文件 lease；并发 close
+共享同一操作，失败后可重试。deinit 的异步清理失败会保留 owner，可通过
+`WeappContainerSession.failedFinalResourceCleanups` 查看并调用
+`await WeappContainerSession.retryFinalResourceCleanups()` 重试，成功后再释放。
+
+网络使用独立 ephemeral URLSession，支持 HTTP、受管 multipart 上传/下载、
+响应头/分块/进度和 WebSocket。宿主列出精确 HTTPS/WSS origin；不共享宿主
+Cookie/cache、不跟随重定向，显式开发选项仅放行 loopback HTTP/WS。HTTP 响应与
+普通请求体 1 MiB，上传/下载文件 8 MiB，socket 消息 1 MiB。串行 delegate 对
+有界数据同步交付主线程事件；取消等待真实 didComplete，socket 还须接收协程
+结束，才完成换号或关闭的清理 ACK。
+
+录音只有在宿主提供 `WeappRecordingAudioSession` 时注册。音频 broker 决定
+如何与宿主已有 AVAudioSession 共存；明确没有其他音频 owner 时，才选择
+`WeappExclusiveRecordingAudioSession()`。默认 nil 不接管宿主共享音频。
+RecorderManager 使用真实 AVAudioRecorder，独立小程序/OS 授权，支持 AAC m4a、
+100–60000ms、最多 4 MiB、8000/16000/44100Hz、1/2 声道、16–128kbps，完成后
+导入受管文件。隐藏/后台/换号停止录音；音频 lease 恢复或 staging 删除失败时
+保留资源供重试。
+
+通讯录、日历、VisionKit/照片扫码、CoreNFC NDEF 与可信 SOTER 注入的配置和实际
+支持范围见 [系统能力](examples/host-services/SYSTEM-APIS.md)。NFC 仅显式
+`enableNfc: true` 并具备设备、Info.plist 和 entitlement 配置时安装；SOTER signer
+始终由 native 宿主注入。
 
 `WeappManagedFiles` 提供基础异步文件方法及受管 `wxfile://user/` 路径。同步
 FileSystemManager 方法由核心直接执行，双方使用同一目录与真实 flock 操作锁。读写块最多 1 MiB、单文件 8 MiB、单账号应用 32 MiB。写入等待

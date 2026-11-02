@@ -24,6 +24,8 @@ import WeappContainerNative
     private var hostServicesConfig: [String: WeappJSON]?
     private var authorizedApplications: [String: [String: WeappJSON]] = [:]
     private var resourceCleanups: [String: () -> Void] = [:]
+    private var asyncResourceCleanups: [String: @MainActor () async throws -> Void] = [:]
+    private var visibilityHandlers: [String: (Bool) -> Void] = [:]
     private var accountSwitchBlocked = false
     private var accountDetachTask: Task<Void, Never>?
     private var accountSwitchOperationID: String?
@@ -35,6 +37,7 @@ import WeappContainerNative
     private var flushes: [UInt64: CheckedContinuation<Void, Error>] = [:]
     private var closeWaiter: CheckedContinuation<Void, Error>?
     private var closeResult: Result<Void, Error>?
+    private var closeTask: Task<Void, Error>?
     private var nativeCloseResult: Result<Void, Error>?
     private var gate = false
     private var gateWaiters: [CheckedContinuation<Void, Never>] = []
@@ -53,19 +56,16 @@ import WeappContainerNative
         timer?.invalidate(); for task in jobs.values { task.cancel() }
         let p = surface, owner = native
         let cancellations = Array(apiCancellations.values), cleanups = Array(resourceCleanups.values)
+        let asyncCleanups = asyncResourceCleanups
         // Retain both GPU and native owners through asynchronous final cleanup.
         Task { @MainActor in
             for cancellation in cancellations { cancellation.cancel() }; for cleanup in cleanups { cleanup() }
-            await p?.drain()
-            do {
-                if p?.attached == true, let owner {
-                    _ = try owner.call { h, result in weapp_container_sdk_metal_detach(h, &result) }
-                    p?.attached = false
-                }
-                try owner?.destroy()
-            } catch { NSLog("WeappContainer final cleanup failed: %@", error.localizedDescription) }
+            await FinalResourceRetirement.retire(surface: p, owner: owner, cleanups: asyncCleanups)
         }
     }
+    /// Failed final cleanup retains its native owner and core file lease until an explicit retry succeeds.
+    public static var failedFinalResourceCleanups: [String: String] { FinalResourceRetirement.failures }
+    @discardableResult public static func retryFinalResourceCleanups() async -> [String: String] { await FinalResourceRetirement.retry(); return FinalResourceRetirement.failures }
 
     public func registerHostMethod(_ name: String, handler: @escaping HostMethod) throws {
         try ensureOpen()
@@ -85,6 +85,18 @@ import WeappContainerNative
         try ensureOpen()
         guard resourceCleanups[key] == nil else { throw failure("ERR_INVALID_REQUEST", "Native resource cleanup key already registered") }
         resourceCleanups[key] = cleanup
+    }
+    /// Native I/O must finish before account cleanup is acknowledged or close destroys its owner.
+    public func registerHostAsyncResourceCleanup(_ key: String, cleanup: @escaping @MainActor () async throws -> Void) throws {
+        try ensureOpen()
+        guard asyncResourceCleanups[key] == nil else { throw failure("ERR_INVALID_REQUEST", "Native async cleanup key already registered") }
+        asyncResourceCleanups[key] = cleanup
+    }
+    public func registerHostVisibilityHandler(_ key: String, handler: @escaping (Bool) -> Void) throws {
+        try ensureOpen(); guard visibilityHandlers[key] == nil else { throw failure("ERR_INVALID_REQUEST", "Visibility handler already registered") }; visibilityHandlers[key] = handler; handler(isForeground)
+    }
+    private func drainAsyncResources(retire: Bool) async throws {
+        for (key, cleanup) in asyncResourceCleanups { try await cleanup(); if retire { asyncResourceCleanups.removeValue(forKey: key) } }
     }
     public func registerApiHandler(_ name: String, handler: @escaping HostApiHandler) throws {
         try ensureOpen()
@@ -369,10 +381,23 @@ import WeappContainerNative
     /// This is idempotent and may be called with a view still attached.
     public func close() async throws {
         if let closeResult { return try closeResult.get() }
-        surface?.cancelInput?()
+        if let closeTask { return try await closeTask.value }
+        // Claim the operation before its first suspension. All callers join the
+        // same cleanup; a failed attempt remains retryable once it has finished.
         closing = true
+        let task = Task { @MainActor in try await self.finishClose() }
+        closeTask = task
+        defer { closeTask = nil }
+        try await task.value
+    }
+    private func finishClose() async throws {
+        surface?.cancelInput?()
+        accountDetachTask?.cancel()
+        if let accountDetachTask { await accountDetachTask.value }
         for cancellation in apiCancellations.values { cancellation.cancel() }; apiCancellations.removeAll()
         for cleanup in resourceCleanups.values { cleanup() }; resourceCleanups.removeAll()
+        try await drainAsyncResources(retire: true)
+        visibilityHandlers.removeAll()
         let waiting = metricsWaiters.values; metricsWaiters.removeAll()
         for waiter in waiting { waiter.resume(throwing: failure("ERR_CLOSED", "Session closed before layout")) }
         await acquireGate()
@@ -450,6 +475,7 @@ import WeappContainerNative
     private func applyForeground(synchronizeNative: Bool = false) throws {
         let active = requestedForeground && surfaceForeground
         let changed = active != isForeground; isForeground = active
+        if changed { for handler in visibilityHandlers.values { handler(active) } }
         guard isLoaded, !accountSwitchBlocked, synchronizeNative || (changed && !gate) else { return }
         // SDK replacement may commit while the host changes visibility during
         // a Metal drain. Synchronize actual desired lifecycle before reattach;
@@ -668,6 +694,7 @@ import WeappContainerNative
                 // Custom toolkit cleanup may await its own UI actor. Keep native commands
                 // and close available while the revoked identity remains blocked in Rust.
                 self.releaseGate(); ownsGate = false
+                try await self.drainAsyncResources(retire: false); try Task.checkCancellation()
                 try await self.onAccountCleanup?(operationID); try Task.checkCancellation()
                 await self.acquireGate(); ownsGate = true
                 try self.ensureOpen()
@@ -688,6 +715,39 @@ import WeappContainerNative
             for event in delivered { self.onEvent?(event) }
         }
     }
+}
+
+@MainActor private enum FinalResourceRetirement {
+    @MainActor private final class Entry {
+        let surface: MetalSurface?
+        let owner: NativeOwner?
+        var cleanups: [String: @MainActor () async throws -> Void]
+        var failure = ""
+        var finishing = false
+        init(_ surface: MetalSurface?, _ owner: NativeOwner?, _ cleanups: [String: @MainActor () async throws -> Void]) { self.surface = surface; self.owner = owner; self.cleanups = cleanups }
+        func finish() async throws {
+            var errors: [String] = []
+            for (key, cleanup) in cleanups { do { try await cleanup(); cleanups.removeValue(forKey: key) } catch { errors.append("\(key): \(error.localizedDescription)") } }
+            guard errors.isEmpty else { throw WeappContainerError(code: "ERR_FINAL_RESOURCE_CLEANUP", message: errors.joined(separator: "; ")) }
+            await surface?.drain()
+            if surface?.attached == true, let owner { _ = try owner.call { h, result in weapp_container_sdk_metal_detach(h, &result) }; surface?.attached = false }
+            try owner?.destroy()
+        }
+    }
+    private static var entries: [String: Entry] = [:]
+    static var failures: [String: String] { entries.reduce(into: [:]) { if !$1.value.failure.isEmpty { $0[$1.key] = $1.value.failure } } }
+    static func retire(surface: MetalSurface?, owner: NativeOwner?, cleanups: [String: @MainActor () async throws -> Void]) async {
+        let id = UUID().uuidString, entry = Entry(surface, owner, cleanups); entries[id] = entry
+        await attempt(id, entry)
+    }
+    private static func attempt(_ id: String, _ entry: Entry) async {
+        guard entries[id] === entry, !entry.finishing else { return }
+        entry.finishing = true
+        defer { entry.finishing = false }
+        do { try await entry.finish(); entries.removeValue(forKey: id) }
+        catch { entry.failure = error.localizedDescription; NSLog("WeappContainer native owner quarantined after final cleanup failure (%@): %@", id, entry.failure) }
+    }
+    static func retry() async { for (id, entry) in entries { await attempt(id, entry) } }
 }
 
 /// The only owner of a C handle. Explicit close is asynchronous; deinit is a

@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
   s.source_files = 'Sources/WeappContainer/**/*.swift'
   s.vendored_frameworks = 'Frameworks/WeappContainerNative.xcframework'
   s.libraries = 'c++', 'z', 'iconv'
-  s.frameworks = 'UIKit', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText', 'CoreFoundation', 'Security', 'SystemConfiguration', 'AVFoundation', 'CoreImage', 'CoreBluetooth', 'CoreLocation', 'CoreMotion', 'Network', 'AudioToolbox', 'CryptoKit'
+  s.frameworks = 'UIKit', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText', 'CoreFoundation', 'Security', 'SystemConfiguration', 'AVFoundation', 'CoreImage', 'CoreBluetooth', 'CoreLocation', 'CoreMotion', 'Network', 'AudioToolbox', 'CryptoKit', 'Contacts', 'ContactsUI', 'EventKit', 'EventKitUI', 'VisionKit', 'Vision', 'PhotosUI', 'CoreNFC', 'LocalAuthentication'
 end
