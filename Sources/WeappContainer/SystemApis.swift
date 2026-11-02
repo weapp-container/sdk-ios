@@ -8,7 +8,6 @@ import PhotosUI
 import Vision
 import VisionKit
 import LocalAuthentication
-@preconcurrency import CoreNFC
 @preconcurrency import AVFoundation
 
 /// Supply a real SOTER signing integration. LocalAuthentication alone cannot
@@ -26,14 +25,14 @@ public struct WeappSoterAttestation: Sendable {
 /// System-owned editors, barcode recognition, signed biometrics and NDEF.
 /// These APIs are native operations; physical-device acceptance is recorded
 /// separately from simulator compilation. NFC requires explicit provisioning.
-@MainActor public final class WeappSystemApis: NSObject, CNContactViewControllerDelegate, EKEventEditViewDelegate, PHPickerViewControllerDelegate, DataScannerViewControllerDelegate, UIAdaptivePresentationControllerDelegate, NFCTagReaderSessionDelegate {
+@MainActor public final class WeappSystemApis: NSObject, CNContactViewControllerDelegate, EKEventEditViewDelegate, PHPickerViewControllerDelegate, DataScannerViewControllerDelegate, UIAdaptivePresentationControllerDelegate {
     private weak var presenter: UIViewController?
     private weak var session: WeappContainerSession?
     private let files: WeappManagedFiles?
     private let scopes = WeappManagedFileScopes()
     private lazy var consent = WeappAppPermissionConsent(presenter: { [weak self] in self?.presenter }, auxiliaryRoot: { [unowned self] in try self.scopes.auxiliaryRoot($0) })
     private let signer: (any WeappSoterAttestationProvider)?
-    private let nfcEnabled: Bool
+    private let nfc: WeappNfcApis?
     private var closed = false, foreground = false
     private var generation: UInt64 = 0
     private var backgroundObserver: NSObjectProtocol?
@@ -44,31 +43,15 @@ public struct WeappSoterAttestation: Sendable {
     private var scanJobs: [UUID: Task<VNBarcodeObservation?, Error>] = [:]
     private var authContexts: [String: LAContext] = [:]
     private var activeCalls: Set<String> = []
-    private var retiringReaders: [ObjectIdentifier: NFCTagReaderSession] = [:]
     private var uiRetirements = 0
     private var retirementWaiters: [UUID: (CheckedContinuation<Void, Error>, Task<Void, Never>)] = [:]
-    private var adapters: [String: NFCResource] = [:]
-    private var ndefs: [String: String] = [:]
-    private var subscriptions: [String: (WeappHostApiCall, UInt64)] = [:]
-    private final class NFCResource {
-        let call: WeappHostApiCall
-        var reader: NFCTagReaderSession?
-        var tag: NFCTag?
-        var connected = false, physicalConnected = false
-        var tagEpoch: UInt64 = 0
-        var activeOperation: String?
-        var lastRecords: WeappJSON?
-        var timeout: TimeInterval = 5
-        var pending: [UUID: () -> Void] = [:]
-        init(_ call: WeappHostApiCall) { self.call = call }
-    }
-    public init(presenter: UIViewController, files: WeappManagedFiles? = nil, soterAttestationProvider: (any WeappSoterAttestationProvider)? = nil, enableNfc: Bool = false) {
-        self.presenter = presenter; self.files = files; self.signer = soterAttestationProvider; self.nfcEnabled = enableNfc
+    public init(presenter: UIViewController, files: WeappManagedFiles? = nil, soterAttestationProvider: (any WeappSoterAttestationProvider)? = nil, enableNfc: Bool = false, nfcConfiguration: WeappNfcConfiguration? = nil) {
+        self.presenter = presenter; self.files = files; self.signer = soterAttestationProvider; self.nfc = (nfcConfiguration ?? (enableNfc ? WeappNfcConfiguration() : nil)).map { WeappNfcApis(presenter: presenter, configuration: $0) }
         super.init()
         backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in Task { @MainActor in self?.reset() } }
     }
     /// Source inventory only. supportedApis still applies real native/configuration gates.
-    public static let potentialApis: Set<String> = ["object:NFCAdapter.getNdef", "object:NFCAdapter.offDiscovered", "object:NFCAdapter.onDiscovered", "object:NFCAdapter.startDiscovery", "object:NFCAdapter.stopDiscovery", "object:NFCAdapter.tech", "object:Ndef.close", "object:Ndef.connect", "object:Ndef.isConnected", "object:Ndef.offNdefMessage", "object:Ndef.onNdefMessage", "object:Ndef.setTimeout", "object:Ndef.writeNdefMessage", "wx.addPhoneCalendar", "wx.addPhoneContact", "wx.addPhoneRepeatCalendar", "wx.checkIsSoterEnrolledInDevice", "wx.checkIsSupportSoterAuthentication", "wx.getNFCAdapter", "wx.scanCode", "wx.startSoterAuthentication"]
+    public static let potentialApis: Set<String> = ["object:IsoDep.close", "object:IsoDep.connect", "object:IsoDep.getHistoricalBytes", "object:IsoDep.isConnected", "object:IsoDep.setTimeout", "object:IsoDep.transceive", "object:MifareUltralight.close", "object:MifareUltralight.connect", "object:MifareUltralight.isConnected", "object:MifareUltralight.setTimeout", "object:MifareUltralight.transceive", "object:NFCAdapter.getIsoDep", "object:NFCAdapter.getMifareUltralight", "object:NFCAdapter.getNdef", "object:NFCAdapter.getNfcF", "object:NFCAdapter.getNfcV", "object:NFCAdapter.offDiscovered", "object:NFCAdapter.onDiscovered", "object:NFCAdapter.startDiscovery", "object:NFCAdapter.stopDiscovery", "object:NFCAdapter.tech", "object:Ndef.close", "object:Ndef.connect", "object:Ndef.isConnected", "object:Ndef.offNdefMessage", "object:Ndef.onNdefMessage", "object:Ndef.setTimeout", "object:Ndef.writeNdefMessage", "object:NfcF.close", "object:NfcF.connect", "object:NfcF.getMaxTransceiveLength", "object:NfcF.isConnected", "object:NfcF.setTimeout", "object:NfcF.transceive", "object:NfcV.close", "object:NfcV.connect", "object:NfcV.getMaxTransceiveLength", "object:NfcV.isConnected", "object:NfcV.setTimeout", "object:NfcV.transceive", "wx.addPhoneCalendar", "wx.addPhoneContact", "wx.addPhoneRepeatCalendar", "wx.checkIsSoterEnrolledInDevice", "wx.checkIsSupportSoterAuthentication", "wx.getNFCAdapter", "wx.scanCode", "wx.startSoterAuthentication"]
     public var supportedApis: Set<String> {
         var apis: Set<String> = ["wx.scanCode", "wx.checkIsSupportSoterAuthentication", "wx.checkIsSoterEnrolledInDevice"]
         if Bundle.main.object(forInfoDictionaryKey: "NSContactsUsageDescription") is String { apis.insert("wx.addPhoneContact") }
@@ -76,21 +59,18 @@ public struct WeappSoterAttestation: Sendable {
         if #available(iOS 17.0, *) { calendarKey = "NSCalendarsWriteOnlyAccessUsageDescription" } else { calendarKey = "NSCalendarsUsageDescription" }
         if Bundle.main.object(forInfoDictionaryKey: calendarKey) is String { apis.formUnion(["wx.addPhoneCalendar", "wx.addPhoneRepeatCalendar"]) }
         if signer != nil && !biometricModes().isEmpty { apis.insert("wx.startSoterAuthentication") }
-        if nfcEnabled && NFCTagReaderSession.readingAvailable && Bundle.main.object(forInfoDictionaryKey: "NFCReaderUsageDescription") is String {
-            apis.formUnion(["wx.getNFCAdapter", "object:NFCAdapter.tech", "object:NFCAdapter.startDiscovery", "object:NFCAdapter.stopDiscovery", "object:NFCAdapter.getNdef", "object:NFCAdapter.onDiscovered", "object:NFCAdapter.offDiscovered", "object:Ndef.connect", "object:Ndef.close", "object:Ndef.isConnected", "object:Ndef.setTimeout", "object:Ndef.writeNdefMessage", "object:Ndef.onNdefMessage", "object:Ndef.offNdefMessage"])
-        }
-        return apis
+        return apis.union(nfc?.supportedApis ?? [])
     }
     public func install(in target: WeappContainerSession) throws {
         guard session == nil, !closed else { throw failure("system", "adapter already installed or closed") }
-        session = target; scopes.bind(target)
+        session = target; scopes.bind(target); try nfc?.install(in: target)
         let key = "system-\(UUID().uuidString)"
         // Retain this lifecycle owner until all native invalidation callbacks
         // and editor dismissals finish, including failed final-close retries.
         try target.registerHostResourceCleanup(key) { [self] in reset() }
         try target.registerHostAsyncResourceCleanup(key) { [self] in reset(); try await drainRetirements() }
         try target.registerHostVisibilityHandler(key) { [weak self] visible in self?.foreground = visible; if !visible { self?.reset() } }
-        for api in supportedApis.sorted() {
+        for api in supportedApis.subtracting(nfc?.supportedApis ?? []).sorted() {
             try target.registerApiHandler(api) { [weak self] call in
                 guard let self, !self.closed else { throw CancellationError() }
                 _ = try self.scopes.descriptor(call.context)
@@ -126,7 +106,7 @@ public struct WeappSoterAttestation: Sendable {
         case "wx.addPhoneContact": return try await contact(call, accepted)
         case "wx.addPhoneCalendar", "wx.addPhoneRepeatCalendar": return try await calendar(call, accepted)
         case "wx.scanCode": return try await scan(call, accepted)
-        default: return try await nfc(api, call, accepted)
+        default: throw failure(api, "system API unavailable", .unsupported)
         }
     }
     private func show(_ controller: UIViewController, _ call: WeappHostApiCall, _ accepted: UInt64) async throws -> WeappJSON {
@@ -306,164 +286,14 @@ public struct WeappSoterAttestation: Sendable {
         try WeappSystemApiPayloads.attestation(resultJSON: result.resultJSON, signature: result.resultJSONSignature, challenge: challenge)
         return ok(call.method, ["authMode": .string(mode), "errCode": .number(0), "resultJSON": .string(result.resultJSON), "resultJSONSignature": .string(result.resultJSONSignature)])
     }
-    private func nfcOwner(_ call: WeappHostApiCall, child: Bool = false) throws -> NFCResource {
-        let object = call.payload["objectId"].string ?? "", id = child ? ndefs[object] ?? "" : object
-        guard let owner = adapters[id], !owner.call.cancellation.isCancelled, sameOwner(owner.call.context, call.context) else { throw failure(call.method, "NFC object owner retired", .cancelled) }; return owner
-    }
-    private func sameOwner(_ lhs: WeappJSON, _ rhs: WeappJSON) -> Bool { lhs["application"] == rhs["application"] && lhs["account"] == rhs["account"] && lhs["sessionId"] == rhs["sessionId"] }
-    private func nfc(_ api: String, _ call: WeappHostApiCall, _ accepted: UInt64) async throws -> WeappJSON {
-        try live(call, accepted)
-        if api == "wx.getNFCAdapter" {
-            guard nfcEnabled, NFCTagReaderSession.readingAvailable, adapters.count < 16, let id = call.payload["objectId"].string, adapters[id] == nil else { throw failure(api, "NFC unavailable or object limit reached", .unsupported) }
-            adapters[id] = NFCResource(call); call.cancellation.retainUntilCancelled(); call.cancellation.onCancel { [weak self] in self?.removeAdapter(id) }
-            let tech: [String: WeappJSON] = ["isoDep": .string("ISO_DEP"), "mifareClassic": .string("MIFARE_CLASSIC"), "mifareUltralight": .string("MIFARE_ULTRALIGHT"), "ndef": .string("NDEF"), "nfcA": .string("NFC_A"), "nfcB": .string("NFC_B"), "nfcF": .string("NFC_F"), "nfcV": .string("NFC_V")]
-            return ok(api, ["objectId": .string(id), "properties": .object(["tech": .object(tech)])])
-        }
-        if api == "object:NFCAdapter.getNdef" {
-            guard let parent = call.payload["receiverId"].string, let owner = adapters[parent], sameOwner(owner.call.context, call.context), ndefs.count < 64, let id = call.payload["objectId"].string, ndefs[id] == nil else { throw failure(api, "NDEF receiver unavailable", .cancelled) }
-            ndefs[id] = parent; call.cancellation.retainUntilCancelled(); call.cancellation.onCancel { [weak self] in self?.ndefs.removeValue(forKey: id) }; return ok(api, ["objectId": .string(id)])
-        }
-        if api.hasSuffix(".onDiscovered") || api.hasSuffix(".onNdefMessage") || api.hasSuffix(".offDiscovered") || api.hasSuffix(".offNdefMessage") {
-            _ = try nfcOwner(call, child: api.hasPrefix("object:Ndef."))
-            guard let id = call.payload["subscriptionId"].string else { throw failure(api, "subscriptionId required") }
-            if api.contains(".off") { subscriptions.removeValue(forKey: id) }
-            else {
-                guard subscriptions.count < 64 else { throw failure(api, "NFC subscription limit reached") }; subscriptions[id] = (call, 0); call.cancellation.retainUntilCancelled(); call.cancellation.onCancel { [weak self] in self?.subscriptions.removeValue(forKey: id) }
-                let owner = try nfcOwner(call, child: api.hasPrefix("object:Ndef."))
-                if api == "object:Ndef.onNdefMessage", owner.connected, let records = owner.lastRecords { emitNfc(owner, event: api, values: ["records": records], only: id) }
-            }
-            return ok(api)
-        }
-        let owner = try nfcOwner(call, child: api.hasPrefix("object:Ndef."))
-        let exclusive = api == "object:Ndef.connect" || api == "object:Ndef.writeNdefMessage"
-        if exclusive { guard owner.activeOperation == nil else { throw failure(api, "another NDEF operation is active") }; owner.activeOperation = call.id }
-        defer { if exclusive && owner.activeOperation == call.id { owner.activeOperation = nil } }
-        switch api {
-        case "object:NFCAdapter.tech": return ok(api)
-        case "object:NFCAdapter.startDiscovery":
-            guard adapters.values.allSatisfy({ $0.reader == nil }) else { throw failure(api, "another NFC discovery is active") }
-            guard try await consent.request(call, "scope.nfc") else { throw failure(api, "auth deny", .permissionDenied) }; try live(call, accepted)
-            guard owner.reader == nil, adapters.values.contains(where: { $0 === owner }) else { throw CancellationError() }
-            guard adapters.values.allSatisfy({ $0.reader == nil }), retiringReaders.isEmpty else { throw failure(api, "another NFC reader is active or retiring") }
-            var polling: NFCTagReaderSession.PollingOption = [.iso14443, .iso15693]
-            if let codes = Bundle.main.object(forInfoDictionaryKey: "com.apple.developer.nfc.readersession.felica.systemcodes") as? [String], !codes.isEmpty { polling.insert(.iso18092) }
-            guard let reader = NFCTagReaderSession(pollingOption: polling, delegate: self, queue: .main) else { throw failure(api, "NFC reader unavailable", .unsupported) }
-            reader.alertMessage = "将 NFC 标签靠近手机顶部"; owner.reader = reader; reader.begin(); return ok(api)
-        case "object:NFCAdapter.stopDiscovery", "object:Ndef.close": stopNfc(owner); return ok(api)
-        case "object:Ndef.isConnected": guard owner.connected else { throw failure(api, "NDEF tag is disconnected") }; return ok(api)
-        case "object:Ndef.setTimeout": guard let milliseconds = call.payload["timeout"].number, milliseconds.isFinite, (100...60000).contains(milliseconds) else { throw failure(api, "timeout must be 100...60000 ms") }; owner.timeout = milliseconds / 1000; return ok(api)
-        case "object:Ndef.connect":
-            guard let reader = owner.reader, let tag = owner.tag else { throw failure(api, "discover a tag before connecting") }
-            if !owner.physicalConnected { try await nfcOperation(owner, call) { finish in reader.connect(to: tag) { error in Task { @MainActor in finish(error.map(Result.failure) ?? .success(())) } } } }
-            try live(call, accepted); guard owner.reader === reader else { throw CancellationError() }; owner.connected = true; owner.physicalConnected = true
-            try await readNdef(owner, call); return ok(api)
-        case "object:Ndef.writeNdefMessage":
-            guard owner.connected, let tag = owner.tag else { throw failure(api, "NDEF tag is disconnected") }
-            let ndef = try ndefTag(tag), message = try ndefMessage(call)
-            let status: (NFCNDEFStatus, Int) = try await nfcOperation(owner, call) { finish in ndef.queryNDEFStatus { state, capacity, error in Task { @MainActor in finish(error.map(Result.failure) ?? .success((state, capacity))) } } }
-            guard status.0 == .readWrite, message.length <= status.1 else { throw failure(api, "NDEF tag is read-only or capacity is insufficient") }
-            try live(call, accepted)
-            try await nfcOperation(owner, call) { finish in ndef.writeNDEF(message) { error in Task { @MainActor in finish(error.map(Result.failure) ?? .success(())) } } }
-            try live(call, accepted); return ok(api)
-        default: throw failure(api, "NFC technology is not installed", .unsupported)
-        }
-    }
-    private func ndefTag(_ tag: NFCTag) throws -> any NFCNDEFTag { switch tag { case .miFare(let value): return value; case .iso7816(let value): return value; case .iso15693(let value): return value; case .feliCa(let value): return value; @unknown default: throw failure("NDEF", "unsupported NFC tag", .unsupported) } }
-    private func binary(_ data: Data) -> WeappJSON { .object(["__weappBinary": .object(["type": .string("ArrayBuffer"), "bytes": .array(data.map { .number(Double($0)) })])]) }
-    private func bytes(_ value: WeappJSON) throws -> Data {
-        try WeappSystemApiPayloads.binary(value)
-    }
-    private func ndefMessage(_ call: WeappHostApiCall) throws -> NFCNDEFMessage {
-        let value = call.payload; var records: [NFCNDEFPayload] = []
-        for text in value["texts"].array ?? [] { guard let text = text.string, let payload = NFCNDEFPayload.wellKnownTypeTextPayload(string: text, locale: Locale(identifier: "en")) else { throw failure(call.method, "invalid NDEF text") }; records.append(payload) }
-        for uri in value["uris"].array ?? [] { guard let uri = uri.string, let payload = NFCNDEFPayload.wellKnownTypeURIPayload(string: uri) else { throw failure(call.method, "invalid NDEF URI") }; records.append(payload) }
-        for record in value["records"].array ?? [] {
-            guard let number = record["tnf"].number, number.isFinite, (0...7).contains(number), number.rounded() == number, let format = NFCTypeNameFormat(rawValue: UInt8(number)) else { throw failure(call.method, "record tnf required") }
-            records.append(NFCNDEFPayload(format: format, type: try bytes(record["type"]), identifier: try bytes(record["id"]), payload: try bytes(record["payload"])))
-        }
-        guard !records.isEmpty, records.count <= 64 else { throw failure(call.method, "NDEF requires 1...64 records") }
-        let message = NFCNDEFMessage(records: records); guard message.length <= 1024 * 1024 else { throw failure(call.method, "NDEF message exceeds 1 MiB") }; return message
-    }
-    private func nfcOperation<T>(_ owner: NFCResource, _ call: WeappHostApiCall, _ operation: (@escaping @MainActor (Result<T, Error>) -> Void) -> Void) async throws -> T {
-        guard let reader = owner.reader, owner.pending.isEmpty else { throw failure(call.method, "NFC reader disconnected or busy") }
-        let tagEpoch = owner.tagEpoch
-        return try await withCheckedThrowingContinuation { continuation in
-            let id = UUID(); var settled = false; var timeout: Task<Void, Never>?
-            let finish: @MainActor (Result<T, Error>) -> Void = { result in
-                guard !settled else { return }; settled = true; timeout?.cancel(); owner.pending.removeValue(forKey: id)
-                if case .success = result, owner.reader !== reader || owner.tagEpoch != tagEpoch { continuation.resume(throwing: CancellationError()) }
-                else { continuation.resume(with: result) }
-            }
-            owner.pending[id] = { finish(.failure(CancellationError())) }
-            if call.id != owner.call.id { call.cancellation.onCancel { [weak self] in finish(.failure(CancellationError())); self?.stopNfc(owner) } }
-            guard !call.cancellation.isCancelled else { return }
-            timeout = Task { @MainActor [weak self] in do { try await Task.sleep(nanoseconds: UInt64(owner.timeout * 1_000_000_000)); finish(.failure(self?.failure(call.method, "NFC operation timed out", .timeout) ?? CancellationError())); self?.stopNfc(owner) } catch {} }
-            operation(finish)
-        }
-    }
-    private func readNdef(_ owner: NFCResource, _ call: WeappHostApiCall) async throws {
-        guard owner.connected, let tag = owner.tag else { throw CancellationError() }; let ndef = try ndefTag(tag)
-        let message: NFCNDEFMessage
-        do { message = try await nfcOperation(owner, call) { finish in ndef.readNDEF { message, error in Task { @MainActor in if let error { finish(.failure(error)) } else if let message { finish(.success(message)) } else { finish(.failure(WeappHostError(code: .invalidRequest, message: "empty NDEF response"))) } } } } }
-        catch { let native = error as NSError; if native.domain == NFCErrorDomain && native.code == NFCReaderError.Code.ndefReaderSessionErrorZeroLengthMessage.rawValue { owner.lastRecords = .array([]); emitNfc(owner, event: "object:Ndef.onNdefMessage", values: ["records": .array([])]); return }; throw error }
-        guard message.length <= 1024 * 1024, owner.connected else { throw failure(call.method, "NDEF message unavailable or exceeds budget") }
-        let records: WeappJSON = .array(message.records.map { .object(["tnf": .number(Double($0.typeNameFormat.rawValue)), "type": binary($0.type), "id": binary($0.identifier), "payload": binary($0.payload)]) })
-        owner.lastRecords = records
-        emitNfc(owner, event: "object:Ndef.onNdefMessage", values: ["records": records])
-    }
-    private func emitNfc(_ owner: NFCResource, event: String, values: [String: WeappJSON], only subscriptionId: String? = nil) {
-        guard !closed, foreground, let session else { return }
-        for (id, (call, sequence)) in subscriptions where (subscriptionId == nil || subscriptionId == id) && call.method == event && !call.cancellation.isCancelled {
-            let object = call.payload["objectId"].string ?? "", adapter = event.contains("Ndef.") ? ndefs[object] ?? "" : object
-            guard adapters[adapter] === owner else { continue }
-            let next = sequence + 1; subscriptions[id] = (call, next)
-            do { _ = try session.emitHostApiEvent(["sessionId": call.context["sessionId"], "accountEpoch": call.context["account"]["epoch"], "objectId": .string(object), "subscriptionId": .string(id), "sequence": .string(String(next)), "value": .object(values)]) }
-            catch { subscriptions.removeValue(forKey: id); stopNfc(owner); session.report(error); return }
-        }
-    }
-    nonisolated public func tagReaderSessionDidBecomeActive(_ session: NFCTagReaderSession) {}
-    nonisolated public func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            if self.retiringReaders.removeValue(forKey: ObjectIdentifier(session)) != nil { self.checkRetirements(); return }
-            guard let owner = self.adapters.values.first(where: { $0.reader === session }) else { return }
-            self.stopNfc(owner, alreadyInvalidated: true); self.session?.report(error)
-        }
-    }
-    nonisolated public func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
-        Task { @MainActor [weak self] in
-            guard let self, self.foreground, let owner = self.adapters.values.first(where: { $0.reader === session }) else { return }
-            guard tags.count == 1, let tag = tags.first else { session.alertMessage = "请只放置一个 NFC 标签"; session.restartPolling(); return }
-            owner.tagEpoch &+= 1; owner.lastRecords = nil
-            let pending = Array(owner.pending.values); for cancel in pending { cancel() }
-            owner.tag = tag; owner.connected = false; owner.physicalConnected = false
-            let id: Data, tech: String
-            switch tag { case .miFare(let value): id = value.identifier; tech = "NFC_A"; case .iso7816(let value): id = value.identifier; tech = "ISO_DEP"; case .iso15693(let value): id = value.identifier; tech = "NFC_V"; case .feliCa(let value): id = value.currentIDm; tech = "NFC_F"; @unknown default: self.stopNfc(owner); return }
-            do {
-                try await self.nfcOperation(owner, owner.call) { finish in session.connect(to: tag) { error in Task { @MainActor in finish(error.map(Result.failure) ?? .success(())) } } }
-                guard owner.reader === session else { return }; owner.physicalConnected = true
-                let ndef = try self.ndefTag(tag)
-                let state: NFCNDEFStatus = try await self.nfcOperation(owner, owner.call) { finish in ndef.queryNDEFStatus { status, _, error in Task { @MainActor in finish(error.map(Result.failure) ?? .success(status)) } } }
-                guard owner.reader === session else { return }
-                let techs = state == .notSupported ? [tech] : [tech, "NDEF"]
-                self.emitNfc(owner, event: "object:NFCAdapter.onDiscovered", values: ["id": self.binary(id), "techs": .array(techs.map(WeappJSON.string))])
-            } catch { self.stopNfc(owner); if !owner.call.cancellation.isCancelled { self.session?.report(error) } }
-        }
-    }
-    private func stopNfc(_ owner: NFCResource, alreadyInvalidated: Bool = false) {
-        let reader = owner.reader; owner.reader = nil; owner.tag = nil; owner.connected = false; owner.physicalConnected = false; owner.tagEpoch &+= 1; owner.lastRecords = nil
-        let pending = Array(owner.pending.values); owner.pending.removeAll(); for cancel in pending { cancel() }
-        if let reader, !alreadyInvalidated { retiringReaders[ObjectIdentifier(reader)] = reader; reader.invalidate() }
-    }
-    private func removeAdapter(_ id: String) { if let owner = adapters.removeValue(forKey: id) { stopNfc(owner) }; let children = Set(ndefs.filter { $0.value == id }.map(\.key)); ndefs = ndefs.filter { $0.value != id }; subscriptions = subscriptions.filter { !children.contains($0.value.0.payload["objectId"].string ?? "") && $0.value.0.payload["objectId"].string != id } }
-    private func reset() { generation &+= 1; consent.reset(); uiFinish?(.failure(CancellationError())); for job in scanJobs.values { job.cancel() }; for context in authContexts.values { context.invalidate() }; authContexts.removeAll(); for owner in adapters.values { stopNfc(owner) }; adapters.removeAll(); ndefs.removeAll(); subscriptions.removeAll() }
+    private func reset() { generation &+= 1; consent.reset(); uiFinish?(.failure(CancellationError())); for job in scanJobs.values { job.cancel() }; for context in authContexts.values { context.invalidate() }; authContexts.removeAll() }
     private func checkRetirements() {
-        guard retiringReaders.isEmpty, uiRetirements == 0, scanJobs.isEmpty, activeCalls.isEmpty else { return }
+        guard uiRetirements == 0, scanJobs.isEmpty, activeCalls.isEmpty else { return }
         let waiting = retirementWaiters; retirementWaiters.removeAll()
         for (continuation, timer) in waiting.values { timer.cancel(); continuation.resume() }
     }
     private func drainRetirements() async throws {
-        guard !retiringReaders.isEmpty || uiRetirements != 0 || !scanJobs.isEmpty || !activeCalls.isEmpty else { return }
+        guard uiRetirements != 0 || !scanJobs.isEmpty || !activeCalls.isEmpty else { return }
         try await withCheckedThrowingContinuation { continuation in
             let id = UUID()
             let timer = Task { @MainActor [weak self] in
@@ -475,5 +305,5 @@ public struct WeappSoterAttestation: Sendable {
             retirementWaiters[id] = (continuation, timer)
         }
     }
-    public func close() async throws { closed = true; reset(); try await drainRetirements(); if let backgroundObserver { NotificationCenter.default.removeObserver(backgroundObserver) }; backgroundObserver = nil }
+    public func close() async throws { try await nfc?.close(); closed = true; reset(); try await drainRetirements(); if let backgroundObserver { NotificationCenter.default.removeObserver(backgroundObserver) }; backgroundObserver = nil }
 }

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "620030e1d942d40c1e590e9281a85cf98e35bc02",
-  "review": "Correct iOS partial Wi-Fi query SSID and BSSID contract with native identifier boundary tests and development compile evidence",
+  "sourceBaseCommit": "87443d33ab19d155089a4e48886d90582caf4108",
+  "review": "Extract exact CoreNFC technology adapter with explicit provisioning gates and native command plus reader terminal barriers; current Swift compilation and boundary evidence",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -107,8 +107,8 @@
     },
     {
       "path": "Sources/WeappContainer/NativeDeviceServices.swift",
-      "sha256": "a369a3060d93466f780e48006808c7deb04d28759a23c65888913044edb9a26e",
-      "size": 2911,
+      "sha256": "8eb1e1b60acd0c9301f00b33c20f45525d7cfc6b1d60d0c3cfcd16af67e15cd1",
+      "size": 2995,
       "mode": "100644"
     },
     {
@@ -121,6 +121,18 @@
       "path": "Sources/WeappContainer/NetworkApis.swift",
       "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb",
       "size": 26184,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/NfcApis.swift",
+      "sha256": "d075e1af1a1e39c638d15a0559e57369f70de5eeb3370efe6acc033f5cb7ef46",
+      "size": 34250,
+      "mode": "100644"
+    },
+    {
+      "path": "Sources/WeappContainer/NfcNativeBoundary.swift",
+      "sha256": "c0110c9414918a838b4b67a76ae01f49b2eb97a96d05020b68d56b1e791670b6",
+      "size": 1770,
       "mode": "100644"
     },
     {
@@ -149,8 +161,8 @@
     },
     {
       "path": "Sources/WeappContainer/SystemApis.swift",
-      "sha256": "a512e997a6ff80571f1ff4372ad662a2f15d52f14cb87aa987e24660f106abd2",
-      "size": 46911,
+      "sha256": "553be46db78c6490b629217ec2c61453898bff907f3c8372cb47e69104c3e883",
+      "size": 30103,
       "mode": "100644"
     },
     {
@@ -214,6 +226,18 @@
       "mode": "100644"
     },
     {
+      "path": "examples/host-services/NFC-APIS.md",
+      "sha256": "d8da21bb32b5c810e44b9599bba60ab13315cdf40249f876b0726d60be2f3de6",
+      "size": 2796,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/host-services/NFC-CONTRACT.json",
+      "sha256": "c0bc07ef93fe8cf95e3898e770d8902468ec58cc5c8da228b988ee7e8d2738a1",
+      "size": 7226,
+      "mode": "100644"
+    },
+    {
       "path": "examples/host-services/README.md",
       "sha256": "961ef69d0aade513965354d5124a1af7566170411cdbc5faaa350f09958786fd",
       "size": 2833,
@@ -262,6 +286,12 @@
       "mode": "100644"
     },
     {
+      "path": "test/NfcNativeBoundaryTests.swift",
+      "sha256": "95166fe760f1891e4bf80aa0eda79e244bee0e1e979645ca2eddecb7956c8bc4",
+      "size": 2501,
+      "mode": "100644"
+    },
+    {
       "path": "test/PresentationInputQueueTests.swift",
       "sha256": "7af25939141b70a4484bc4acbcf7b64eafa8115c2e6b59230f4b4aa2a90ba7d9",
       "size": 6614,
@@ -301,6 +331,12 @@
       "path": "test/evidence/host-services-network-system-development.json",
       "sha256": "0a8c13015ade0838abd5350f4e8c7691db5dd81d55849442a0df3642fec63e5d",
       "size": 5326,
+      "mode": "100644"
+    },
+    {
+      "path": "test/evidence/host-services-nfc-development.json",
+      "sha256": "e6e99859ff0aa1f2946ce2b9ce3ab0c5848b7326a4b1c2a090fa5b8b3a4516d3",
+      "size": 11146,
       "mode": "100644"
     },
     {
@@ -391,6 +427,12 @@
       "path": "tools/test-host-cancellation.mjs",
       "sha256": "d1ad7b07c59240910e541803c39a82ce3d029c798c4aec36e435d599911da390",
       "size": 850,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test-nfc-boundary.mjs",
+      "sha256": "b98ed3489c92e1c189d2304182b5e400e8e2e4515cc40bd1c664c7d5fcd66c04",
+      "size": 893,
       "mode": "100644"
     },
     {

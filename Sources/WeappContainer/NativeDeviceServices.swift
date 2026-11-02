@@ -17,7 +17,7 @@ import UIKit
     public init(presenter: UIViewController, networkOrigins: [String] = [], allowLoopbackForDevelopment: Bool = false,
                 enableBluetooth: Bool = true, allowedMediaOrigins: [String] = [], recordingAudioSession: (any WeappRecordingAudioSession)? = nil,
                 enableNfc: Bool = false, soterAttestationProvider: (any WeappSoterAttestationProvider)? = nil,
-                wifiConfiguration: WeappWifiConfiguration? = nil) throws {
+                wifiConfiguration: WeappWifiConfiguration? = nil, nfcConfiguration: WeappNfcConfiguration? = nil) throws {
         let files = try WeappManagedFiles(); self.files = files
         self.device = WeappDeviceApis(presenter: presenter)
         self.bluetooth = enableBluetooth ? WeappBluetoothApis(presenter: presenter) : nil
@@ -26,7 +26,7 @@ import UIKit
         self.media = WeappNativeMedia(presenter: presenter, files: files, allowedMediaOrigins: Set(allowedMediaOrigins))
         self.network = try WeappNetworkApis(files: files, allowedOrigins: networkOrigins, allowLoopbackForDevelopment: allowLoopbackForDevelopment)
         self.recorder = recordingAudioSession.map { WeappRecorderApis(presenter: presenter, files: files, audioSession: $0) }
-        self.system = WeappSystemApis(presenter: presenter, files: files, soterAttestationProvider: soterAttestationProvider, enableNfc: enableNfc)
+        self.system = WeappSystemApis(presenter: presenter, files: files, soterAttestationProvider: soterAttestationProvider, enableNfc: enableNfc, nfcConfiguration: nfcConfiguration)
     }
     public func install(in session: WeappContainerSession) throws {
         guard !installed, !closed else { throw WeappHostError(code: .invalidRequest, message: "Device toolkit already installed or closed") }; installed = true

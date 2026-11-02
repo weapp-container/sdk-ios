@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.1.0-preview.6.0",
+  "date": "2026-11-02",
+  "status": "passed",
+  "scope": "Development source compilation and native terminal/framing boundary checks only; no release, device or parity acceptance",
+  "contract": {
+    "path": "examples/host-services/NFC-CONTRACT.json",
+    "sha256": "c0bc07ef93fe8cf95e3898e770d8902468ec58cc5c8da228b988ee7e8d2738a1",
+    "officialLeafCount": 66,
+    "potentialImplementedLeafCount": 41
+  },
+  "checks": [
+    {
+      "consumer": "flutter",
+      "status": "passed",
+      "sourceCount": 23,
+      "sourceStability": "before/after/current hashes match",
+      "sources": [
+        {
+          "path": "sdk/ios/Sources/WeappContainer/AppPayments.swift",
+          "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/AppPermissionConsent.swift",
+          "sha256": "3aa0bea622688e7df56c6da9eaca632038e979134ea3e2ef0660cfd9045d7da5"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/BeaconApis.swift",
+          "sha256": "6d3c4e5ce80590b81bfe343855eded72b2a08429274f783b1df324f5bb8bef68"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/BluetoothApis.swift",
+          "sha256": "bc44718d58569a1226fea55f49b7652673c64b097e5cb3a4d07df41651e7bd6b"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/DeviceApis.swift",
+          "sha256": "a87193a35ee6e4bf2ab18c003f78ee2811bce5e49eee83f8cfbbd54a0000a4e3"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/HostServicesClient.swift",
+          "sha256": "2b9e81f848e2678974472494729e8786f140b88d56b6d6b61f09b5d0bc12999c"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/ManagedFileScope.swift",
+          "sha256": "6520899422290970ae4f5afec47e8bc72a20c0750e2211d44fa6724a97f54e33"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/ManagedFiles.swift",
+          "sha256": "b6a6b6df8506c1604165ad45e1afa8503262a4248711a60c37c4488fd44caa22"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NativeDeviceServices.swift",
+          "sha256": "8eb1e1b60acd0c9301f00b33c20f45525d7cfc6b1d60d0c3cfcd16af67e15cd1"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NativeMedia.swift",
+          "sha256": "33b3bc73fd448e4f6c60c45d2a288d328eea145680d958556d9b05551ab60098"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NetworkApis.swift",
+          "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NfcApis.swift",
+          "sha256": "d075e1af1a1e39c638d15a0559e57369f70de5eeb3370efe6acc033f5cb7ef46"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NfcNativeBoundary.swift",
+          "sha256": "c0110c9414918a838b4b67a76ae01f49b2eb97a96d05020b68d56b1e791670b6"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/PresentationInputQueue.swift",
+          "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/RecorderApis.swift",
+          "sha256": "007015abe91701b39de1edc6131f8a9ec19b7812c94b61c46a07f2f01b0e52f3"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/Session.swift",
+          "sha256": "f46df4ebab0475538feac8e468eca916234c9fa1208f65932e810cff2b8ff0fa"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/SystemApiPayloads.swift",
+          "sha256": "de4ebd06288f0df51b22f8724b5c84c404fead51ae2d45f756bdb91027cc013b"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/SystemApis.swift",
+          "sha256": "553be46db78c6490b629217ec2c61453898bff907f3c8372cb47e69104c3e883"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/Types.swift",
+          "sha256": "6c6a82f48912d352010eb9f08b213b608eb55d61588a6187c5f6a2fb2523d23e"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/View.swift",
+          "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/WifiApis.swift",
+          "sha256": "8330d0d8e0775b6cbf027e5ff93b26ffa544965b2556cd8c3256ed91fa8681c0"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/WifiPayloads.swift",
+          "sha256": "7ef859d5774f96a1759864cd0f55208fb9a991d8fa4fef712c6d4b611c626569"
+        },
+        {
+          "path": "sdk/flutter/weapp_container_ios/ios/Classes/WeappContainerIosPlugin.swift",
+          "sha256": "f6987e6e4500b7b11746b5b278a392b20979e55252fd6ea4537c79820514d585"
+        }
+      ],
+      "commandFile": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-wrapper-nfc-final-gk97re9p/flutter-command.json",
+      "commandSha256": "6391959c0113f119359ff0756769d7322537eaa2ba620569efb7fabc71ff42a9",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "diagnostics": "zero diagnostics"
+    },
+    {
+      "consumer": "react-native",
+      "status": "passed",
+      "sourceCount": 23,
+      "sourceStability": "before/after/current hashes match",
+      "sources": [
+        {
+          "path": "sdk/ios/Sources/WeappContainer/AppPayments.swift",
+          "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/AppPermissionConsent.swift",
+          "sha256": "3aa0bea622688e7df56c6da9eaca632038e979134ea3e2ef0660cfd9045d7da5"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/BeaconApis.swift",
+          "sha256": "6d3c4e5ce80590b81bfe343855eded72b2a08429274f783b1df324f5bb8bef68"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/BluetoothApis.swift",
+          "sha256": "bc44718d58569a1226fea55f49b7652673c64b097e5cb3a4d07df41651e7bd6b"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/DeviceApis.swift",
+          "sha256": "a87193a35ee6e4bf2ab18c003f78ee2811bce5e49eee83f8cfbbd54a0000a4e3"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/HostServicesClient.swift",
+          "sha256": "2b9e81f848e2678974472494729e8786f140b88d56b6d6b61f09b5d0bc12999c"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/ManagedFileScope.swift",
+          "sha256": "6520899422290970ae4f5afec47e8bc72a20c0750e2211d44fa6724a97f54e33"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/ManagedFiles.swift",
+          "sha256": "b6a6b6df8506c1604165ad45e1afa8503262a4248711a60c37c4488fd44caa22"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NativeDeviceServices.swift",
+          "sha256": "8eb1e1b60acd0c9301f00b33c20f45525d7cfc6b1d60d0c3cfcd16af67e15cd1"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NativeMedia.swift",
+          "sha256": "33b3bc73fd448e4f6c60c45d2a288d328eea145680d958556d9b05551ab60098"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NetworkApis.swift",
+          "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NfcApis.swift",
+          "sha256": "d075e1af1a1e39c638d15a0559e57369f70de5eeb3370efe6acc033f5cb7ef46"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/NfcNativeBoundary.swift",
+          "sha256": "c0110c9414918a838b4b67a76ae01f49b2eb97a96d05020b68d56b1e791670b6"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/PresentationInputQueue.swift",
+          "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/RecorderApis.swift",
+          "sha256": "007015abe91701b39de1edc6131f8a9ec19b7812c94b61c46a07f2f01b0e52f3"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/Session.swift",
+          "sha256": "f46df4ebab0475538feac8e468eca916234c9fa1208f65932e810cff2b8ff0fa"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/SystemApiPayloads.swift",
+          "sha256": "de4ebd06288f0df51b22f8724b5c84c404fead51ae2d45f756bdb91027cc013b"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/SystemApis.swift",
+          "sha256": "553be46db78c6490b629217ec2c61453898bff907f3c8372cb47e69104c3e883"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/Types.swift",
+          "sha256": "6c6a82f48912d352010eb9f08b213b608eb55d61588a6187c5f6a2fb2523d23e"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/View.swift",
+          "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/WifiApis.swift",
+          "sha256": "8330d0d8e0775b6cbf027e5ff93b26ffa544965b2556cd8c3256ed91fa8681c0"
+        },
+        {
+          "path": "sdk/ios/Sources/WeappContainer/WifiPayloads.swift",
+          "sha256": "7ef859d5774f96a1759864cd0f55208fb9a991d8fa4fef712c6d4b611c626569"
+        },
+        {
+          "path": "sdk/react-native/ios/WCRNInstance.swift",
+          "sha256": "decd8758e513429df0f1cbce7884fc6ea83767fa69054aa1cfebb511be889f00"
+        }
+      ],
+      "commandFile": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-wrapper-nfc-final-gk97re9p/react-native-command.json",
+      "commandSha256": "fe25589f6c4bce3989c82162b5850173972530da2ee6954defb8a6d528bb7bfd",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "diagnostics": "zero diagnostics"
+    }
+  ],
+  "nativeBoundaryTests": {
+    "status": "passed",
+    "scope": "Real host Swift executes production WeappNfcNativeBoundary and FeliCa/ISO15693 framing assertions",
+    "sources": [
+      {
+        "path": "Sources/WeappContainer/NfcNativeBoundary.swift",
+        "sha256": "c0110c9414918a838b4b67a76ae01f49b2eb97a96d05020b68d56b1e791670b6"
+      },
+      {
+        "path": "test/NfcNativeBoundaryTests.swift",
+        "sha256": "95166fe760f1891e4bf80aa0eda79e244bee0e1e979645ca2eddecb7956c8bc4"
+      }
+    ],
+    "command": "node tools/test-nfc-boundary.mjs"
+  },
+  "limitations": [
+    "No NFC-capable device, physical tag, system reader UI or NFC permissions exercised",
+    "No signed iOS TAG entitlement, AID or FeliCa systemcode accepted on hardware",
+    "No tag technology chipset parity or concurrent host reader acceptance",
+    "No new runtime binary linked, packaged or published"
+  ],
+  "sampleCompile": {
+    "status": "passed",
+    "sourceCount": 23,
+    "sourceStability": "before and after hashes matched",
+    "commandFile": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-wrapper-nfc-final-gk97re9p/sample-command.json",
+    "commandSha256": "dd987573f4ade7198e66fd43740989f0dc78898a14b1fc365f8edb58490e5682",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
