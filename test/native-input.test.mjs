@@ -199,3 +199,19 @@ test('runtime preparation rejects an earlier distribution lock before download',
     version: SDK_VERSION, platform: 'ios', arch: 'arm64-simulator', component: 'runtime', abiVersion: 1,
   }), { code: 'ERR_RUNTIME_MANIFEST' });
 });
+
+
+// Wrapper archives are outputs, so they cannot appear in their own build inputs.
+test('reviewed lock binds exactly this SDK native slices without a wrapper dependency cycle', () => {
+  const manifest = JSON.parse(readFileSync(resolve(root, 'runtime-artifacts.lock.json')));
+  const platform = 'ios', architectures = ["arm64-device", "arm64-simulator", "x86_64-simulator"];
+  assert.equal(manifest.runtimeVersion, SDK_VERSION);
+  assert.equal(manifest.abiVersion, 1);
+  assert.equal(manifest.source.releaseTag, `runtime-v${SDK_VERSION}`);
+  assert.deepEqual(manifest.artifacts.map(item => item.arch).sort(), architectures);
+  assert.ok(manifest.artifacts.every(item => item.component === 'runtime' && item.platform === platform));
+  for (const arch of architectures) {
+    const selected = selectArtifact(manifest, {version: SDK_VERSION, abiVersion: 1, component: 'runtime', platform, arch});
+    assert.equal(selected.arch, arch);
+  }
+});
