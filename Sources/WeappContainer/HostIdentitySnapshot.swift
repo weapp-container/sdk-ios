@@ -6,7 +6,7 @@ enum WeappHostIdentitySnapshot {
     static func signedOut(_ context: WeappJSON) throws -> WeappJSON? {
         let account = context["account"].dictionary
         guard let principal = account["principalId"], let epoch = account["epoch"]?.string,
-              let exactEpoch = UInt64(epoch), exactEpoch > 0, String(exactEpoch) == epoch else {
+              let exactEpoch = UInt64(epoch), String(exactEpoch) == epoch else {
             throw WeappHostError(code: .invalidRequest, message: "Trusted account principal and exact epoch required")
         }
         if case .string(let value) = principal, !value.isEmpty { return nil }
