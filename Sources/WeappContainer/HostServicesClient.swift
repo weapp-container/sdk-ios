@@ -86,6 +86,7 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
     }
     /// Refresh after server code redemption, revocation, token refresh and foreground resume.
     @discardableResult public func refreshState(in session: WeappContainerSession, trustedContext: [String: WeappJSON]) async throws -> WeappJSON {
+        try requireSnapshotOwnerContext(in: session)
         let context = try WeappHostIdentitySnapshot.refreshContext(.object(trustedContext), nativeState: session.state())
         return try await refresh(session, nativeCall(context))
     }
@@ -100,14 +101,20 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
         WeappHostApiCall(event: .object(["callId": .string("native-identity-\(UUID().uuidString)"), "method": .string("weappContainer.identity.getState"), "payload": .object([:]), "context": .object(context)]), cancellation: WeappHostApiCancellation())
     }
     private func refresh(_ session: WeappContainerSession, _ call: WeappHostApiCall) async throws -> WeappJSON {
+        try requireSnapshotOwnerContext(in: session)
         let state = try await backend.identityState(call)
         try Task.checkCancellation(); guard !call.cancellation.isCancelled else { throw CancellationError() }
         _ = try session.hostServicesCommand("updateHostServiceSnapshots", ["context": call.context, "values": .object(["weappContainer.identity.getState": state])])
-        for (id, subscription) in subscriptions where !subscription.cancellation.isCancelled && subscription.context["application"] == call.context["application"] && subscription.context["account"] == call.context["account"] {
+        for (id, subscription) in subscriptions where !subscription.cancellation.isCancelled && subscription.context["sessionId"] == call.context["sessionId"] && subscription.context["application"] == call.context["application"] && subscription.context["account"] == call.context["account"] {
             let next = (sequences[id] ?? 0) + 1; sequences[id] = next
             _ = try session.emitHostApiEvent(["sessionId": subscription.context["sessionId"], "accountEpoch": subscription.context["account"]["epoch"], "subscriptionId": .string(id), "sequence": .string(String(next)), "value": state])
         }
         return state
+    }
+    private func requireSnapshotOwnerContext(in session: WeappContainerSession) throws {
+        guard WeappHostIdentitySnapshot.supportsOwnerContext(try session.capabilities()) else {
+            throw WeappContainerError(code: "ERR_UNSUPPORTED_CAPABILITY", message: "Runtime does not validate native snapshot owner contexts")
+        }
     }
     public func install(in session: WeappContainerSession) throws {
         try session.registerHostResourceCleanup("identity-\(UUID().uuidString)") { [weak self] in self?.subscriptions.removeAll(); self?.sequences.removeAll() }

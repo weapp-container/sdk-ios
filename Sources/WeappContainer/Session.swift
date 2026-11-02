@@ -119,6 +119,7 @@ import WeappContainerNative
         try createNativeIfNeeded()
         if operation == "retryAccountCleanup" { beginAccountCleanup(); return try command("queryAccountSwitch") }
         if operation == "updateHostServiceSnapshots", let context = payload["context"] {
+            guard WeappHostIdentitySnapshot.supportsOwnerContext(try command("capabilities")) else { throw failure("ERR_UNSUPPORTED_CAPABILITY", "Runtime does not validate native snapshot owner contexts") }
             guard !accountSwitchBlocked, context["account"] == hostServicesConfig?["account"], context["application"] == hostServicesConfig?["application"] else { throw failure("ERR_IDENTITY_SWITCHING", "Stale native snapshot owner") }
         }
         let result = try command(operation, payload)

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "b7e50a509674d010b11ac37b59cf53f24e9a6414",
-  "review": "Freeze actual native snapshot incarnation before asynchronous identity refresh and reject mismatched trusted application/account before I/O",
+  "sourceBaseCommit": "c07b99fe9cb586c4991fdd505772dafaae90f7b4",
+  "review": "Negotiate snapshot ownership before asynchronous refresh; require a ready owner, freeze actual incarnation, and isolate identity subscriptions by session",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "1c39e8a5896711d9282367f6891879877b8659ea7b4b887670da271d662c48e3",
-      "size": 12609,
+      "sha256": "36a52fe631629e531a8dd808389a17b602816ff28b5265840c80853c18bab763",
+      "size": 12926,
       "mode": "100644"
     },
     {
@@ -95,14 +95,14 @@
     },
     {
       "path": "Sources/WeappContainer/HostIdentitySnapshot.swift",
-      "sha256": "50aadd02f605c6063ebd0edee92321618d095087fa41065b6567bf2d37bfd8b5",
-      "size": 1866,
+      "sha256": "736c5ed4de607de6391bc0e32dae54c6b59b178db227f713b3edcb0de099821a",
+      "size": 2069,
       "mode": "100644"
     },
     {
       "path": "Sources/WeappContainer/HostServicesClient.swift",
-      "sha256": "fa9a47e105d74136964c844d4c8fd49a3e4a1c5d071bff19764f06f76561e743",
-      "size": 15196,
+      "sha256": "8cd0559c552e3eb846fddfd6c1d5cb0e2226f6c0336443dda7f0f219265afe90",
+      "size": 15712,
       "mode": "100644"
     },
     {
@@ -161,8 +161,8 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "cc7b03e4e4e8f48dbfd8728130d8117c2babbce8b4e8afdb15f4fefcc376117e",
-      "size": 50640,
+      "sha256": "a59bdcdf2892bae3f5d87a5c70710bae42cbc24349e771cc6e857894ffd1462a",
+      "size": 50847,
       "mode": "100644"
     },
     {
@@ -317,8 +317,8 @@
     },
     {
       "path": "test/HostIdentitySnapshotTests.swift",
-      "sha256": "60bf32e74ad5aff0a42e3575cf6f6900610eada01d8165aefef0442d49bd96c0",
-      "size": 3762,
+      "sha256": "a7d4f7cda855216e2e5d6a2b859786c52ce1b6a6ac61859ef41a0492f9a5d16b",
+      "size": 4547,
       "mode": "100644"
     },
     {

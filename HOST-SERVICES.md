@@ -125,9 +125,13 @@ purpose 与 permissionVersion。guest desc 不决定用途；拒绝同步服务�
 置为 true。宿主在兑换、撤权、凭据刷新及前台恢复后调用
 `identity.refreshState(in:trustedContext:)`，更新同步 getState 和 onChange。
 刷新在后端请求前读取 native state，核对可信 application/account 并冻结实际内部
-sessionId；响应完成后继续使用同一身份，不会重贴到新 owner。API 回调的原始
+sessionId；只有 ready owner 能开始该刷新，切换中或空 owner 直接拒绝。
+响应完成后继续使用同一身份，不会重贴到新 owner。API 回调的原始
 ApiCallContext 继续透传，运行时按完整应用/包、账号 epoch 和内部会话拒绝旧快照；
 人工 native refresh 不需要伪装成 pending API call。
+发起异步身份刷新前及提交带 context 的快照时，SDK 都要求 runtime 声明
+`hostServices.snapshotOwnerContext == "1.0"`；缺失则报
+`ERR_UNSUPPORTED_CAPABILITY`，不允许旧 runtime 静默忽略 owner 校验字段。
 换号清理 hook 应先准备新宿主凭据，再等待
 `identity.prepareAccountState(in:operationID:trustedContext:)`，最后返回清理成功；
 旧账号快照不能用于新 owner。
