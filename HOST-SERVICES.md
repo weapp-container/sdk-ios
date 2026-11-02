@@ -172,3 +172,5 @@ WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官�
 已完成且未保留的 host call 会释放 setup 取消回调的捕获对象，保留资源的调用仍
 等待取消，失败则运行一次清理；`tools/test-host-cancellation.mjs` 用实际 Swift
 弱引用检查这三个生命周期边界。
+
+Native snapshot owner validation belongs to the negotiated runtime. The SDK passes the complete captured context unchanged and preserves the runtime error, including `ERR_CANCELLED` for a retired owner; it updates its rebuild cache only after successful validation. A credential refresh cannot replace this owner check.

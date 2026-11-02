@@ -118,9 +118,11 @@ import WeappContainerNative
         if operation == "configureHostServices" { try configureHostServices(payload); return .null }
         try createNativeIfNeeded()
         if operation == "retryAccountCleanup" { beginAccountCleanup(); return try command("queryAccountSwitch") }
-        if operation == "updateHostServiceSnapshots", let context = payload["context"] {
+        if operation == "updateHostServiceSnapshots", payload["context"] != nil {
             guard WeappHostIdentitySnapshot.supportsOwnerContext(try command("capabilities")) else { throw failure("ERR_UNSUPPORTED_CAPABILITY", "Runtime does not validate native snapshot owner contexts") }
-            guard !accountSwitchBlocked, context["account"] == hostServicesConfig?["account"], context["application"] == hostServicesConfig?["application"] else { throw failure("ERR_IDENTITY_SWITCHING", "Stale native snapshot owner") }
+            // The negotiated runtime validates application, accepted pack, epoch
+            // and session together, and preserves its ERR_CANCELLED result.
+            // Update the replay cache only after this command succeeds.
         }
         let result = try command(operation, payload)
         if operation == "authorizeInstalledPack", let root = payload["packRoot"]?.string {
