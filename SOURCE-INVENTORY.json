@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "e77dcdb4b06c42b65d5dd1d2661f04f02155ad3c",
-  "review": "Recognize core unsupported capability aliases while preserving raw API error fields in actual Swift parser and JSON codec regression",
+  "sourceBaseCommit": "40be97fb34d68902f31aa1969b034c6495e96eb1",
+  "review": "Review trusted system TabBar presenter configuration, dynamic indicators and styles; preserve historical ORIGIN identity",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "8ad4742521f7e5962297c9b2238b455ca663d5f97edc688e2c8dcb515d3ea2c9",
-      "size": 11103,
+      "sha256": "c4fa268270c78196cb6e576bbf6a69c30248dd17c6ca8e8808e2b95947ed3027",
+      "size": 11856,
       "mode": "100644"
     },
     {
@@ -167,8 +167,8 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "6af9966cc079d2638e08fca12d46d337ce6cb90fbd8fef165c8e2bf1f94ab451",
-      "size": 50836,
+      "sha256": "151cdd4e984296dee491c24f50fcb8e18a3bb2e89966d35b200e275c784a0a05",
+      "size": 50915,
       "mode": "100644"
     },
     {
@@ -185,8 +185,8 @@
     },
     {
       "path": "Sources/WeappContainer/Types.swift",
-      "sha256": "6c6a82f48912d352010eb9f08b213b608eb55d61588a6187c5f6a2fb2523d23e",
-      "size": 6204,
+      "sha256": "61987b57486b4042c0cd783ea14048135df26515bba9c0d57b7ca50073e3fe38",
+      "size": 6324,
       "mode": "100644"
     },
     {
@@ -539,8 +539,8 @@
     },
     {
       "path": "types/weapp-container.d.ts",
-      "sha256": "c951bcb61181a050f06049417d6db2b8e421b349092cce3bd19042426bb6080b",
-      "size": 1804,
+      "sha256": "a0dc928f8d421a057fe08243e1024ffe2aa5a84fc25de6225515d465d837625f",
+      "size": 1941,
       "mode": "100644"
     }
   ]
