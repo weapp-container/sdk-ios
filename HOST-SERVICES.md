@@ -122,6 +122,7 @@ try identity.install(in: session)
 原始 `errCode/errMsg` 和扩展字段保留到 `WeappHostError.details`；缺失的 errCode
 及缺失、空白或非字符串的 errMsg 才使用适配器默认值。五种 canonical 分类及对应
 大写 `ERR_*` 保留类型化类别；consent/session 身份错误归为 permission_denied，
+core 的 `ERR_UNSUPPORTED_CAPABILITY` 和 `unsupported_capability` 均归为 unsupported，
 未知错误归为 invalid_request。iOS 既有的 `backendCode` 字段仍在缺失时补入原始
 分类字符串，不覆盖服务返回的公开字段。运行 `npm run test:host-backend-error`
 可实际执行 Swift 解析与 JSON codec 回归；它不代表原生 Session/JS 或设备验收。

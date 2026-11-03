@@ -31,7 +31,7 @@ struct WeappHostBackendError {
             classification = .permissionDenied
         case "timeout": classification = .timeout
         case "cancelled": classification = .cancelled
-        case "unsupported": classification = .unsupported
+        case "unsupported", "unsupported_capability": classification = .unsupported
         default: classification = .invalidRequest
         }
         var fields = details

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceBaseCommit": "8e25dfd8828c96af822239681b8f86e75db32fd8",
-  "review": "Preserve typed backend classifications and non-null public API error fields through actual Swift parsing and JSON serialization regressions",
+  "sourceBaseCommit": "e77dcdb4b06c42b65d5dd1d2661f04f02155ad3c",
+  "review": "Recognize core unsupported capability aliases while preserving raw API error fields in actual Swift parser and JSON codec regression",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -29,8 +29,8 @@
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "28e44522ede3cac1f8cea37ce270f7c908538b13ee9586e15a7c1447bed2d6bd",
-      "size": 14132,
+      "sha256": "81e0e40dd014515a6f53e2a5de6074ff6a1c79b8f41085630c2121a635e615d8",
+      "size": 14224,
       "mode": "100644"
     },
     {
@@ -95,8 +95,8 @@
     },
     {
       "path": "Sources/WeappContainer/HostBackendError.swift",
-      "sha256": "cbb0c77e688afa00b04a500833dd1fdfb4dcc953200dddae4d8beb1a9e24d24c",
-      "size": 2480,
+      "sha256": "dfb9d15917eed45df6947a16f65f9e1aa53fb9d80facf6a2cb084b1b05553806",
+      "size": 2506,
       "mode": "100644"
     },
     {
@@ -317,8 +317,8 @@
     },
     {
       "path": "test/HostBackendErrorTests.swift",
-      "sha256": "f10144a0dfedab4c20bb66a98715cb061931f5c555a4b2be72dd1d366cc1c56a",
-      "size": 8872,
+      "sha256": "659a859e8bb29f2a5a4056730b050456e27c3e29b9a32cdc8fb69a296fa4f3d0",
+      "size": 9672,
       "mode": "100644"
     },
     {

@@ -84,6 +84,17 @@ import Foundation
                 precondition(error["details"]["providerId"] == .string("identity-provider"))
             }
         }
+        for code in ["unsupported_capability", "ERR_UNSUPPORTED_CAPABILITY"] {
+            let backend = WeappHostBackendError(try decode("""
+                {"error":{"code":"\(code)","message":"Runtime capability unavailable",
+                    "errCode":4017,"errMsg":"login:fail provider original","capability":"identity"}}
+                """))
+            let error = try serialized(backend.project(api: "wx.login"))
+            precondition(error["code"] == .string("unsupported"), "\(code) lost the core unsupported classification")
+            precondition(error["details"]["errCode"] == .number(4017))
+            precondition(error["details"]["errMsg"] == .string("login:fail provider original"))
+            precondition(error["details"]["capability"] == .string("identity"))
+        }
         for alias in ["consent_required", "invalid_host_session", "invalid_app_session", "host_identity_mismatch", "stale_principal"] {
             for code in [alias, "ERR_" + alias.uppercased()] {
                 let error = WeappHostBackendError(.object(["error": .string(code)])).project(api: "wx.login")
