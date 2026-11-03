@@ -112,6 +112,8 @@ public struct WeappContainerConfiguration: Sendable {
     public var devDiagnostics: Bool
     /// Opt in before native creation; complete host layouts become mandatory.
     public var atomicHostLayout: Bool = false
+    /// Enable only when the embedding host paints dynamic system tab chrome.
+    public var systemTabBar: Bool = false
     public init(storageKey: String, storageRoot: URL? = nil, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false) {
         self.storage = .persistent(key: storageKey, root: storageRoot); self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics
     }

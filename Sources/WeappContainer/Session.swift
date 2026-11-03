@@ -569,6 +569,7 @@ import WeappContainerNative
         config["managedFilesRoot"] = .string(managedRoot.path)
         if let required = configuration.gpuRequired { config["gpuRequired"] = .bool(required) }
         if configuration.devDiagnostics { config["devDiagnostics"] = .bool(true) }
+        if configuration.systemTabBar { config["systemTabBar"] = .bool(true) }
         if configuration.atomicHostLayout { config["hostLayout"] = .object(["protocolVersion": .string("1.0"), "atomic": .bool(true)]) }
         if let hostServicesConfig { config["hostServices"] = .object(hostServicesConfig) }
         if case .persistent(let key, let suppliedRoot) = configuration.storage {
