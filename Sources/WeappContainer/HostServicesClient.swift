@@ -46,9 +46,7 @@ private final class HostServicesNoRedirect: NSObject, URLSessionTaskDelegate, @u
         }
         let value = try JSONDecoder().decode(WeappJSON.self, from: data)
         guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
-            let reason = value["error"].string ?? "host_services_error"
-            throw WeappHostError(code: ["consent_required", "invalid_host_session", "invalid_app_session", "host_identity_mismatch", "stale_principal"].contains(reason) ? .permissionDenied : .invalidRequest,
-                message: value["message"].string ?? "Host services request failed", details: ["backendCode": .string(reason)])
+            throw WeappHostBackendError(value).project(api: call.method)
         }
         try Task.checkCancellation(); return value
     }

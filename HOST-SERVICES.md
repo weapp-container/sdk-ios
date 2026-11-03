@@ -116,6 +116,16 @@ try identity.install(in: session)
 // 配置和安装完成后再 load。
 ```
 
+后端错误将容器分类 `code/message` 与公开 API 字段分开处理。`code/message`
+只接受非空字符串；公开字段按 envelope、envelope.details、error.details、error
+的顺序合并，后来的非 null 值覆盖前值，排除结构键 `code/message/error/details`。
+原始 `errCode/errMsg` 和扩展字段保留到 `WeappHostError.details`；缺失的 errCode
+及缺失、空白或非字符串的 errMsg 才使用适配器默认值。五种 canonical 分类及对应
+大写 `ERR_*` 保留类型化类别；consent/session 身份错误归为 permission_denied，
+未知错误归为 invalid_request。iOS 既有的 `backendCode` 字段仍在缺失时补入原始
+分类字符串，不覆盖服务返回的公开字段。运行 `npm run test:host-backend-error`
+可实际执行 Swift 解析与 JSON codec 回归；它不代表原生 Session/JS 或设备验收。
+
 应用后端用独立 confidential client 兑换短时、单次且绑定 app/pack 的 code。
 小程序得不到宿主 bearer 和应用后端密钥。手机号与昵称头像分别提示和授权。
 原生提示先从可信后端取得授权政策，展示登记 purpose，并在授权和 code 中绑定
