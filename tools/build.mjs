@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { distributionOptions } from './distribution-identity.mjs';
 import { verifySourceInventory } from './source-inventory.mjs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -10,12 +11,13 @@ import { copyVerifiedTree, option, readNative, readNotices, requireNativeRoot, s
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const reviewedSource = verifySourceInventory(root);
 const args = process.argv.slice(2);
+const expectedDistribution = distributionOptions(args);
 if (process.platform !== 'darwin') throw new Error('XCFramework assembly requires macOS and Xcode');
 const native = requireNativeRoot(args);
 const licenses = resolve(option(args, '--licenses-root', resolve(native, '../licenses')));
 const out = resolve(option(args, '--out', resolve(root, 'artifacts/ios')));
 const targets = ['aarch64-apple-ios', 'aarch64-apple-ios-sim', 'x86_64-apple-ios'];
-const inputs = targets.map(target => ({ ...readNative(native, target, ['libweapp_container_sdk.a']), ...readNotices(native, licenses, target) }));
+const inputs = targets.map(target => ({ ...readNative(native, target, ['libweapp_container_sdk.a'], expectedDistribution), ...readNotices(native, licenses, target) }));
 const packageRoot = resolve(out, 'WeappContainer');
 const work = resolve(out, `.packaging-${process.pid}`);
 if (existsSync(work)) throw new Error(`Packaging directory already exists: ${work}`);
@@ -28,7 +30,7 @@ function run(command, argv) {
   if (result.error || result.status !== 0) throw new Error(`${command} failed: ${result.error?.message || result.status}`);
 }
 const receipt = {
-  schemaVersion: 1, sdkVersion: SDK_VERSION, status: 'building', profile: 'release',
+  schemaVersion: 1, sdkVersion: SDK_VERSION, ...expectedDistribution, status: 'building', profile: 'release',
   ...sourceProvenance(root), sourceInventorySha256: reviewedSource.inventorySha256, minimumIOS: '16.0',
   startedAt: new Date().toISOString(), targets, native: inputs.map(input => nativeIdentity(input.receipt)), artifacts: [],
 };
