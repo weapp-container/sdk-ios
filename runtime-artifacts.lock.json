@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "0.1.0-preview.6.0",
+  "abiVersion": 1,
+  "source": {
+    "repository": "weapp-container/runtime-artifacts",
+    "releaseTag": "runtime-v0.1.0-preview.6.0"
+  },
+  "artifacts": [
+    {
+      "component": "runtime",
+      "platform": "ios",
+      "arch": "arm64-device",
+      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-device.tar.gz",
+      "size": 22595261,
+      "sha256": "d216e467bf6de5f462bc616f8c5a99f47dcd655edc34164b1ccaf14f35ff36be"
+    },
+    {
+      "component": "runtime",
+      "platform": "ios",
+      "arch": "arm64-simulator",
+      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-simulator.tar.gz",
+      "size": 22604793,
+      "sha256": "bcc0128f344843426fa7b217c1239d7ab5c09e31960543102ed0899362871ecd"
+    },
+    {
+      "component": "runtime",
+      "platform": "ios",
+      "arch": "x86_64-simulator",
+      "fileName": "runtime-0.1.0-preview.6.0-ios-x86_64-simulator.tar.gz",
+      "size": 22886438,
+      "sha256": "0682277914747fc1e814551cef51ea702ad1215288baaa44e7ab13ddd5a35a0d"
+    }
+  ]
+}

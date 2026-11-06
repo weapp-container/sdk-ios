@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.1.0-preview.6.0",
+  "date": "2026-11-02",
+  "status": "passed",
+  "scope": "Full native iOS16 Simulator Swift module and native reference sample typecheck, with host-executed pure payload boundary tests; no linked/device application claim",
+  "target": "arm64-apple-ios16.0-simulator",
+  "xcode": "Xcode 27.2\nBuild version 27B52",
+  "swift": "Apple Swift version 6.4.2 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)\nTarget: arm64-apple-macosx27.0.0",
+  "checks": [
+    "All current production Swift sources emitted with actual official payment headers, no diagnostics",
+    "ReferenceHostServices.swift typechecked against emitted module, no diagnostics",
+    "Host Swift executable validated bounded binary payloads, calendar ranges and challenge/signature rejection"
+  ],
+  "sources": [
+    {
+      "path": "Sources/WeappContainer/AppPayments.swift",
+      "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91"
+    },
+    {
+      "path": "Sources/WeappContainer/AppPermissionConsent.swift",
+      "sha256": "c1d98c951a712eeed087ac7c0c8384aec2aff49c64082c2fcaad5d592340432e"
+    },
+    {
+      "path": "Sources/WeappContainer/BluetoothApis.swift",
+      "sha256": "bc44718d58569a1226fea55f49b7652673c64b097e5cb3a4d07df41651e7bd6b"
+    },
+    {
+      "path": "Sources/WeappContainer/DeviceApis.swift",
+      "sha256": "048531c51c9c6af704aeb240beabc7f1969f4e781a390d301e05302290b6c254"
+    },
+    {
+      "path": "Sources/WeappContainer/HostServicesClient.swift",
+      "sha256": "fb245039236ac276367fb2df25b0002eac93f17fa9f7ef8d0caee771d2b51263"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFileScope.swift",
+      "sha256": "6520899422290970ae4f5afec47e8bc72a20c0750e2211d44fa6724a97f54e33"
+    },
+    {
+      "path": "Sources/WeappContainer/ManagedFiles.swift",
+      "sha256": "b6a6b6df8506c1604165ad45e1afa8503262a4248711a60c37c4488fd44caa22"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeDeviceServices.swift",
+      "sha256": "b50f95dac1c891a48a4e05254f7b5edaa9c0f7d3688230a61a9be56647250d72"
+    },
+    {
+      "path": "Sources/WeappContainer/NativeMedia.swift",
+      "sha256": "33b3bc73fd448e4f6c60c45d2a288d328eea145680d958556d9b05551ab60098"
+    },
+    {
+      "path": "Sources/WeappContainer/NetworkApis.swift",
+      "sha256": "f68cff6054d29057a533d5d1e602fa236e09a87909f6f78033bbef6553ac73cb"
+    },
+    {
+      "path": "Sources/WeappContainer/PresentationInputQueue.swift",
+      "sha256": "b28d3a08692929daf768f6ca33f5c2b3f5740bd0535bf6389653ac638b36f6d0"
+    },
+    {
+      "path": "Sources/WeappContainer/RecorderApis.swift",
+      "sha256": "90bfc38bd7233894260c84b3830c37e3381c354d4476d2baf76a628b4a0a8417"
+    },
+    {
+      "path": "Sources/WeappContainer/Session.swift",
+      "sha256": "fdb3e40ef23b6c873eeeeb9199a464eeb2e57d78739bea9714a5d5a9e1d96885"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApiPayloads.swift",
+      "sha256": "de4ebd06288f0df51b22f8724b5c84c404fead51ae2d45f756bdb91027cc013b"
+    },
+    {
+      "path": "Sources/WeappContainer/SystemApis.swift",
+      "sha256": "a512e997a6ff80571f1ff4372ad662a2f15d52f14cb87aa987e24660f106abd2"
+    },
+    {
+      "path": "Sources/WeappContainer/Types.swift",
+      "sha256": "e43bd927e5313336c18848fb78ab426a503248b039d37a97f72893c09771fa54"
+    },
+    {
+      "path": "Sources/WeappContainer/View.swift",
+      "sha256": "a9201f89439805250ab2b7ee6e595809889957a858df91d2da2efd2e08d686cf"
+    },
+    {
+      "path": "examples/host-services/ReferenceHostServices.swift",
+      "sha256": "b1d71e3700da15c2d7cae63d81205b4c0371e5b150705d1baf04f844cd27c040"
+    },
+    {
+      "path": "test/SystemApiPayloadTests.swift",
+      "sha256": "805252e725df321498c91ae371a58839d9bbb8a249168adeafb5babac439d27f"
+    },
+    {
+      "path": "tools/test-system-api-payloads.mjs",
+      "sha256": "c28511c5bf5b146cd299ce48a907d1a7241df280677ed3ce9dfe732a287ef6c4"
+    }
+  ],
+  "officialHeaderPackages": [
+    {
+      "name": "wechat",
+      "source": "https://dldir1.qq.com/WechatWebDev/opensdk/cocoapods/OpenSDK2.0.9.zip",
+      "archiveSha256": "f40037787bb9ca8742d90b945cc82163bb123e156f9330316dd5df43782d351d"
+    },
+    {
+      "name": "alipay",
+      "source": "https://mdn.alipayobjects.com/mobilecashier_res/afts/file/lEoLQ64WOGAAAAAAAAAAAAAADnW6AQBr",
+      "archiveSha256": "9391ce3555c86321d19a67eaf6b8a04702582476a90e19e3b75e141a33d98e70"
+    }
+  ],
+  "compileLogSha256": [
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "externalArtifacts": {
+    "directory": "/var/folders/nc/lnt357c50gdcwqlvymm9jn040000gn/T/weapp-host-services-swift-system-stable-qlo8apu7",
+    "commandsSha256": "4477263b83a04a4a74c06e1398de2bb42ef56ad58664dfd27ee1ff9b66c5d925"
+  },
+  "limitations": [
+    "No iOS native binary linked or simulator/device application launched in this check",
+    "No native contacts/calendar editor, QR camera/photo recognition, NFC tag, microphone or biometric interaction acceptance",
+    "No native HTTP/WebSocket runtime or production TLS endpoint test",
+    "SOTER requires real host attestation provider; ordinary LocalAuthentication success is not a signature",
+    "No official payment wallet or merchant transaction performed"
+  ]
+}
