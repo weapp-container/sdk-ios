@@ -14,6 +14,7 @@ import XCTest
         let initial = try wait { $0["loaded"] as? Bool == true && ($0["completedFrames"] as? Int ?? 0) > 0 && $0["hostResult"] != nil && $0["geometry"] != nil && $0["secondLoaded"] as? Bool == true && ($0["secondCompletedFrames"] as? Int ?? 0) > 0 }
         XCTAssertEqual(initial["singleViewRejected"] as? Bool, true)
         XCTAssertEqual(initial["unmeasuredObservationRejected"] as? Bool, true)
+        XCTAssertEqual(initial["capturePreservedState"] as? Bool, true)
         XCTAssertEqual((initial["stateAfterPresentation"] as? [String: Any])?["presentationRequired"] as? Bool, true)
         XCTAssertEqual((initial["stateAfterPresentation"] as? [String: Any])?["inputEnabled"] as? Bool, true)
         XCTAssertEqual((initial["secondStateAfterPresentation"] as? [String: Any])?["inputEnabled"] as? Bool, true)
@@ -111,6 +112,8 @@ import XCTest
     private func assertWindowMetrics(_ facts: [String: Any], snapshot: String, file: StaticString = #filePath, line: UInt = #line) throws {
         let observed = try XCTUnwrap(facts[snapshot] as? [String: Any], file: file, line: line)
         let native = try XCTUnwrap(facts[snapshot + "NativeWindow"] as? [String: Any], file: file, line: line)
+        let captured = try XCTUnwrap(facts[snapshot + "CapturedWindow"] as? [String: Any], file: file, line: line)
+        XCTAssertEqual(captured as NSDictionary, native as NSDictionary, "Passive capture must match the independent UIKit witness", file: file, line: line)
         for field in ["windowWidth", "windowHeight", "pixelRatio", "screenWidth", "screenHeight", "screenTop", "statusBarHeight"] {
             XCTAssertEqual(try XCTUnwrap(observed[field] as? Double), try XCTUnwrap(native[field] as? Double), accuracy: 0.000001, "\(snapshot).\(field)", file: file, line: line)
         }

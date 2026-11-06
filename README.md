@@ -96,6 +96,8 @@ func makeContainer(packURL: URL) throws -> WeappContainerViewController {
 
 SwiftUI：创建并持有一个 `WeappContainerView(session:)`，使用 `WeappContainerRepresentable(view:)` 放入界面，宿主继续负责会话生命周期。完整挂载和重绑行为见 [嵌入说明](docs/EMBEDDING.md)。
 
+`view.captureWindowMetrics()` 在主线程同步读取当前窗口尺寸、DPR、屏幕固定坐标 safe area 和 scene 方向；未取得有效布局或视图正在解绑、已解绑/关闭时返回 `nil`。它不创建运行时或推进布局身份，不能代替布局权限校验。折叠、旋转和多窗口变化按真实窗口观测处理，详见 [窗口信息契约](docs/window-metrics.md)。
+
 ## 4. 通信与导航
 
 所有会话和视图 API 在 `MainActor` 上使用：

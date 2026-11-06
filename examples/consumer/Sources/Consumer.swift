@@ -107,6 +107,16 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             facts["completedFrames"] = .number(Double(v.presentedFrameCount))
             facts["stateAfterPresentation"] = try? s.state()
             facts["capabilitiesAfterPresentation"] = try? s.capabilities()
+            if facts["capturePreservedState"] == nil {
+                do {
+                    let before = try s.state()
+                    guard let captured = v.captureWindowMetrics(), captured == nativeWindowWitness(v),
+                          try s.state() == before else {
+                        throw WeappContainerError(code: "ERR_TEST", message: "Passive UIKit capture changed runtime state or disagreed with the independent window witness")
+                    }
+                    facts["capturePreservedState"] = .bool(true)
+                } catch { fail(error) }
+            }
             // Geometry is valid only after this revision has actually been
             // presented. Loading and resizing may still be awaiting Metal.
             if facts["geometry"] == nil, facts["stateAfterPresentation"]?["inputEnabled"].bool == true {
@@ -122,6 +132,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
                 if let type = message["kind"].string { facts[type] = message }
                 if let type = message["kind"].string, ["initial", "resize", "geometry"].contains(type) {
                     facts[type + "NativeWindow"] = nativeWindowWitness(v)
+                    facts[type + "CapturedWindow"] = v.captureWindowMetrics()
                 }
                 if message["kind"].string == "hiddenDone" {
                     if featurePaused {
@@ -262,6 +273,9 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
         let unmeasured = WeappContainerSession(configuration: .init(storage: .memoryOnly))
         let view = try WeappContainerView(session: unmeasured)
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200); view.layoutIfNeeded()
+        guard view.captureWindowMetrics() == nil else {
+            throw WeappContainerError(code: "ERR_TEST", message: "An unattached view invented passive window metrics")
+        }
         let pending = Task { try await unmeasured.prepareView() }
         try await Task.sleep(nanoseconds: 30_000_000)
         do {
@@ -274,6 +288,9 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             throw WeappContainerError(code: "ERR_TEST", message: "An unmeasured prepareView unexpectedly completed")
         } catch is CancellationError {}
         try await view.close()
+        guard view.captureWindowMetrics() == nil else {
+            throw WeappContainerError(code: "ERR_TEST", message: "A detached view still exposed passive window metrics")
+        }
         facts["unmeasuredObservationRejected"] = .bool(true)
     }
     /// Independent UIKit witness for the public JS snapshot. Deliberately uses

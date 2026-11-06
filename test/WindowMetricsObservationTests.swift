@@ -32,6 +32,12 @@ import CoreGraphics
         check(landscape.payload["deviceOrientation"].string == "landscape", "Use actual orientation, independent of viewport")
         let widePortrait = observe(screen: CGSize(width: 1200, height: 800))!
         check(widePortrait.payload["deviceOrientation"].string == "portrait", "Natural display aspect cannot infer interface orientation")
+        let squareLandscape = observe(viewport: CGSize(width: 780, height: 780), scale: 2,
+                                      screen: CGSize(width: 780, height: 780), bar: 0,
+                                      safe: CGRect(x: 0, y: 0, width: 780, height: 760), orientation: .landscape)!
+        check(squareLandscape.payload["deviceOrientation"].string == "landscape", "Square screens retain the resolved scene orientation")
+        check(squareLandscape.payload["pixelRatio"].number == 2, "Changed display density is observed without scaling logical geometry")
+        check(squareLandscape.payload["safeArea"]["height"].number == 760, "Current display safe region survives square viewports")
         check(observe(bar: 0) != nil, "An observed absent/hidden status bar is valid")
         check(observe(safe: nil)!.payload["safeArea"] == .null, "Omit missing safe observation")
         let offsetSafe = observe(safe: CGRect(x: -0.125, y: 10.25, width: 200.5, height: 300.75))!.payload["safeArea"]

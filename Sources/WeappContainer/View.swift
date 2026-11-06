@@ -232,6 +232,13 @@ import WeappContainerNative
         surface.layer.device = nil
     }
     public func close() async throws { try await session.close(); try await detach() }
+    /// Read current UIKit geometry without creating a runtime, advancing a layout
+    /// observation, changing presentation state or extending a measurement lease.
+    /// This is geometry evidence only; it does not authorize a layout or input.
+    public func captureWindowMetrics() -> WeappJSON? {
+        guard !detaching, !detached, !session.isClosed else { return nil }
+        return WindowMetricsObservation(view: self)?.payload
+    }
     public override var isHidden: Bool { didSet { if surface != nil { synchronizeActivity() } } }
     public override var alpha: CGFloat { didSet { if surface != nil { synchronizeActivity() } } }
     public override func didMoveToSuperview() { super.didMoveToSuperview(); if surface != nil { synchronizeActivity() } }

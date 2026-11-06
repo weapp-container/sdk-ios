@@ -96,6 +96,8 @@ func makeContainer(packURL: URL) throws -> WeappContainerViewController {
 
 SwiftUI: create and retain a `WeappContainerView(session:)` and display it through `WeappContainerRepresentable(view:)`. The host owns the session lifetime. See the [embedding guide](docs/EMBEDDING.md) for mounting and reattachment details.
 
+`view.captureWindowMetrics()` synchronously reads current window extents, DPR, safe area in the screen's fixed coordinate space, and resolved scene orientation on the main actor. It returns `nil` without valid layout or while detaching/after detach or close. It does not create a runtime or advance layout identity, and does not replace layout authorization checks. Folding, rotation, and window changes follow real measurements; see the [window metrics contract](docs/window-metrics.md).
+
 ## 4. Messaging and navigation
 
 Use all session and view APIs on the `MainActor`:

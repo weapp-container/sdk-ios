@@ -28,6 +28,16 @@ A scene with no associated manager has no scene status bar and contributes zero.
 A missing scene, unknown interface orientation or invalid mandatory observation
 cannot seed a runtime owner or resume its surface.
 
+`WeappContainerView.captureWindowMetrics()` synchronously reads this same UIKit
+geometry on the main actor. It returns `nil` until a complete valid measurement
+is available, and while detaching or after detach/close. It neither lays out the
+view nor creates or updates a runtime, advances an observation, drains events,
+acknowledges a frame, or extends a measurement lease. Its result is geometry
+evidence, not authorization to apply a layout or enable input. Framework adapters
+must still validate the current owner, page, surface and observation identities.
+Flutter uses this API rather than deriving a second safe-area or orientation
+algorithm. Its paired iOS SDK archive must include this additive Swift API.
+
 Window changes invalidate the wrapper's retained metrics before a new load or
 owner can use them. Scene geometry KVO, native safe-area and trait changes,
 layout, scene activity, and the existing independent session pump retry actual
