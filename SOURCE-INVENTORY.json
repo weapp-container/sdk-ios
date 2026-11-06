@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceFilesSha256": "b632b9945f6eb1f9a0601c921acb0387e8f5686a72f33029f980cf29ce70a136",
-  "review": "Review versioned surface-local host layout sampling, trait scale, same-size input/presentation retirement, independent UIKit consumer comparison and bilingual usage docs for iPhone Duo.",
+  "sourceFilesSha256": "2e52c49ce70bea825b99d3993b07d62942a04ff0b704c8a28a95ab63280faee2",
+  "review": "Pin the exact hostLayout-aware full iOS runtime archives from clean core e2a091b with the central native geometry projection fix; preserve other platform release identities.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -317,8 +317,8 @@
     },
     {
       "path": "runtime-artifacts.lock.json",
-      "sha256": "09f97cee16ee25ce30ea00e0a0f39d2819741f01fb97d88ffbd9816033cbeda9",
-      "size": 1162,
+      "sha256": "05d510eb2104ce3643c5c952db4dd007250bbce6761564a8c6115b594dadcd66",
+      "size": 1168,
       "mode": "100644"
     },
     {
