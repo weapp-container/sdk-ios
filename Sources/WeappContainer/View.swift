@@ -198,6 +198,13 @@ import WeappContainerNative
         let displayLink = CADisplayLink(target: target, selector: #selector(DisplayTarget.tick))
         displayLink.preferredFramesPerSecond = 60; displayLink.isPaused = true
         displayLink.add(to: .main, forMode: .common); link = displayLink
+        if #available(iOS 27.1, *) {
+            registerForTraitChanges(UITraitCollection.systemTraitsAffectingVerticalBarEdge) {
+                (view: WeappContainerView, _: UITraitCollection) in
+                guard !view.detached, !view.detaching else { return }
+                view.invalidateMetrics(); view.setNeedsLayout()
+            }
+        }
         appActive = UIApplication.shared.applicationState == .active
         notifications = [UIApplication.didBecomeActiveNotification, UIApplication.willResignActiveNotification,
                          UIApplication.didEnterBackgroundNotification, UIScene.didActivateNotification,
@@ -279,6 +286,9 @@ import WeappContainerNative
             return
         }
         guard observation.payload != observedMetrics else { return }
+        // A region/rail change can leave width and height untouched. Retire
+        // touches and queued Metal receipts for every complete snapshot change.
+        retireInput(); surface.invalidate()
         let scale = observation.pixelRatio
         let pixels = CGSize(width: observation.viewport.width * scale, height: observation.viewport.height * scale)
         if surface.layer.drawableSize != pixels || surface.layer.contentsScale != scale {

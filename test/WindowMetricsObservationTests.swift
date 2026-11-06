@@ -10,10 +10,11 @@ import CoreGraphics
                         scale: CGFloat = 3, screen: CGSize = CGSize(width: 393.25, height: 852.375),
                         bar: CGFloat = 59.25, top: CGFloat = 83.5,
                         safe: CGRect? = CGRect(x: 0.125, y: 59.25, width: 393.125, height: 759.125),
-                        orientation: WindowMetricsObservation.Orientation? = .portrait) -> WindowMetricsObservation? {
+                        orientation: WindowMetricsObservation.Orientation? = .portrait,
+                        layout: HostLayoutObservation? = nil) -> WindowMetricsObservation? {
         WindowMetricsObservation(viewport: viewport, pixelRatio: scale, screen: screen,
                                  statusBarHeight: bar, screenTop: top,
-                                 safeAreaInPortrait: safe, orientation: orientation)
+                                 safeAreaInPortrait: safe, orientation: orientation, hostLayout: layout)
     }
     static func main() {
         let embedded = observe()!
@@ -55,6 +56,34 @@ import CoreGraphics
         check(observe(top: .infinity) == nil, "Reject unavailable screen location")
         check(observe(orientation: nil) == nil, "Unknown orientation must not be guessed from screen aspect")
         check(observe(viewport: CGSize(width: 0.1, height: 0.1))!.viewport == CGSize(width: 1, height: 1), "Positive subpixel viewport remains representable")
+        let rail = HostLayoutObservation(safeInsets: .init(top: 0, right: 84, bottom: 34, left: 0),
+                                         verticalBarEdge: .right, reservedRegions: [
+            .init(id: "camera", kind: "occlusion", frame: CGRect(x: 170, y: 0, width: 20.5, height: 50)),
+            .init(id: "fold", kind: "division", frame: CGRect(x: 90, y: 0, width: 10, height: 646.25))
+        ])
+        let full = observe(layout: rail)!
+        check(full.viewport == embedded.viewport, "A rail does not crop the rendering viewport")
+        check(full.payload["safeArea"] == safe, "Surface-local layout cannot rebase fixed-screen safeArea")
+        check(full.payload["hostLayout"]["version"].number == 1, "Version the optional layout extension")
+        check(full.payload["hostLayout"]["verticalBarEdge"].string == "right", "Preserve measured physical rail edge")
+        check(full.payload["hostLayout"]["safeInsets"]["right"].number == 84, "Keep measured safe margins")
+        check(full.payload["hostLayout"]["reservedRegions"].array?.count == 2, "Deliver active clipped regions")
+        check(embedded.payload["hostLayout"] == .null, "Missing extension clears the layout rather than copying an old one")
+        let inactiveFold = HostLayoutObservation(safeInsets: rail.safeInsets, verticalBarEdge: .right, reservedRegions: [])
+        check(observe(layout: inactiveFold)!.payload != full.payload, "Same-size fold-region changes produce distinct complete snapshots")
+        for insets in [HostLayoutObservation.Insets(top: -1, right: 0, bottom: 0, left: 0),
+                       .init(top: 0, right: .infinity, bottom: 0, left: 0),
+                       .init(top: 647, right: 0, bottom: 0, left: 0)] {
+            check(observe(layout: .init(safeInsets: insets, verticalBarEdge: .none, reservedRegions: [])) == nil,
+                  "Reject invalid safe content geometry before advancing native owner")
+        }
+        for region in [HostLayoutObservation.Region(id: "", kind: "occlusion", frame: CGRect(x: 0, y: 0, width: 1, height: 1)),
+                       .init(id: "x", kind: "unknown", frame: CGRect(x: 0, y: 0, width: 1, height: 1)),
+                       .init(id: "x", kind: "division", frame: CGRect(x: -1, y: 0, width: 1, height: 1)),
+                       .init(id: "x", kind: "division", frame: CGRect(x: 0, y: 0, width: 500, height: 1))] {
+            check(observe(layout: .init(safeInsets: rail.safeInsets, verticalBarEdge: .none, reservedRegions: [region])) == nil,
+                  "Reject invalid/out-of-surface reserved regions")
+        }
         print("Window metrics boundaries passed (\(assertions) assertions). UIKit conversion and JS delivery require the independent simulator consumer.")
     }
 }

@@ -294,8 +294,9 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
         facts["unmeasuredObservationRejected"] = .bool(true)
     }
     /// Independent UIKit witness for the public JS snapshot. Deliberately uses
-    /// window insets and fixed-space conversion, rather than SDK helpers or the
-    /// mini-program view's inherited/clipped safeAreaInsets.
+    /// window insets and inverse fixed-space conversion for legacy safeArea,
+    /// and separate actual-surface traits/regions for the local extension.
+    /// It deliberately does not call the SDK sampler or its value helpers.
     private func nativeWindowWitness(_ surface: UIView) -> WeappJSON {
         guard let window = surface.window, let scene = window.windowScene else { return .null }
         let screen = scene.screen, insets = window.safeAreaInsets
@@ -303,15 +304,55 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
                                 width: window.bounds.width - insets.left - insets.right,
                                 height: window.bounds.height - insets.top - insets.bottom)
         let safe = screen.fixedCoordinateSpace.convert(windowSafe, from: window)
+        let local = surface.safeAreaInsets
+        var physicalEdge = "none"
+        var regions: [WeappJSON] = []
+        if #available(iOS 27.1, *) {
+            let direction = surface.effectiveUserInterfaceLayoutDirection
+            switch surface.traitCollection.verticalBarEdge {
+            case .leading: physicalEdge = direction == .rightToLeft ? "right" : "left"
+            case .trailing: physicalEdge = direction == .rightToLeft ? "left" : "right"
+            case .unspecified: break
+            @unknown default: break
+            }
+            for (kind, name) in [(UIView.ReservedRegion.Kind.division, "division"), (.occlusion, "occlusion")] {
+                var frames: [CGRect] = []
+                for item in surface.reservedRegions(kind: kind) {
+                    if !item.isActive { continue }
+                    let clipped = surface.bounds.intersection(item.frame)
+                    if !clipped.isNull && !clipped.isEmpty {
+                        frames.append(CGRect(x: clipped.minX - surface.bounds.minX, y: clipped.minY - surface.bounds.minY,
+                                             width: clipped.width, height: clipped.height))
+                    }
+                }
+                frames.sort { a, b in
+                    let first = [a.minX, a.minY, a.width, a.height]
+                    let second = [b.minX, b.minY, b.width, b.height]
+                    return first.lexicographicallyPrecedes(second)
+                }
+                for (index, frame) in frames.enumerated() {
+                    regions.append(.object(["id": .string("\(name):\(index)"), "kind": .string(name),
+                                            "x": .number(Double(frame.minX)), "y": .number(Double(frame.minY)),
+                                            "width": .number(Double(frame.width)), "height": .number(Double(frame.height))]))
+                }
+            }
+            regions.sort { $0["id"].string! < $1["id"].string! }
+        }
         return .object([
             "windowWidth": .number(Double(max(1, surface.bounds.width.rounded()))),
             "windowHeight": .number(Double(max(1, surface.bounds.height.rounded()))),
-            "pixelRatio": .number(Double(screen.scale)),
+            "pixelRatio": .number(Double(surface.traitCollection.displayScale)),
             "screenWidth": .number(Double(screen.bounds.width.rounded())),
             "screenHeight": .number(Double(screen.bounds.height.rounded())),
             "statusBarHeight": .number(Double(scene.statusBarManager?.statusBarFrame.height ?? 0)),
             "screenTop": .number(Double(screen.coordinateSpace.convert(surface.bounds, from: surface).minY)),
             "deviceOrientation": .string(scene.effectiveGeometry.interfaceOrientation.isLandscape ? "landscape" : "portrait"),
+            "hostLayout": .object([
+                "version": .number(1),
+                "safeInsets": .object(["top": .number(Double(local.top)), "right": .number(Double(local.right)),
+                                       "bottom": .number(Double(local.bottom)), "left": .number(Double(local.left))]),
+                "verticalBarEdge": .string(physicalEdge), "reservedRegions": .array(regions)
+            ]),
             "safeArea": .object(["left": .number(Double(safe.minX)), "right": .number(Double(safe.maxX)),
                                  "top": .number(Double(safe.minY)), "bottom": .number(Double(safe.maxY)),
                                  "width": .number(Double(safe.width)), "height": .number(Double(safe.height))])

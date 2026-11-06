@@ -96,7 +96,11 @@ func makeContainer(packURL: URL) throws -> WeappContainerViewController {
 
 SwiftUI: create and retain a `WeappContainerView(session:)` and display it through `WeappContainerRepresentable(view:)`. The host owns the session lifetime. See the [embedding guide](docs/EMBEDDING.md) for mounting and reattachment details.
 
-`view.captureWindowMetrics()` synchronously reads current window extents, DPR, safe area in the screen's fixed coordinate space, and resolved scene orientation on the main actor. It returns `nil` without valid layout or while detaching/after detach or close. It does not create a runtime or advance layout identity, and does not replace layout authorization checks. Folding, rotation, and window changes follow real measurements; see the [window metrics contract](docs/window-metrics.md).
+`view.captureWindowMetrics()` synchronously reads a complete snapshot on the main actor: actual View bounds, trait DPR, fixed-screen `safeArea`, resolved scene orientation, and surface-local `hostLayout`. It returns `nil` without valid layout or while detaching/after detach or close. Reading neither creates a runtime nor advances layout identity, and grants no presentation or input authority.
+
+Let the rendering View fill the actual window. The mini-program reads `wx.getWindowInfo().hostLayout` to protect controls against safe margins, occlusions, and active fold regions while its background reaches the edges. `verticalBarEdge` resolves the system trait into physical `left` / `right` / `none`. iOS 27.1+ uses active UIKit reserved regions; older systems retain safe-inset fallback and the minimum stays iOS 16. Business navigation, back, and close can live in the guest safe tool area, with a message requesting host closure; host error UI replaces the inactive guest. Avoid cropping the whole rendering View to its safe area.
+
+Folding, rotation, and same-size region changes submit complete snapshots, preserving the session and waiting for the new frame before interaction resumes. The container extensions `wx.onHostLayoutChange/offHostLayoutChange` report local layout changes; `wx.onResize` continues to report size changes only. See the [window metrics contract](docs/window-metrics.md).
 
 ## 4. Messaging and navigation
 

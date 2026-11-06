@@ -118,6 +118,10 @@ import XCTest
             XCTAssertEqual(try XCTUnwrap(observed[field] as? Double), try XCTUnwrap(native[field] as? Double), accuracy: 0.000001, "\(snapshot).\(field)", file: file, line: line)
         }
         XCTAssertEqual(observed["deviceOrientation"] as? String, native["deviceOrientation"] as? String, file: file, line: line)
+        let layout = try XCTUnwrap(observed["hostLayout"] as? [String: Any], file: file, line: line)
+        let nativeLayout = try XCTUnwrap(native["hostLayout"] as? [String: Any], file: file, line: line)
+        XCTAssertEqual(layout as NSDictionary, nativeLayout as NSDictionary,
+                       "Complete surface-local traits and active regions must reach JS unchanged", file: file, line: line)
         let safe = try XCTUnwrap(observed["safeArea"] as? [String: Any], file: file, line: line)
         let nativeSafe = try XCTUnwrap(native["safeArea"] as? [String: Any], file: file, line: line)
         for field in ["left", "right", "top", "bottom", "width", "height"] {

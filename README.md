@@ -96,7 +96,11 @@ func makeContainer(packURL: URL) throws -> WeappContainerViewController {
 
 SwiftUI：创建并持有一个 `WeappContainerView(session:)`，使用 `WeappContainerRepresentable(view:)` 放入界面，宿主继续负责会话生命周期。完整挂载和重绑行为见 [嵌入说明](docs/EMBEDDING.md)。
 
-`view.captureWindowMetrics()` 在主线程同步读取当前窗口尺寸、DPR、屏幕固定坐标 safe area 和 scene 方向；未取得有效布局或视图正在解绑、已解绑/关闭时返回 `nil`。它不创建运行时或推进布局身份，不能代替布局权限校验。折叠、旋转和多窗口变化按真实窗口观测处理，详见 [窗口信息契约](docs/window-metrics.md)。
+`view.captureWindowMetrics()` 在主线程同步读取完整窗口快照，包含实际 View 尺寸、trait DPR、屏幕固定坐标 `safeArea`、scene 方向，以及 View 局部坐标的 `hostLayout`。未取得有效布局或视图正在解绑、已解绑/关闭时返回 `nil`；读取不创建运行时、不推进布局身份，也不授予呈现或输入权限。
+
+让容器 View 铺满需要渲染的实际窗口，背景可延伸到边缘。小程序通过 `wx.getWindowInfo().hostLayout` 独立避让安全边距、遮挡和有效折叠区域；`verticalBarEdge` 是系统 trait 解析后的物理 `left` / `right` / `none`。iOS 27.1+ 使用 UIKit 的活动保留区域，旧系统使用安全边距兼容路径，最低版本仍为 iOS 16。业务导航、返回和关闭可以放在小程序的安全工具区，由消息通道请求宿主关闭；宿主错误页则在停止交互后替换容器。避免把整张渲染 View 再裁到安全区。
+
+折叠、旋转及同尺寸布局区域变化都提交完整快照，保留会话并等待新画面确认后恢复交互。小程序可用容器扩展 `wx.onHostLayoutChange/offHostLayoutChange` 监听布局区域变化，`wx.onResize` 继续只表示尺寸变化。详见[窗口信息用法](docs/window-metrics.zh-CN.md)。
 
 ## 4. 通信与导航
 
