@@ -12,7 +12,9 @@ node tools/simulator-smoke.mjs \
 
 The default `--rotation device` uses `XCUIDevice.orientation`. `--rotation scene` separately exercises the host's Rotate button, `setNeedsUpdateOfSupportedInterfaceOrientations()` and `UIWindowScene.requestGeometryUpdate`. Both modes require the actual interface orientation and native surface dimensions to change and return to portrait. A scene-mode pass does not certify device-orientation injection; each receipt records its mode.
 
-Both modes retain the same dual-session, asynchronous host-call, native touch/scroll, navigation, background, persistent reopen, parent/embedded scrolling and multitouch gates. `--compile-only` validates device and x86_64 compile/link without using a simulator; `--simulator-only` builds and runs only the arm64 simulator consumer, skipping the other two architecture checks.
+Both modes retain the same dual-session, asynchronous host-call, native touch/scroll, navigation, background, persistent reopen, parent/embedded scrolling and multitouch gates. Both landscape directions and their return to portrait compare public `wx.getWindowInfo` with an independent UIKit window/screen witness, including unscaled portrait safe-area edges, status bar and fractional screenTop. Startup, reopen and nested-scroll snapshots receive the same checks. An unattached view must wait for real observations without creating a native owner, and cancellation must settle its pending preflight. These are executed gates, not inferred from a source build; see [window metrics](../../docs/window-metrics.md).
+
+`--compile-only` validates device and x86_64 compile/link without using a simulator; `--simulator-only` builds and runs only the arm64 simulator consumer, skipping the other two architecture checks.
 
 Receipts include the distribution inventory digest, executable and consumer/test source hashes, executed-test counts, and verified app cleanup. If XCTest fails, the runner preserves `last-consumer-result.json` before removing its app and runner. Screenshots and the xcresult remain alongside the receipt.
 

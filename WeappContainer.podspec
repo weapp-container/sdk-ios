@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'WeappContainer'
-  s.version = '0.1.0-preview.5.7'
+  s.version = '0.1.0-preview.6.0'
   s.summary = 'Native mini-program SDK with QuickJS and Skia Metal rendering.'
   s.homepage = 'https://github.com/weapp-container/sdk-ios'
   s.license = { :type => 'Apache-2.0', :file => 'LICENSE' }
@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
   s.source_files = 'Sources/WeappContainer/**/*.swift'
   s.vendored_frameworks = 'Frameworks/WeappContainerNative.xcframework'
   s.libraries = 'c++', 'z', 'iconv'
-  s.frameworks = 'UIKit', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText', 'CoreFoundation', 'Security', 'SystemConfiguration'
+  s.frameworks = 'UIKit', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText', 'CoreFoundation', 'Security', 'SystemConfiguration', 'AVFoundation', 'CoreImage', 'CoreBluetooth', 'CoreLocation', 'CoreMotion', 'Network', 'AudioToolbox', 'CryptoKit', 'Contacts', 'ContactsUI', 'EventKit', 'EventKitUI', 'VisionKit', 'Vision', 'PhotosUI', 'CoreNFC', 'LocalAuthentication'
 end

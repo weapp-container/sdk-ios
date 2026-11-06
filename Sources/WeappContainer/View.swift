@@ -45,6 +45,29 @@ import WeappContainerNative
     func drain() async {
         if inFlight { await withCheckedContinuation { waiters.append($0) } }
     }
+    /// Clear retained pixels without acknowledging an application frame.
+    func clear() async throws {
+        guard layer.drawableSize.width > 0, layer.drawableSize.height > 0 else { return }
+        guard let drawable = layer.nextDrawable(), let buffer = queue.makeCommandBuffer() else {
+            throw WeappContainerError(code: "ERR_METAL", message: "Cannot clear revoked account pixels")
+        }
+        let pass = MTLRenderPassDescriptor()
+        pass.colorAttachments[0].texture = drawable.texture
+        pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
+        pass.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 1)
+        guard let encoder = buffer.makeRenderCommandEncoder(descriptor: pass) else {
+            throw WeappContainerError(code: "ERR_METAL", message: "Cannot encode account revocation clear")
+        }
+        encoder.endEncoding(); buffer.present(drawable)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            buffer.addCompletedHandler { command in
+                if command.status == .completed { continuation.resume() }
+                else { continuation.resume(throwing: WeappContainerError(code: "ERR_METAL", message: "Account revocation clear failed")) }
+            }
+            buffer.commit()
+        }
+        lastRevision = nil; lastEpoch = nil; invalidate()
+    }
     func present() throws {
         guard attached, !inFlight, let session, session.canPresent,
               lastRevision != session.frameRevision || lastEpoch != epoch,
@@ -144,6 +167,8 @@ import WeappContainerNative
     private var appActive = false
     private var sceneActive = true
     private var observedScene: ObjectIdentifier?
+    private var geometryObservation: NSKeyValueObservation?
+    private var observedMetrics: WeappJSON?
     private var touch: UITouch?
     private var start = CGPoint.zero
     private var last = CGPoint.zero
@@ -202,6 +227,7 @@ import WeappContainerNative
         do { try await session.release(surface) }
         catch { detaching = false; synchronizeActivity(); throw error }
         detached = true; detaching = false; link?.invalidate(); link = nil
+        geometryObservation = nil
         for token in notifications { NotificationCenter.default.removeObserver(token) }; notifications.removeAll()
         surface.layer.device = nil
     }
@@ -212,36 +238,46 @@ import WeappContainerNative
     public override func didMoveToWindow() {
         super.didMoveToWindow()
         retireInput()
+        invalidateMetrics()
         let scene = window?.windowScene.map(ObjectIdentifier.init)
-        if scene != observedScene { observedScene = scene; sceneActive = true }
+        if scene != observedScene {
+            observedScene = scene; sceneActive = true
+            geometryObservation = window?.windowScene?.observe(\.effectiveGeometry, options: [.new]) { [weak self] _, _ in
+                MainActor.assumeIsolated {
+                    self?.invalidateMetrics(); self?.setNeedsLayout()
+                }
+            }
+        }
         surface.invalidate(); setNeedsLayout(); synchronizeActivity()
+    }
+    public override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        if surface != nil { invalidateMetrics(); setNeedsLayout() }
+    }
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if surface != nil { invalidateMetrics(); setNeedsLayout() }
     }
     public override func layoutSubviews() {
         super.layoutSubviews()
-        guard !detached, !session.isClosed, let window,
-              bounds.width.isFinite, bounds.height.isFinite, bounds.width > 0, bounds.height > 0 else {
-            retireInput(); link?.isPaused = true; session.setSurfaceForeground(false); return
+        synchronizeActivity(); display()
+    }
+    private func invalidateMetrics() {
+        observedMetrics = nil; session.invalidateMetrics()
+        retireInput(); link?.isPaused = true; session.setSurfaceForeground(false)
+    }
+    private func observeMetrics() {
+        guard !detached, !session.isClosed, let observation = WindowMetricsObservation(view: self) else {
+            if observedMetrics != nil { invalidateMetrics() }
+            return
         }
-        let width = max(1, bounds.width.rounded()), height = max(1, bounds.height.rounded())
-        let scale = window.screen.scale
-        let pixels = CGSize(width: width * scale, height: height * scale)
+        guard observation.payload != observedMetrics else { return }
+        let scale = observation.pixelRatio
+        let pixels = CGSize(width: observation.viewport.width * scale, height: observation.viewport.height * scale)
         if surface.layer.drawableSize != pixels || surface.layer.contentsScale != scale {
             retireInput(); surface.layer.contentsScale = scale; surface.layer.drawableSize = pixels; surface.invalidate()
         }
-        let intersection = bounds.inset(by: safeAreaInsets).intersection(bounds)
-        let safe = intersection.isNull ? CGRect.zero : intersection
-        let sx = width / bounds.width, sy = height / bounds.height
-        let inScreen = convert(bounds, to: window.screen.coordinateSpace)
-        let screen = window.screen.bounds
-        let metrics: WeappJSON = .object([
-            "windowWidth": .number(Double(width)), "windowHeight": .number(Double(height)), "pixelRatio": .number(Double(scale)),
-            "screenWidth": .number(Double(screen.width)), "screenHeight": .number(Double(screen.height)),
-            "statusBarHeight": .number(Double(window.windowScene?.statusBarManager?.statusBarFrame.height ?? 0)),
-            "screenTop": .number(Double(inScreen.minY)),
-            "safeArea": .object(["left": .number(Double(safe.minX * sx)), "right": .number(Double(safe.maxX * sx)), "top": .number(Double(safe.minY * sy)), "bottom": .number(Double(safe.maxY * sy)), "width": .number(Double(safe.width * sx)), "height": .number(Double(safe.height * sy))]),
-            "deviceOrientation": .string(screen.width > screen.height ? "landscape" : "portrait")
-        ])
-        session.updateMetrics(metrics); synchronizeActivity(); display()
+        observedMetrics = observation.payload; session.updateMetrics(observation.payload)
     }
     fileprivate func display() {
         guard !detached else { return }
@@ -256,9 +292,13 @@ import WeappContainerNative
             guard let scene = n.object as? UIScene, scene === window?.windowScene else { return }
             sceneActive = n.name == UIScene.didActivateNotification
         }
-        synchronizeActivity()
+        setNeedsLayout(); synchronizeActivity()
     }
     private func synchronizeActivity() {
+        // The session pump calls this even while CADisplayLink is paused. It
+        // retries an early unknown scene observation and catches window moves
+        // or parent scrolling that do not lay out the embedded view itself.
+        observeMetrics()
         let sceneReady = window?.windowScene.map { $0.activationState == .foregroundActive } ?? appActive
         var visible = true
         var ancestor: UIView? = self
@@ -269,11 +309,11 @@ import WeappContainerNative
         // UIKit has no general ancestor-visibility notification. The session's
         // independent completion pump also observes this while CADisplayLink is
         // paused, so showing any ancestor resumes presentation.
-        let active = visible && !detached && !detaching && window != nil && bounds.width > 0 && bounds.height > 0 && appActive && sceneActive && sceneReady
+        let active = visible && !detached && !detaching && observedMetrics != nil && window != nil && bounds.width > 0 && bounds.height > 0 && appActive && sceneActive && sceneReady
         if !active { retireInput() }
         session.setSurfaceForeground(active); link?.isPaused = !session.isForeground
     }
-    private var acceptsInput: Bool { !detached && session.canPresent && bounds.width > 0 && bounds.height > 0 }
+    private var acceptsInput: Bool { !detached && observedMetrics != nil && session.canPresent && bounds.width > 0 && bounds.height > 0 }
     public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard acceptsInput, !ignoringTouches else { return }
         if touch != nil || touches.count != 1 || activeCount(event) > 1 { cancelTouch(); ignoringTouches = true; return }

@@ -16,6 +16,18 @@ function bodyAfter(text, marker) {
   assert.fail(`Unclosed ${marker}`)
 }
 
+test('API resource reads preserve their native context without allocating or presenting an owner', () => {
+  const method=bodyAfter(source,'public func hostServicesCommand(');
+  assert.match(method,/let allowed = \[[^\n]*"hostApiResource"/);
+  const branch=bodyAfter(method,'if operation == "hostApiResource"');
+  assert.ok(method.indexOf('try ensureOpen()')<method.indexOf('if operation == "hostApiResource"'));
+  assert.match(branch,/guard let native.*ERR_NOT_READY/);
+  assert.match(branch,/return try native.command\(operation, \.object\(payload\)\)/);
+  assert.doesNotMatch(branch,/createNative|drainEvents|invalidate|accountSwitchBlocked\s*=|acknowledge/);
+  const publicRead=bodyAfter(source,'public func readHostApiResource(');
+  assert.match(publicRead,/hostServicesCommand\("hostApiResource", \["context":context,/);
+});
+
 test('journal queries cannot create a native owner or invalidate presentation', () => {
   const execute = bodyAfter(source, 'public func executeCommand(')
   const queryMarker = 'if name == "queryDevPackAttempt"'
