@@ -11,25 +11,25 @@
       "component": "runtime",
       "platform": "ios",
       "arch": "arm64-device",
-      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-device.tar.gz",
-      "size": 22595261,
-      "sha256": "d216e467bf6de5f462bc616f8c5a99f47dcd655edc34164b1ccaf14f35ff36be"
+      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-device-lifetime-c17f0af5-d60a7ed6a551.tar.gz",
+      "size": 23688440,
+      "sha256": "0c7adebdd22d00eaeabaf33ee42958ec68c6783d156e6d3d729aec41c996c1a1"
     },
     {
       "component": "runtime",
       "platform": "ios",
       "arch": "arm64-simulator",
-      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-simulator.tar.gz",
-      "size": 22604793,
-      "sha256": "bcc0128f344843426fa7b217c1239d7ab5c09e31960543102ed0899362871ecd"
+      "fileName": "runtime-0.1.0-preview.6.0-ios-arm64-simulator-lifetime-c17f0af5-94120ec84f40.tar.gz",
+      "size": 23697662,
+      "sha256": "4d25de1cf81ba5deebf1735555af0fd450643d10b93872f06f84f6098e173656"
     },
     {
       "component": "runtime",
       "platform": "ios",
       "arch": "x86_64-simulator",
-      "fileName": "runtime-0.1.0-preview.6.0-ios-x86_64-simulator.tar.gz",
-      "size": 22886438,
-      "sha256": "0682277914747fc1e814551cef51ea702ad1215288baaa44e7ab13ddd5a35a0d"
+      "fileName": "runtime-0.1.0-preview.6.0-ios-x86_64-simulator-lifetime-c17f0af5-9f5946cf88e6.tar.gz",
+      "size": 23982033,
+      "sha256": "6c5f2b396c9353f62c9ff9155892a6ae17908c42deaa769bbc8dcfcb0c6eae08"
     }
   ]
 }

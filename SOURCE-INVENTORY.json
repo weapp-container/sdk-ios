@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceFilesSha256": "87bd0c159f28544fa897f1475ed2afe755b74d2849124f597e751deaa0e6c86d",
-  "review": "Add passive UIKit window metrics capture for foldable and embedded iOS hosts, with observation identity regression coverage",
+  "sourceFilesSha256": "06e638070396d6b71980a9c010894401829a5dadf6a449d31f01bf70e0817b09",
+  "review": "精确锁定 c17 clean full iOS 原生三 slice，包含生命周期 input lifetime 渲染调度修复；restricted 使用独立显式输入。",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -311,8 +311,8 @@
     },
     {
       "path": "runtime-artifacts.lock.json",
-      "sha256": "d6ba56d53bff88b53d84cb9ceeb6ef33b46afabeacace573b8542104cf05f83b",
-      "size": 1069,
+      "sha256": "09f97cee16ee25ce30ea00e0a0f39d2819741f01fb97d88ffbd9816033cbeda9",
+      "size": 1162,
       "mode": "100644"
     },
     {
