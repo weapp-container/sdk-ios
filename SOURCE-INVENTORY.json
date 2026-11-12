@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "ac03e095b82dca699f5587355c9d9759304ea90a751547e10a66db92e10f961e",
-  "review": "Prepare validated public preview distributions",
+  "sourceFilesSha256": "4952e8beaa19834f6929cffbb27b41c4519ef1510d8f9e1a6a732add6241a3ab",
+  "review": "Complete public release workflows and installation documentation",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -31,6 +31,12 @@
       "path": ".github/workflows/publication-security.yml",
       "sha256": "b6d87425d409e2d0add4aaa9b40fc7c0f33e5b6be9ff692eaecc91ed32b93c91",
       "size": 1189,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish-release.yml",
+      "sha256": "b06eebbdf6c244f74b5bb44bc11dee6a2b90817611e7f65730e19492adbafb64",
+      "size": 857,
       "mode": "100644"
     },
     {
@@ -73,6 +79,12 @@
       "path": "ORIGIN.json",
       "sha256": "fb2e151764d1d82b9687616b0ccf86a45f261850c2025c19ab06f956d8b9f524",
       "size": 17821,
+      "mode": "100644"
+    },
+    {
+      "path": "PUBLIC-RELEASE.md",
+      "sha256": "f7404ac7ed31a2a780d84da16734bd7144b0f1e637bf6fc37c57eafaed9ef511",
+      "size": 3388,
       "mode": "100644"
     },
     {
