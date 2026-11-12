@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "4d77a0b5976b79a734f817ffa59c027add94bda7e5db34bb412cfab4d7e1897b",
-  "review": "Require and record the iOS 27.1 SDK used by the current Swift APIs",
+  "sourceFilesSha256": "f2c0d1e2ce55070f177fc3406dc2ce3a8edaddb3754172c22ae6d18fe07665ac",
+  "review": "Use the dedicated Xcode 27 image and typecheck the complete Swift wrapper on both SDKs",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": ".github/workflows/build-public.yml",
-      "sha256": "8d478f5921913482189e2748dfee59dbc981d745838d3cb716b915a4bae82317",
-      "size": 1847,
+      "sha256": "11289dff352143c2063bf4bc76138e2a3ab3786cc1def0f568f3c9ae4814a61c",
+      "size": 1925,
       "mode": "100644"
     },
     {
@@ -29,8 +29,8 @@
     },
     {
       "path": ".github/workflows/public-sdk.yml",
-      "sha256": "3582ab912d24f859b0f543d95dab2002e17f091390adc8e4ae02a04f1007edaf",
-      "size": 476,
+      "sha256": "1663e7ab790f30b73df0e9d51246ea00be2349e3962bdea49124cec2dd33f592",
+      "size": 1724,
       "mode": "100644"
     },
     {
@@ -89,8 +89,8 @@
     },
     {
       "path": "PUBLIC-RELEASE.md",
-      "sha256": "6970476962669b8b6c651adff45ecfe8a3058f98a6d26337880ef5a6d8d21513",
-      "size": 4360,
+      "sha256": "5f5638b18acfe352ccadf55700ae55ad0799adb8121f21ef81e8d1b85016c7e3",
+      "size": 4450,
       "mode": "100644"
     },
     {
