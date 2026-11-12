@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "5ec3aa5d9adb0e61cde366c5a34678514661c2df96910dbc07e2a030f3edd782",
-  "review": "Use the owning recognizer original touch stream inside UIScrollView and validate current snapshots after UIKit scene rotation settles.",
+  "sourceFilesSha256": "32e3e01d49584abeb3e8fde73de656f55075d6fc1aa64e9d6c8d38a18d8982a9",
+  "review": "Pin SwiftPM and CocoaPods to the exact CI-verified public SDK archive bytes",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -95,8 +95,8 @@
     },
     {
       "path": "Package.swift",
-      "sha256": "4c201a804c57867ca5dcf15bf9b96453f4e4b669a127b64b4d11a67fa9ba569f",
-      "size": 1427,
+      "sha256": "5fb03bbd6a64dbc3efe9cf9695c11455a93c4f931e250eb6188b89330cae4772",
+      "size": 1595,
       "mode": "100644"
     },
     {
@@ -269,8 +269,8 @@
     },
     {
       "path": "WeappContainer.podspec",
-      "sha256": "6ba49945d5c85b17ef1de7b19524f836680909ca637b26432bc944fae7cd3a90",
-      "size": 1075,
+      "sha256": "aeb13a9d4f2d3155e55fa1d62cdc90367174707e6dd68312e1da13c6cb3c5d14",
+      "size": 1200,
       "mode": "100644"
     },
     {
@@ -361,6 +361,12 @@
       "path": "package.json",
       "sha256": "b68335093404a8dc26437d5162f2d514237c2f1a217819476bc08b25214d4b36",
       "size": 881,
+      "mode": "100644"
+    },
+    {
+      "path": "release-assets.json",
+      "sha256": "4e1d077a9cb3e1369a4df4bf8da04cf40b3c83690506ac3ffc464a0005358741",
+      "size": 687,
       "mode": "100644"
     },
     {
