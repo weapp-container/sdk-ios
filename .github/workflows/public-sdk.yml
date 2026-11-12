@@ -20,3 +20,26 @@ jobs:
           node-version: '24'
       - run: node tools/source-inventory.mjs
       - run: node --test test/*.test.mjs
+
+  swift:
+    runs-on: xcode-27
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Typecheck every Swift source against the public ABI
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import shutil, subprocess, tempfile
+          with tempfile.TemporaryDirectory() as directory:
+              stage = Path(directory)
+              shutil.copyfile('include/weapp_container_sdk.h', stage / 'weapp_container_sdk.h')
+              (stage / 'module.modulemap').write_text('module WeappContainerNative { header "weapp_container_sdk.h" export * }\n')
+              for sdk_name, target in [('iphoneos', 'arm64-apple-ios16.0'), ('iphonesimulator', 'arm64-apple-ios16.0-simulator')]:
+                  sdk = subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path'], text=True).strip()
+                  subprocess.run(['xcrun', 'swiftc', '-typecheck', '-parse-as-library', '-module-name', 'WeappContainer', '-target', target, '-sdk', sdk, '-I', directory, *map(str, sorted(Path('Sources').rglob('*.swift')))], check=True)
+          PYTHON
