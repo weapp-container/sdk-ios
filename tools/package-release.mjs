@@ -1,7 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assetEntry, cleanSource, filesUnder, readRelease, releaseUrl, run, sha256, versionOf, writeRelease, publishRelease } from './public-release.mjs';
+import { assetEntry, cleanSource, readRelease, releaseUrl, run, sha256, validateRelease, versionOf, writeRelease, publishRelease } from './public-release.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const option = name => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1]; };
@@ -24,10 +24,19 @@ if (args.includes('--pin')) {
   console.log('Pinned public assets. Review, refresh the source inventory, commit, then --finalize.');
 } else if (args.includes('--finalize')) {
   const release = readRelease(manifest, 'weapp-container/sdk-ios', version, true);
-  const pinned = JSON.parse(readFileSync(join(root, 'release-assets.json')));
+  const pinned = validateRelease(JSON.parse(readFileSync(join(root, 'release-assets.json'))), release.repository, version);
   if (JSON.stringify(pinned.assets) !== JSON.stringify(release.assets)) throw Error('Committed pins differ from the archive set');
+  const packagingSourceCommit = release.packagingSourceCommit ?? release.sourceCommit;
+  if (pinned.sourceCommit !== packagingSourceCommit) throw Error('Committed pins differ from the packaging source');
+  run('git', ['merge-base', '--is-ancestor', packagingSourceCommit, 'HEAD'], root);
+  const native = release.assets.find(asset => asset.component === 'swiftpm-native');
+  const sdk = release.assets.find(asset => asset.component === 'cocoapods-sdk');
+  if (!native || !sdk) throw Error('Both public archives are required');
+  const swift = readFileSync(join(root, 'Package.swift'), 'utf8');
+  const pod = readFileSync(join(root, 'WeappContainer.podspec'), 'utf8');
+  if (!swift.includes(`url: "${releaseUrl(release, native)}", checksum: "${native.sha256}"`) || !pod.includes(`:http => '${releaseUrl(release, sdk)}', :sha256 => '${sdk.sha256}'`)) throw Error('Install metadata differs from the reviewed public assets');
   const next = writeRelease(root, out, release.repository, release.assets);
-  next.packagingSourceCommit = release.packagingSourceCommit ?? release.sourceCommit;
+  next.packagingSourceCommit = packagingSourceCommit;
   writeFileSync(manifest, JSON.stringify(next, null, 2) + '\n');
   // Regenerate the manifest checksum after adding its explicit packaging provenance.
   writeFileSync(join(out, 'SHA256SUMS'), [...next.assets, assetEntry(out, 'release.json')].map(a => `${a.sha256}  ${a.fileName}`).join('\n') + '\n');

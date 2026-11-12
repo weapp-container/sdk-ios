@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "4952e8beaa19834f6929cffbb27b41c4519ef1510d8f9e1a6a732add6241a3ab",
-  "review": "Complete public release workflows and installation documentation",
+  "sourceFilesSha256": "ff75cb72674fb93e893f65e2880ee696308e4ff9aed9fc214cf7445afb02a98d",
+  "review": "Bind publication to successful finalized archives and reviewed install pins",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -22,6 +22,12 @@
       "mode": "100644"
     },
     {
+      "path": ".github/workflows/finalize-public.yml",
+      "sha256": "5541ea53b1a910eb60aed1958b536d6821172f6b0e8c4014961eab2438a56f3c",
+      "size": 2178,
+      "mode": "100644"
+    },
+    {
       "path": ".github/workflows/public-sdk.yml",
       "sha256": "3582ab912d24f859b0f543d95dab2002e17f091390adc8e4ae02a04f1007edaf",
       "size": 476,
@@ -35,8 +41,8 @@
     },
     {
       "path": ".github/workflows/publish-release.yml",
-      "sha256": "b06eebbdf6c244f74b5bb44bc11dee6a2b90817611e7f65730e19492adbafb64",
-      "size": 857,
+      "sha256": "15e73ee6364ec122c9ef89289c2d82bf9b639903f41a6803f5ca79e6b91fc89f",
+      "size": 1776,
       "mode": "100644"
     },
     {
@@ -83,8 +89,8 @@
     },
     {
       "path": "PUBLIC-RELEASE.md",
-      "sha256": "f7404ac7ed31a2a780d84da16734bd7144b0f1e637bf6fc37c57eafaed9ef511",
-      "size": 3388,
+      "sha256": "286545eeb063b10bda9747fdb341b690088e957f8e88cbd22785e127c59ea85e",
+      "size": 3855,
       "mode": "100644"
     },
     {
@@ -490,6 +496,12 @@
       "mode": "100644"
     },
     {
+      "path": "test/release-finalization.test.mjs",
+      "sha256": "d1a3ce54b5cf835e6e06dd27b40a8216ac835c267116525f344f186623559154",
+      "size": 2841,
+      "mode": "100644"
+    },
+    {
       "path": "test/runtime-repository.test.mjs",
       "sha256": "9033e1e8890b92969386374366a70a92ed6d51573032af1efc3aca4118d1d47d",
       "size": 5492,
@@ -533,8 +545,8 @@
     },
     {
       "path": "tools/package-release.mjs",
-      "sha256": "c8018defe38d00673ff9ceae9abf7158b173c7666eac5c9c5c99c6ea0d4482ff",
-      "size": 4548,
+      "sha256": "883e83a7a92b71987820bf7e7adb8df83e1b95e01864a2efa0bb6f91e68cdc0b",
+      "size": 5489,
       "mode": "100644"
     },
     {
