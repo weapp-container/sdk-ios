@@ -1,71 +1,25 @@
 # Weapp Container iOS SDK
 
-运行库发行工具已迁入 [核心仓库](https://github.com/weapp-container/weapp-container/tree/main/tools/runtime-artifacts)。新清单使用核心仓库的精确版本 Release；用 `--manifest` 显式选取。更新后的下载器把旧锁中的 `runtime-artifacts` 标识定向到私有的 `weapp-container/runtime-artifacts-private-archive`，仅允许九个冻结版本，保留原版本、哈希及随附许可，回执记录实际存储库。旧版下载器需升级；同名新仓库只保留停更工具源码。无跨仓库回退，私有档案仍需读取权限，源码许可不代表历史发行物公开可用。
+首次公开发布正在准备；安装命令须在对应注册源出现本版本后使用。历史私有归档及其锁文件保持原样。
 
-核心运行时与 SDK 自有源码采用 Apache-2.0，可按[主仓库源码构建说明](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-repositories.md)构建当前运行库。现有预编译归档保留原许可、访问要求及精确版本和哈希锁；本次源码更新不发布替代二进制。
+版本 `0.1.0-preview.7.0`；iOS 16+，Xcode / Swift 5.9+；包含 arm64 真机和 arm64/x86_64 模拟器。
 
-**简体中文** · [English](README.en.md)
+Swift Package Manager 使用固定版本标签；二进制归档由 Package.swift 的 URL 与 checksum 锁定：
 
-在 iOS 应用中嵌入小程序页面。SDK 提供 Swift 会话、UIKit / SwiftUI 视图、宿主消息通道和本地持久化，使用 QuickJS 执行 JavaScript、Skia Metal 渲染页面。
-
-当前源码版本：**0.1.0-preview.6.0**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
-
-## 准备环境
-
-| 项目 | 要求 |
-| --- | --- |
-| 应用系统 | iOS 16+ |
-| 原生架构 | arm64 真机、arm64 / x86_64 模拟器 |
-| 构建环境 | macOS、Xcode / Apple SDK、Swift 5.9+ |
-| 辅助工具 | Node.js 24+、Python 3；使用 CocoaPods 时需安装 CocoaPods |
-
-应用使用预编译 XCFramework 和 Swift 封装，无需 Rust 或核心源码。
-
-## 1. 获取运行库
-
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git
-cd sdk-ios
+```swift
+.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.0")
 ```
 
-获得运行库访问授权后，通过凭据环境提供 `WEAPP_CONTAINER_RUNTIME_TOKEN`，权限限定为私有产物仓库的 **Contents: read**。不要把凭据写进源码或命令参数。
-
-```sh
-node tools/prepare-runtime.mjs
-```
-
-使用已获授权的离线归档：
-
-```sh
-node tools/prepare-runtime.mjs --artifact-dir /absolute/runtime-archives
-```
-
-工具按 [runtime-artifacts.lock.json](runtime-artifacts.lock.json) 校验 **0.1.0-preview.6.0**、ABI 1、架构、大小和 SHA-256，安装到 `.runtime/install/native` 和 `.runtime/install/licenses`。缺少归档、无下载权限或校验不符时会失败；已有安装在失败时保留。锁文件中的 pin 不代表运行库可公开下载。
-
-自定义归档清单使用 `--manifest /absolute/reviewed-lock.json`。慢速网络可通过 `WEAPP_CONTAINER_RUNTIME_TIMEOUT_MS` 调整下载超时，范围为 `1`–`3600000` 毫秒，默认 15 分钟。
-
-## 2. 构建并接入
-
-在 macOS 上组装分发包：
-
-```sh
-node tools/build.mjs --native-root .runtime/install/native --licenses-root .runtime/install/licenses --install-framework
-```
-
-输出目录为 `artifacts/ios/WeappContainer`，包含 Swift 源码、XCFramework、SwiftPM / CocoaPods 配置、许可证和构建记录。`--install-framework` 同时安装到本仓库忽略的 `Frameworks/` 目录，供根 `Package.swift` 使用。
-
-Swift Package Manager：在 Xcode 中把生成的 `artifacts/ios/WeappContainer` 目录添加为本地 package，并把 **WeappContainer** product 加到应用 target。也可在安装框架后运行 `swift build` 检查本仓库 package。
-
-CocoaPods：将生成目录放到应用旁边，并按实际位置配置：
+CocoaPods 在 Podfile 添加组织公开 Specs 源和官方源：
 
 ```ruby
+source 'https://github.com/weapp-container/Specs.git'
+source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-target 'YourApp' do
-  pod 'WeappContainer', :path => '../WeappContainer'
-end
+pod 'WeappContainer', '0.1.0-preview.7.0'
 ```
 
-上述方式消费本地生成的完整分发包，不要求 SDK 已发布到公共包服务。应用签名由宿主工程管理。
+Pod 使用包含 Swift 层、XCFramework 和许可的固定 HTTP 归档，验证 SHA-256。普通安装无需 Node.js、Rust 或本地运行库目录。Trunk 投稿状态以 [Specs 发布记录](https://github.com/weapp-container/Specs) 为准。
 
 ## 3. 嵌入 UIKit 页面
 
