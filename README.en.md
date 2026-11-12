@@ -1,73 +1,25 @@
 # Weapp Container iOS SDK
 
-Historical storage: updated downloaders map the nine frozen legacy `runtime-artifacts` versions to the private `weapp-container/runtime-artifacts-private-archive`, retaining original lock bytes, hashes and licenses and recording the resolved repository. Old downloaders must upgrade. The new repository at the old name contains retired tool source only; new runtime releases use the core repository. Private archive access still requires authorization, with no cross-repository fallback.
+First public publication is being prepared. Use these commands once this version is visible in its registry. Historical private archives and locks retain their original identities.
 
-Runtime packaging and publication now live in the [core repository](https://github.com/weapp-container/weapp-container/tree/main/tools/runtime-artifacts). New manifests select exact core releases through `--manifest`. The default lock retains its historical `runtime-artifacts` source, version, hashes and bundled licenses. The retired repository remains a read-only archive; downloads never fall back between repositories. Private repositories still require read access; source licensing does not imply public binary availability.
+Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode / Swift 5.9+. It covers arm64 devices and arm64/x86_64 simulators.
 
-The core runtime and SDK source are available under Apache-2.0. Build the current runtime from the [core source guide](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-repositories.md). Existing prebuilt archives retain their original licenses, access requirements and exact version/hash pins; this source update does not publish replacement binaries.
+Use the exact SwiftPM version; Package.swift pins the binary URL and checksum:
 
-[简体中文](README.md) · **English**
-
-Embed mini-program pages in an iOS app with Swift sessions, UIKit / SwiftUI views, host messaging, and local persistence. JavaScript runs in QuickJS; Skia Metal renders the page.
-
-Source version: **0.1.0-preview.6.0**. The wrapper source is [Apache-2.0](LICENSE). Current runtime source is Apache-2.0 in the core repository. This SDK repository contains wrapper source; runtime binaries are built or installed separately.
-
-## Requirements
-
-| Component | Requirement |
-| --- | --- |
-| Application | iOS 16+ |
-| Architectures | arm64 devices, arm64 / x86_64 simulators |
-| Build environment | macOS, Xcode / Apple SDKs, Swift 5.9+ |
-| Supporting tools | Node.js 24+, Python 3; CocoaPods for Pod integration |
-
-Applications consume a prebuilt XCFramework and Swift wrapper without a Rust toolchain or core source.
-
-## 1. Obtain the runtime
-
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git
-cd sdk-ios
+```swift
+.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.0")
 ```
 
-After obtaining runtime access, supply `WEAPP_CONTAINER_RUNTIME_TOKEN` through your credential environment, restricted to **Contents: read** on the private artifact repository. Keep credentials out of source files and command arguments.
-
-```sh
-node tools/prepare-runtime.mjs
-```
-
-For authorized offline archives:
-
-```sh
-node tools/prepare-runtime.mjs --artifact-dir /absolute/runtime-archives
-```
-
-The installer checks **0.1.0-preview.6.0**, ABI 1, architecture, size, and SHA-256 against [runtime-artifacts.lock.json](runtime-artifacts.lock.json), then installs to `.runtime/install/native` and `.runtime/install/licenses`. Missing archives, denied access, or integrity mismatches fail the operation and preserve the previous installation. A committed pin does not imply public download access.
-
-Use `--manifest /absolute/reviewed-lock.json` for an explicitly reviewed archive manifest. `WEAPP_CONTAINER_RUNTIME_TIMEOUT_MS` adjusts the download deadline from `1` to `3600000` milliseconds; the default is 15 minutes.
-
-## 2. Build and integrate
-
-Assemble the distribution on macOS:
-
-```sh
-node tools/build.mjs --native-root .runtime/install/native --licenses-root .runtime/install/licenses --install-framework
-```
-
-`artifacts/ios/WeappContainer` contains Swift sources, the XCFramework, SwiftPM / CocoaPods metadata, licenses, and build receipts. `--install-framework` also installs the verified framework into this clone's ignored `Frameworks/` directory for the root `Package.swift`.
-
-Swift Package Manager: in Xcode, add the generated `artifacts/ios/WeappContainer` directory as a local package and link its **WeappContainer** product to your app target. After installing the framework, `swift build` also checks the repository package.
-
-CocoaPods: place the generated distribution beside your app and adjust the path:
+For CocoaPods, add the public organization Specs repository alongside the official source:
 
 ```ruby
+source 'https://github.com/weapp-container/Specs.git'
+source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-target 'YourApp' do
-  pod 'WeappContainer', :path => '../WeappContainer'
-end
+pod 'WeappContainer', '0.1.0-preview.7.0'
 ```
 
-Both approaches consume a complete local distribution and do not require a public package publication. The host project manages application signing.
+The Pod downloads a fixed HTTP archive containing Swift sources, the XCFramework and licenses, verified by SHA-256. Installation needs no Node.js, Rust or local runtime checkout. Check the [Specs publication record](https://github.com/weapp-container/Specs) for Trunk availability.
 
 ## 3. Embed a UIKit page
 
