@@ -18,7 +18,7 @@ if (args.includes('--pin')) {
   if (!swift.includes(native.sha256)) throw Error('Cannot locate SwiftPM binary target');
   writeFileSync(join(root, 'Package.swift'), swift);
   let pod = readFileSync(join(root, 'WeappContainer.podspec'), 'utf8');
-  pod = pod.replace(/^  s.source = .*$/m, `  s.source = { :http => '${releaseUrl(release, sdk)}', :sha256 => '${sdk.sha256}' }`);
+  pod = pod.replace(/^  s.source = .*$/m, `  s.source = { :http => '${releaseUrl(release, sdk)}', :sha256 => '${sdk.sha256}', :flatten => true }`);
   writeFileSync(join(root, 'WeappContainer.podspec'), pod);
   writeFileSync(join(root, 'release-assets.json'), JSON.stringify(release, null, 2) + '\n');
   console.log('Pinned public assets. Review, refresh the source inventory, commit, then --finalize.');
@@ -34,7 +34,7 @@ if (args.includes('--pin')) {
   if (!native || !sdk) throw Error('Both public archives are required');
   const swift = readFileSync(join(root, 'Package.swift'), 'utf8');
   const pod = readFileSync(join(root, 'WeappContainer.podspec'), 'utf8');
-  if (!swift.includes(`url: "${releaseUrl(release, native)}", checksum: "${native.sha256}"`) || !pod.includes(`:http => '${releaseUrl(release, sdk)}', :sha256 => '${sdk.sha256}'`)) throw Error('Install metadata differs from the reviewed public assets');
+  if (!swift.includes(`url: "${releaseUrl(release, native)}", checksum: "${native.sha256}"`) || !pod.includes(`:http => '${releaseUrl(release, sdk)}', :sha256 => '${sdk.sha256}', :flatten => true`)) throw Error('Install metadata differs from the reviewed public assets');
   const next = writeRelease(root, out, release.repository, release.assets);
   next.packagingSourceCommit = packagingSourceCommit;
   writeFileSync(manifest, JSON.stringify(next, null, 2) + '\n');
