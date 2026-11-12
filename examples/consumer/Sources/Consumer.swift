@@ -190,6 +190,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             case .message(let value):
                 if value["kind"].string == "initial" {
                     facts["secondInitial"] = value; facts["secondInitialNativeWindow"] = nativeWindowWitness(v)
+                    facts["secondInitialCapturedWindow"] = v.captureWindowMetrics()
                 }
                 if value["kind"].string == "tap" { facts["secondTap"] = value }
             case .error(let error): fail(error)

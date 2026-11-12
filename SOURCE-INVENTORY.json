@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "f2c0d1e2ce55070f177fc3406dc2ce3a8edaddb3754172c22ae6d18fe07665ac",
-  "review": "Use the dedicated Xcode 27 image and typecheck the complete Swift wrapper on both SDKs",
+  "sourceFilesSha256": "a73ecf2471efd16f500a6fcf499d95bda4611cc45a4fa5c6e1ad4346cdb06f1d",
+  "review": "Capture the second independent consumer window witness for existing simulator assertions",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -299,8 +299,8 @@
     },
     {
       "path": "examples/consumer/Sources/Consumer.swift",
-      "sha256": "df3b8133eb0e654b20c3228ae165b62d4be641bb41e9c9dfa40e56928c2aa401",
-      "size": 21842,
+      "sha256": "be8d4abc8c4763852a2b8f6dea7da1587775bf4e4d15fa300e8f52324b13083d",
+      "size": 21926,
       "mode": "100644"
     },
     {
