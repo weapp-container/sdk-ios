@@ -2,12 +2,48 @@
 
 [简体中文](README.md) · **English**
 
+<a id="公开发行候选preview7"></a>
+## Public distribution candidate: preview.7
+
+The installation examples below describe the preview.7 distribution candidate. Check the named registry or release before using them; source publication does not establish package publication or device acceptance. The source-build examples later in this document refer to the reviewed preview.6 checkout below. The core builder currently emits preview.6, so do not combine that runtime with preview.7 wrappers.
+
+First public publication is being prepared. Use these commands once this version is visible in its registry. Historical private archives and locks retain their original identities.
+
+Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode / Swift 5.9+. It covers arm64 devices and arm64/x86_64 simulators.
+
+Use the exact SwiftPM version; Package.swift pins the binary URL and checksum:
+
+```swift
+.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.0")
+```
+
+For CocoaPods, add the public organization Specs repository alongside the official source:
+
+```ruby
+source 'https://github.com/weapp-container/Specs.git'
+source 'https://cdn.cocoapods.org/'
+platform :ios, '16.0'
+pod 'WeappContainer', '0.1.0-preview.7.0'
+```
+
+The Pod downloads a fixed HTTP archive containing Swift sources, the XCFramework and licenses, verified by SHA-256. Installation needs no Node.js, Rust or local runtime checkout. Check the [Specs publication record](https://github.com/weapp-container/Specs) for Trunk availability.
+
+<a id="已复核的源码构建版本"></a>
+### Reviewed source-build checkout
+
+```sh
+git clone https://github.com/weapp-container/sdk-ios.git sdk-ios-source
+cd sdk-ios-source
+git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
+```
+
+
 
 [Documentation](https://container.weapp.dev/en/docs/) · [Build from source](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md) · [APIs and contracts](https://github.com/weapp-container/sdk-contract/blob/main/README.en.md)
 
 Embed mini-program pages within iOS applications. The SDK provides Swift session management, UIKit / SwiftUI view integration, host messaging channels, and local persistence, with JavaScript execution via QuickJS and page rendering through Skia Metal.
 
-Current source version: **0.1.0-preview.6.0**. The SDK wrapper source is licensed under [Apache-2.0](LICENSE); the runtime source is provided in the main repository under Apache-2.0. This repository contains the SDK wrapper layer source, while the runtime is built or installed separately.
+Reviewed source example version: **0.1.0-preview.6.0**. The SDK wrapper source is licensed under [Apache-2.0](LICENSE); the runtime source is provided in the main repository under Apache-2.0. This repository contains the SDK wrapper layer source, while the runtime is built or installed separately.
 
 <a id="从当前源码开始"></a>
 ## Starting from Source Code
