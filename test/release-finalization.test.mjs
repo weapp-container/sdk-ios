@@ -30,7 +30,7 @@ test('iOS finalization preserves the tested archive bytes across the reviewed pi
   const release = writeRelease(root, out, 'weapp-container/sdk-ios', assets);
   writeFileSync(join(root, 'release-assets.json'), JSON.stringify(release));
   writeFileSync(join(root, 'Package.swift'), `.binaryTarget(name: "WeappContainerNative", url: "${releaseUrl(release, assets[0])}", checksum: "${assets[0].sha256}")`);
-  writeFileSync(join(root, 'WeappContainer.podspec'), `s.source = { :http => '${releaseUrl(release, assets[1])}', :sha256 => '${assets[1].sha256}' }`);
+  writeFileSync(join(root, 'WeappContainer.podspec'), `s.source = { :http => '${releaseUrl(release, assets[1])}', :sha256 => '${assets[1].sha256}', :flatten => true }`);
   commit(root);
   run(process.execPath, ['tools/package-release.mjs', '--out', out, '--finalize'], root);
   const finalized = readRelease(join(out, 'release.json'), release.repository, release.sdkVersion, true);
