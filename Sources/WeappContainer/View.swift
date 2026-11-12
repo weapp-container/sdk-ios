@@ -116,13 +116,16 @@ import WeappContainerNative
 /// A touch that starts inside the mini-program belongs to its input runtime.
 /// Claim only ancestor scroll pans; leave host navigation and other recognizers
 /// free to cancel the touch through the normal UIKit cancellation path.
+/// Deliver the recognizer's original stream: UIScrollView may delay/replay the
+/// responder's touchesBegan while withholding its subsequent move events.
 @MainActor private final class ContainerTouchOwnership: UIGestureRecognizer {
     private let acceptsInput: () -> Bool
     private var contacts: Set<UITouch> = []
+    weak var containerView: WeappContainerView?
     init(acceptsInput: @escaping () -> Bool) {
         self.acceptsInput = acceptsInput
         super.init(target: nil, action: nil)
-        cancelsTouchesInView = false
+        cancelsTouchesInView = true
         delaysTouchesBegan = false; delaysTouchesEnded = false
     }
     private func isAncestorScrollPan(_ recognizer: UIGestureRecognizer) -> Bool {
@@ -137,16 +140,30 @@ import WeappContainerNative
         !isAncestorScrollPan(preventingGestureRecognizer) && super.canBePrevented(by: preventingGestureRecognizer)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesBegan(touches, with: event)
         guard acceptsInput() else { state = state == .possible ? .failed : .cancelled; return }
         contacts.formUnion(touches)
         state = state == .possible ? .began : .changed
+        containerView?.ownedTouchesBegan(touches, with: event)
     }
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) { state = .changed }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesMoved(touches, with: event); state = .changed
+        containerView?.ownedTouchesMoved(touches, with: event)
+    }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesEnded(touches, with: event)
+        containerView?.ownedTouchesEnded(touches, with: event)
         contacts.subtract(touches); state = contacts.isEmpty ? .ended : .changed
     }
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) { state = .cancelled }
-    override func reset() { super.reset(); contacts.removeAll() }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesCancelled(touches, with: event)
+        containerView?.ownedTouchesCancelled(touches, with: event); contacts.removeAll(); state = .cancelled
+    }
+    override func reset() {
+        super.reset()
+        containerView?.resetOwnedTouches()
+        contacts.removeAll()
+    }
 }
 
 /// Native Skia Metal surface. Removing this view hides the app; it does not
@@ -184,7 +201,8 @@ import WeappContainerNative
         surface = try MetalSurface(layer: layer as! CAMetalLayer, session: session)
         try session.claim(surface)
         isOpaque = true; backgroundColor = .white; isMultipleTouchEnabled = true
-        addGestureRecognizer(ContainerTouchOwnership { [weak self] in self?.acceptsInput ?? false })
+        let ownership = ContainerTouchOwnership { [weak self] in self?.acceptsInput ?? false }
+        ownership.containerView = self; addGestureRecognizer(ownership)
         // Session lifecycle operations retire their native touch state. They
         // must not replay a cancellation against another page or surface.
         surface.cancelInput = { [weak self] in self?.retireInput() }
@@ -331,21 +349,21 @@ import WeappContainerNative
         session.setSurfaceForeground(active); link?.isPaused = !session.isForeground
     }
     private var acceptsInput: Bool { !detached && observedMetrics != nil && session.canPresent && bounds.width > 0 && bounds.height > 0 }
-    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    fileprivate func ownedTouchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard acceptsInput, !ignoringTouches else { return }
         if touch != nil || touches.count != 1 || activeCount(event) > 1 { cancelTouch(); ignoringTouches = true; return }
         guard let t = touches.first else { return }
         touch = t; start = t.location(in: self); last = start; started = t.timestamp; moved = false
         dispatch([pointer("touchstart", active: true, time: t.timestamp)])
     }
-    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    fileprivate func ownedTouchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard acceptsInput else { retireInput(); return }
         guard activeCount(event) <= 1 else { cancelTouch(); ignoringTouches = true; return }
         guard let t = touch, touches.contains(t), !ignoringTouches else { return }
         last = t.location(in: self); moved = moved || hypot(last.x - start.x, last.y - start.y) > 10
         dispatch([pointer("touchmove", active: true, time: t.timestamp)])
     }
-    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    fileprivate func ownedTouchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         defer { if activeCount(event) == 0 { ignoringTouches = false } }
         guard let t = touch, touches.contains(t) else { return }
         guard acceptsInput else { retireInput(); return }
@@ -355,10 +373,11 @@ import WeappContainerNative
         if !moved, t.timestamp - started <= 0.5, bounds.contains(last) { values.append(pointer("tap", active: false, time: t.timestamp)) }
         touch = nil; dispatch(values)
     }
-    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+    fileprivate func ownedTouchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let t = touch, touches.contains(t) { cancelTouch() }
         if activeCount(event) == 0 { ignoringTouches = false }
     }
+    fileprivate func resetOwnedTouches() { cancelTouch(); ignoringTouches = false }
     private func cancelTouch() {
         guard let t = touch else { return }
         let value = pointer("touchcancel", active: false, time: t.timestamp); touch = nil

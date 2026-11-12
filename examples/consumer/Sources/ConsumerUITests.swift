@@ -64,19 +64,23 @@ import XCTest
         _ = try wait { (($0["show"] as? [String: Any])?["shows"] as? Int ?? 0) > showCount }
         let sceneRotation = "__SDK_ROTATION_MODE__" == "scene"
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .landscapeLeft }
-        let rotated = try wait { ($0["surfaceWidth"] as? Double) != (initial["surfaceWidth"] as? Double) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "landscape" && [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) }
-        try assertWindowMetrics(rotated, snapshot: "resize")
+        let rotated = try wait { ($0["surfaceWidth"] as? Double) != (initial["surfaceWidth"] as? Double) && self.hasCurrentGeometry($0, orientation: "landscape") && [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) }
+        try assertResizeViewport(rotated)
+        try assertWindowMetrics(rotated, snapshot: "geometry")
         capture("rotation")
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .portrait }
-        let upright = try wait { ($0["surfaceWidth"] as? Double) == (initial["surfaceWidth"] as? Double) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "portrait" && $0["interfaceOrientation"] as? Int == 1 }
-        try assertWindowMetrics(upright, snapshot: "resize")
+        let upright = try wait { ($0["surfaceWidth"] as? Double) == (initial["surfaceWidth"] as? Double) && self.hasCurrentGeometry($0, orientation: "portrait") && $0["interfaceOrientation"] as? Int == 1 }
+        try assertResizeViewport(upright)
+        try assertWindowMetrics(upright, snapshot: "geometry")
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .landscapeRight }
-        let otherLandscape = try wait { [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) && ($0["interfaceOrientation"] as? Int) != (rotated["interfaceOrientation"] as? Int) && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "landscape" }
-        try assertWindowMetrics(otherLandscape, snapshot: "resize")
+        let otherLandscape = try wait { [3, 4].contains($0["interfaceOrientation"] as? Int ?? 0) && ($0["interfaceOrientation"] as? Int) != (rotated["interfaceOrientation"] as? Int) && self.hasCurrentGeometry($0, orientation: "landscape") }
+        try assertResizeViewport(otherLandscape)
+        try assertWindowMetrics(otherLandscape, snapshot: "geometry")
         capture("opposite-landscape")
         if sceneRotation { app.buttons["Rotate"].tap() } else { XCUIDevice.shared.orientation = .portrait }
-        let restored = try wait { $0["interfaceOrientation"] as? Int == 1 && ($0["resize"] as? [String: Any])?["deviceOrientation"] as? String == "portrait" }
-        try assertWindowMetrics(restored, snapshot: "resize")
+        let restored = try wait { $0["interfaceOrientation"] as? Int == 1 && self.hasCurrentGeometry($0, orientation: "portrait") }
+        try assertResizeViewport(restored)
+        try assertWindowMetrics(restored, snapshot: "geometry")
         app.buttons["Reload"].tap()
         let reload = try wait { $0["reloaded"] as? Bool == true && ($0["completedFrames"] as? Int ?? 0) > 1 }
         XCTAssertEqual(reload["failedLoadPreservedGeneration"] as? Bool, true)
@@ -87,12 +91,12 @@ import XCTest
         try assertWindowMetrics(reopened, snapshot: "initial")
         capture("reopened-persistent")
         app.buttons["Embed"].tap()
-        _ = try wait { $0["nested"] as? Bool == true && $0["geometry"] != nil }
+        _ = try wait { $0["nested"] as? Bool == true && self.hasCurrentGeometry($0, orientation: "portrait") }
         let hostArea = app.otherElements["parent-drag-area"].coordinate(withNormalizedOffset: .zero)
         hostArea.withOffset(CGVector(dx: 180, dy: 100)).press(forDuration: 0.05, thenDragTo: hostArea.withOffset(CGVector(dx: 180, dy: 15)))
         _ = try wait { ($0["parentOffset"] as? Double ?? 0) > 30 }
         app.buttons["Reset"].tap()
-        let reset = try wait { abs($0["parentOffset"] as? Double ?? 0) < 1 }
+        let reset = try wait { abs($0["parentOffset"] as? Double ?? 0) < 1 && self.hasCurrentGeometry($0, orientation: "portrait") && ($0["stateAfterPresentation"] as? [String: Any])?["inputEnabled"] as? Bool == true }
         try assertWindowMetrics(reset, snapshot: "geometry")
         let nestedGeometry = try XCTUnwrap((reset["geometry"] as? [String: Any])?["scroll"] as? [String: Any])
         let nestedX = try XCTUnwrap(nestedGeometry["left"] as? Double) + 50
@@ -108,6 +112,16 @@ import XCTest
         capture("native-nested-scroll-and-multitouch")
         app.buttons["Close"].tap()
         _ = try wait { $0["pairClosed"] as? Bool == true }
+    }
+    private func hasCurrentGeometry(_ facts: [String: Any], orientation: String) -> Bool {
+        facts["geometryMatchesWindow"] as? Bool == true && (facts["geometry"] as? [String: Any])?["deviceOrientation"] as? String == orientation
+    }
+    private func assertResizeViewport(_ facts: [String: Any], file: StaticString = #filePath, line: UInt = #line) throws {
+        // The queued resize event describes the accepted observation at that
+        // instant. UIKit may finish orientation afterwards at the same size.
+        let resize = try XCTUnwrap(facts["resize"] as? [String: Any], file: file, line: line)
+        XCTAssertEqual(resize["windowWidth"] as? Double, facts["surfaceWidth"] as? Double, file: file, line: line)
+        XCTAssertEqual(resize["windowHeight"] as? Double, facts["surfaceHeight"] as? Double, file: file, line: line)
     }
     private func assertWindowMetrics(_ facts: [String: Any], snapshot: String, file: StaticString = #filePath, line: UInt = #line) throws {
         let observed = try XCTUnwrap(facts[snapshot] as? [String: Any], file: file, line: line)
