@@ -1,4 +1,8 @@
+<a id="native-system-api"></a>
 # 原生系统 API
+
+**简体中文** · [English](SYSTEM-APIS.en.md)
+
 
 `WeappSystemApis` 由 `WeappNativeDeviceServices` 统一安装，也可在可信宿主配置后、加载小程序前独立安装。联系人、日历、相机扫码与 NFC 均使用系统 UI 或原生框架；编译通过不代表真机验收。
 

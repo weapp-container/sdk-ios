@@ -18,6 +18,7 @@
     "test:account-cleanup": "node tools/test-account-cleanup.mjs",
     "test:identity-snapshot": "node tools/test-identity-snapshot.mjs",
     "test:host-backend-error": "node tools/test-host-backend-error.mjs",
-    "check:origin": "node tools/check-origin.mjs"
+    "check:origin": "node tools/check-origin.mjs",
+    "docs:check": "node tools/documentation/check.mjs && node tools/documentation/check-content.mjs"
   }
 }

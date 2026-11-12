@@ -1,4 +1,8 @@
+<a id="ios-wi-fi-public-capability-range"></a>
 # iOS Wi-Fi 公共能力范围
+
+**简体中文** · [English](WIFI-APIS.en.md)
+
 
 SDK 默认不安装 Wi-Fi。宿主显式配置：
 
