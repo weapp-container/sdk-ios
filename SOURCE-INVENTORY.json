@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "ec60ce13fa28968ebf8a9f18422d7d8047b846e789cc9591392658b70ecc8f5e",
-  "review": "Pin the verified public runtime release and review publication metadata",
+  "sourceFilesSha256": "001a24af36532e819c1d653bb74f75df04ce9e4343031fd090b32458f81cf5e3",
+  "review": "Document the compiler SDK required by the published iOS wrapper",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -101,14 +101,14 @@
     },
     {
       "path": "README.en.md",
-      "sha256": "6d352abd8390f646584d2218c17fa46f6a1c83e91dece553010b0e3e8271e59b",
-      "size": 7236,
+      "sha256": "c91d278422be5ed7200e29fd78a1751bf7fc6340cd9d0b04241bd14e52013e55",
+      "size": 7255,
       "mode": "100644"
     },
     {
       "path": "README.md",
-      "sha256": "4dfdced8260d27554956a519f519cc97fcdd1b53a6eacb89063974e09a03ce18",
-      "size": 6720,
+      "sha256": "ce2269e549187959baecd9d956cd121679b9eeea3e6bf8990b0a4e4ededb4261",
+      "size": 6741,
       "mode": "100644"
     },
     {

@@ -2,7 +2,7 @@
 
 First public publication is being prepared. Use these commands once this version is visible in its registry. Historical private archives and locks retain their original identities.
 
-Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode / Swift 5.9+. It covers arm64 devices and arm64/x86_64 simulators.
+Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode 27.2+ (Swift 5.9 language mode). It covers arm64 devices and arm64/x86_64 simulators.
 
 Use the exact SwiftPM version; Package.swift pins the binary URL and checksum:
 
