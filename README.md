@@ -2,7 +2,7 @@
 
 首次公开发布正在准备；安装命令须在对应注册源出现本版本后使用。历史私有归档及其锁文件保持原样。
 
-版本 `0.1.0-preview.7.0`；iOS 16+，Xcode / Swift 5.9+；包含 arm64 真机和 arm64/x86_64 模拟器。
+版本 `0.1.0-preview.7.0`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。
 
 Swift Package Manager 使用固定版本标签；二进制归档由 Package.swift 的 URL 与 checksum 锁定：
 
