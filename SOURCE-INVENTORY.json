@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "a73ecf2471efd16f500a6fcf499d95bda4611cc45a4fa5c6e1ad4346cdb06f1d",
-  "review": "Capture the second independent consumer window witness for existing simulator assertions",
+  "sourceFilesSha256": "5ec3aa5d9adb0e61cde366c5a34678514661c2df96910dbc07e2a030f3edd782",
+  "review": "Use the owning recognizer original touch stream inside UIScrollView and validate current snapshots after UIKit scene rotation settles.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -245,8 +245,8 @@
     },
     {
       "path": "Sources/WeappContainer/View.swift",
-      "sha256": "6beb0621b70d343e9420502e10904e0175326e4849185ff3095877df0259d8a1",
-      "size": 24014,
+      "sha256": "f4e3d3f921a2fa419bc430ce931c313886ded6fd282699af82d6f10b21963df7",
+      "size": 24920,
       "mode": "100644"
     },
     {
@@ -281,14 +281,14 @@
     },
     {
       "path": "docs/window-metrics.md",
-      "sha256": "12eaff0bfac93cee985962b76608083e5eb2e389589c38501a87b04ec891f9c5",
-      "size": 7748,
+      "sha256": "3b8e82eca7904d6a3003d96fcc9fb02f825896f02b3b97361f6a4c11ec0409dc",
+      "size": 8208,
       "mode": "100644"
     },
     {
       "path": "docs/window-metrics.zh-CN.md",
-      "sha256": "ad70e3fb8fe3ad02f4bf245f742af716ac439995410f5d979cf33b71efcf8886",
-      "size": 3452,
+      "sha256": "1b5dcb53346dc6c62ed863cd2dcb160146ef1bd64dee527a92c3e0b76d09cb2a",
+      "size": 3841,
       "mode": "100644"
     },
     {
@@ -299,14 +299,14 @@
     },
     {
       "path": "examples/consumer/Sources/Consumer.swift",
-      "sha256": "be8d4abc8c4763852a2b8f6dea7da1587775bf4e4d15fa300e8f52324b13083d",
-      "size": 21926,
+      "sha256": "5b364bc1a7da3affb61029e66fec60ca65b8ce558aa3dd1cd63d80d82037a647",
+      "size": 22593,
       "mode": "100644"
     },
     {
       "path": "examples/consumer/Sources/ConsumerUITests.swift",
-      "sha256": "a280a95c981f7f1e21d4cf022badef8113cec4a6aa296461daa311a88b8904bc",
-      "size": 12299,
+      "sha256": "02cf3726e50fb9ef9d2acd5361b7ae6787d86e1e29a935e927b18b8bade40bfd",
+      "size": 13401,
       "mode": "100644"
     },
     {
@@ -581,8 +581,8 @@
     },
     {
       "path": "tools/simulator-smoke.mjs",
-      "sha256": "67f0574ae8ebee86db521725bdb55d2a4836baeecc2af0666b414a0addea4152",
-      "size": 10629,
+      "sha256": "63354e2ba846f9d716562a9b28657a0352077b53707fb3d3975b842140864e1c",
+      "size": 10717,
       "mode": "100644"
     },
     {
