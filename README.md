@@ -207,6 +207,7 @@ node tools/simulator-smoke.mjs --distribution artifacts/sdk/ios/WeappContainer -
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git
 cd sdk-ios
+git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
 ```
 
 获得运行库访问授权后，通过凭据环境提供 `WEAPP_CONTAINER_RUNTIME_TOKEN`，权限限定为私有产物仓库的 **Contents: read**。不要把凭据写进源码或命令参数。

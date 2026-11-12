@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.0",
-  "sourceFilesSha256": "4940ee50eb2b88202b63d2724b9db93992558bff51116be395cb6a40fa39ccfe",
-  "review": "Merge public distribution candidate and review bilingual installation boundaries; retain pinned preview.6 source example, historical ORIGIN and artifact locks.",
+  "sourceFilesSha256": "84c90912ad53c61353016fa303583bc2b74362a658e9c6d979ce2b147a89b115",
+  "review": "Review merged public publication workflows and bilingual maintainer guidance; keep original SDK behavior, ORIGIN and historical artifact locks.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -37,6 +37,12 @@
       "path": ".github/workflows/publication-security.yml",
       "sha256": "b6d87425d409e2d0add4aaa9b40fc7c0f33e5b6be9ff692eaecc91ed32b93c91",
       "size": 1189,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish-release.yml",
+      "sha256": "b06eebbdf6c244f74b5bb44bc11dee6a2b90817611e7f65730e19492adbafb64",
+      "size": 857,
       "mode": "100644"
     },
     {
@@ -100,6 +106,18 @@
       "mode": "100644"
     },
     {
+      "path": "PUBLIC-RELEASE.en.md",
+      "sha256": "72f8302bc052046c8203b3e49615e20ebed57a6072457df690c8e3d8335c19b7",
+      "size": 3438,
+      "mode": "100644"
+    },
+    {
+      "path": "PUBLIC-RELEASE.md",
+      "sha256": "2f98992b79546245e82c291a1ec3c396b8b25ae28a92a136d4a3e02b711c98fe",
+      "size": 3119,
+      "mode": "100644"
+    },
+    {
       "path": "Package.swift",
       "sha256": "4c201a804c57867ca5dcf15bf9b96453f4e4b669a127b64b4d11a67fa9ba569f",
       "size": 1427,
@@ -107,14 +125,14 @@
     },
     {
       "path": "README.en.md",
-      "sha256": "8228ff98d7710c67c0d53dc827a3b7bc42b31629cd722e9758f52c1f5964645f",
-      "size": 15656,
+      "sha256": "e765630dfe04f201d9d26149ff9983c3b321e3fb652add81cd4cf2f08cec5ce2",
+      "size": 15710,
       "mode": "100644"
     },
     {
       "path": "README.md",
-      "sha256": "8fe983a0a591112c1ba1cf1caade657ac9f575972e7c23de5b2f0fc6fa0b5346",
-      "size": 13706,
+      "sha256": "de77718893e19572d6b4b139ec3af0421ab3d82c603b289b660db8dd1d760372",
+      "size": 13760,
       "mode": "100644"
     },
     {
@@ -317,8 +335,8 @@
     },
     {
       "path": "documentation.json",
-      "sha256": "097ed8520145799f6e035038efad7ee89bca67c9b189341d2318a41163ae192f",
-      "size": 7809,
+      "sha256": "e953b0a99d56e3212656eeab996eaed3c59889dcc8c87a5ad76ae04483a57f79",
+      "size": 8325,
       "mode": "100644"
     },
     {

@@ -206,6 +206,7 @@ Repository-authored runtime and SDK source uses Apache-2.0. Build the current ru
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git
 cd sdk-ios
+git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
 ```
 
 Once runtime access is authorized, provide `WEAPP_CONTAINER_RUNTIME_TOKEN` through the credential environment with **Contents: read** for the private artifact repository. Keep credentials out of source and command arguments.

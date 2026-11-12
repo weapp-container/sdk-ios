@@ -68,8 +68,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "README.md"
       },
-      "reviewedChineseSummary": "合入 preview.7 公开发行候选的安装入口；保留已匹配的 preview.6 源码构建版本、历史锁与独立设备验收边界。",
-      "reviewedChineseSha256": "8fe983a0a591112c1ba1cf1caade657ac9f575972e7c23de5b2f0fc6fa0b5346",
+      "reviewedChineseSummary": "同步最新公开发行工作流入口，保留固定 preview.6 源码用法与 preview.7 发行候选的独立边界。",
+      "reviewedChineseSha256": "de77718893e19572d6b4b139ec3af0421ab3d82c603b289b660db8dd1d760372",
       "legacyHeadingIds": [
         "1-获取运行库",
         "2-构建并接入",
@@ -218,6 +218,19 @@
       },
       "reviewedChineseSummary": "双语文档维护；更新一组文档；网站快照；检查与测试",
       "reviewedChineseSha256": "6c0d12dd12a6cd4a1076e912f2a09d959772638769da314e76d1708cc7c5a64e",
+      "legacyHeadingIds": []
+    },
+    {
+      "id": "public-release",
+      "zh": "PUBLIC-RELEASE.md",
+      "en": "PUBLIC-RELEASE.en.md",
+      "section": "tools",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "PUBLIC-RELEASE.md"
+      },
+      "reviewedChineseSummary": "维护者发行顺序、认证、不可变资产与平台独立验收条件；不会自动发布或修改历史发行物。",
+      "reviewedChineseSha256": "2f98992b79546245e82c291a1ec3c396b8b25ae28a92a136d4a3e02b711c98fe",
       "legacyHeadingIds": []
     }
   ],
