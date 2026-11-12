@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.6.0",
-  "sourceFilesSha256": "aef178410b99357116ea7a2fa45674e83928f3a01593fe85151af5efe8db6993",
-  "review": "Consolidate future runtime releases in the core repository; retain immutable historical artifact locks and ORIGIN",
+  "sourceFilesSha256": "1ee07dde73bf9e460ece338829eabfdeb5fb4a148239300c5cd8d471a3d2545d",
+  "review": "Isolate immutable legacy downloads in private storage and enforce reviewed publication scanning",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -16,9 +16,21 @@
       "mode": "100644"
     },
     {
+      "path": ".github/workflows/publication-security.yml",
+      "sha256": "b6d87425d409e2d0add4aaa9b40fc7c0f33e5b6be9ff692eaecc91ed32b93c91",
+      "size": 1189,
+      "mode": "100644"
+    },
+    {
       "path": ".gitignore",
       "sha256": "c9cbe620e120627c6e7f4d75ec73d3cee15d5ff21f2fca8fc7bc006ac5eb7fa1",
       "size": 70,
+      "mode": "100644"
+    },
+    {
+      "path": ".public-source-policy.json",
+      "sha256": "656e72ff4cd56f2863b2f16a7f23ff9e56421229e79398b9749a3adeeec95d6b",
+      "size": 76,
       "mode": "100644"
     },
     {
@@ -59,14 +71,14 @@
     },
     {
       "path": "README.en.md",
-      "sha256": "87d7cfad689d960c2517437bc7aa620697ef1b275067a718ce4405c6437cdaf2",
-      "size": 10154,
+      "sha256": "0dd4122275f9e3d419a7139cd01eeaab3d0ff98edcb729e8dfc9e1838661358e",
+      "size": 10643,
       "mode": "100644"
     },
     {
       "path": "README.md",
-      "sha256": "571f9e57ae950f78f7e84901f70f754138984002627c22061309765fa35b03e8",
-      "size": 9431,
+      "sha256": "5b81645b71daa5355490df99d5263e3d9624e10377dcf50603c349989f337a3d",
+      "size": 9585,
       "mode": "100644"
     },
     {
@@ -449,8 +461,8 @@
     },
     {
       "path": "test/runtime-repository.test.mjs",
-      "sha256": "67ab428402cbc8683a93d046a3046c72d81d6217ccd35271f7bc1d4a7a0a6a74",
-      "size": 5195,
+      "sha256": "9033e1e8890b92969386374366a70a92ed6d51573032af1efc3aca4118d1d47d",
+      "size": 5492,
       "mode": "100644"
     },
     {
@@ -497,8 +509,14 @@
     },
     {
       "path": "tools/runtime-artifacts.mjs",
-      "sha256": "e406847cda005b6d52f5b63b18f0d4e7e91b1dc5d9d6d8519d4d601980af1480",
-      "size": 20516,
+      "sha256": "17b6f4f4ec2a1b743fe1e2632b3a119f0cf2bf7fd3b7fa1e15df32da5d8bb882",
+      "size": 21000,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/scan-public-source.mjs",
+      "sha256": "51c6dbef9b53291ade608e239fa94010c7177afabce05ce7a3b1450d28aff1f7",
+      "size": 8037,
       "mode": "100644"
     },
     {
