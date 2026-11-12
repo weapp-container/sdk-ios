@@ -13,6 +13,16 @@ const reviewedSource = verifySourceInventory(root);
 const args = process.argv.slice(2);
 const expectedDistribution = distributionOptions(args);
 if (process.platform !== 'darwin') throw new Error('XCFramework assembly requires macOS and Xcode');
+function toolVersion(command, argv) {
+  const result = spawnSync(command, argv, { encoding: 'utf8' });
+  if (result.error || result.status !== 0) throw new Error(`Cannot read ${command} toolchain version`);
+  return result.stdout.trim();
+}
+const toolchain = { xcode: toolVersion('xcodebuild', ['-version']), iosSdk: toolVersion('xcrun', ['--sdk', 'iphoneos', '--show-sdk-version']), simulatorSdk: toolVersion('xcrun', ['--sdk', 'iphonesimulator', '--show-sdk-version']) };
+for (const sdk of [toolchain.iosSdk, toolchain.simulatorSdk]) {
+  const [major, minor = 0] = sdk.split('.').map(Number);
+  if (!Number.isInteger(major) || major < 27 || major === 27 && minor < 1) throw new Error('The current Swift integration requires iOS 27.1+ device and simulator SDKs. Select a supported Xcode; use a local macOS build while hosted runner images lack this SDK.');
+}
 const native = requireNativeRoot(args);
 const licenses = resolve(option(args, '--licenses-root', resolve(native, '../licenses')));
 const out = resolve(option(args, '--out', resolve(root, 'artifacts/ios')));
@@ -31,7 +41,7 @@ function run(command, argv) {
 }
 const receipt = {
   schemaVersion: 1, sdkVersion: SDK_VERSION, ...expectedDistribution, status: 'building', profile: 'release',
-  ...sourceProvenance(root), sourceInventorySha256: reviewedSource.inventorySha256, minimumIOS: '16.0',
+  ...sourceProvenance(root), sourceInventorySha256: reviewedSource.inventorySha256, minimumIOS: '16.0', toolchain,
   startedAt: new Date().toISOString(), targets, native: inputs.map(input => nativeIdentity(input.receipt)), artifacts: [],
 };
 const save = () => writeFileSync(resolve(out, 'build.json'), `${JSON.stringify(receipt, null, 2)}\n`);
