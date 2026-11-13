@@ -117,9 +117,13 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
                     facts["capturePreservedState"] = .bool(true)
                 } catch { fail(error) }
             }
-            // Geometry is valid only after this revision has actually been
-            // presented. Loading and resizing may still be awaiting Metal.
-            if facts["geometry"] == nil, facts["stateAfterPresentation"]?["inputEnabled"].bool == true {
+            // UIKit can publish a new size before its final scene orientation.
+            // Inspect again after every changed, actually presented observation;
+            // an orientation-only update deliberately does not emit onResize.
+            let witness = nativeWindowWitness(v)
+            let inspected = facts["geometry"]
+            let geometryIsCurrent = matchesWindow(inspected, witness)
+            if !geometryIsCurrent, facts["stateAfterPresentation"]?["inputEnabled"].bool == true {
                 do { try s.sendMessage(.object(["op": .string("inspect")])) } catch { fail(error) }
             }
             publish()
@@ -190,6 +194,7 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
             case .message(let value):
                 if value["kind"].string == "initial" {
                     facts["secondInitial"] = value; facts["secondInitialNativeWindow"] = nativeWindowWitness(v)
+                    facts["secondInitialCapturedWindow"] = v.captureWindowMetrics()
                 }
                 if value["kind"].string == "tap" { facts["secondTap"] = value }
             case .error(let error): fail(error)
@@ -358,7 +363,15 @@ final class ConsumerSceneDelegate: UIResponder, UIWindowSceneDelegate {
                                  "width": .number(Double(safe.width)), "height": .number(Double(safe.height))])
         ])
     }
+    private func matchesWindow(_ snapshot: WeappJSON?, _ witness: WeappJSON) -> Bool {
+        guard case .object(let fields) = witness else { return false }
+        return fields.allSatisfy { snapshot?[$0.key] == $0.value }
+    }
     private func publish() {
+        if let container {
+            let witness = nativeWindowWitness(container)
+            facts["geometryMatchesWindow"] = .bool(matchesWindow(facts["geometry"], witness))
+        }
         facts["surfaceWidth"] = .number(Double(container?.bounds.width.rounded() ?? 0))
         facts["surfaceHeight"] = .number(Double(container?.bounds.height.rounded() ?? 0))
         facts["interfaceOrientation"] = .number(Double(view.window?.windowScene?.interfaceOrientation.rawValue ?? 0))

@@ -122,3 +122,11 @@ physical-device, signing, or reserved-region acceptance by itself.
 
 References: [Duo preparation](https://developer.apple.com/iphone-duo/prepare/)
 and [Duo design guidance](https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo).
+
+
+During rotation, UIKit can report a changed viewport before its resolved scene
+orientation changes. Each complete observation updates the synchronous APIs;
+`onResize` runs only when the viewport size changes. The consumer checks that
+callback's viewport, then reads a fresh JS snapshot after presentation and
+compares every geometry field, including orientation, with the settled UIKit
+witness. A queued resize message is not evidence of UIKit's later state.

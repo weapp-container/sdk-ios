@@ -27,3 +27,8 @@
 ## iOS 命令
 
 `node tools/package-release.mjs --sdk artifacts/ios/WeappContainer --out artifacts/public` 归档已验证 SDK。`--pin` 写入实际 URL/checksum pin。刷新源码清单、复核并提交后，`--finalize` 保留原始打包来源并绑定发布提交。`--verify` 执行离线验证；`--publish` 上传相同归档字节，核对 GitHub digest 后发布 prerelease。
+
+
+发布工作流只接受与当前 checkout 提交完全一致且成功完成 finalize 的产物。iOS 在归档 pin 已复核并提交后，使用原成功 `build-public.yml` 的 run ID 执行 `finalize-public.yml`。Desktop 的 `build-public.yml` 自动将三个平台成功作业合并为 `finalized-public-release`，包含固定哈希的 macOS Podspec。finalize 和发布均复用原始归档字节。
+
+当前 Swift 接入要求真机和模拟器均使用 iOS 27.1 或更新 SDK 编译，部署最低版本仍为 iOS 16。打包器在组装前检查并记录 Xcode 和 SDK 版本。公开构建使用专用 `xcode-27` runner，显式选择 Xcode 27.2。缺少此 SDK 的标准 macOS 镜像不能验证本次发行。可在受支持的本地 macOS 工具链上执行相同构建、打包、暂存 SwiftPM 消费和 Pod lint 命令，保留日志后再固定和 finalize 原始归档。

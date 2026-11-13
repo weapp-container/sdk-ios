@@ -45,3 +45,11 @@ wx.onHostLayoutChange(updateLayout)
 Running `npm run test:window-metrics` can verify values, defaults, and boundary rejection. UIKit transformations, actual event delivery, fold states, RTL, and embedded window behavior must be validated using a separate simulator. The final App must link to the iOS 27.1+ SDK to access Duo full-screen behavior; signature and device verification are separately recorded.
 
 References: [Apple Adaptation Guide](https://developer.apple.com/iphone-duo/prepare/) · [Duo Design Specifications](https://developer.apple.com/design/human-interface-guidelines/designing-for-iphone-duo).
+
+
+During rotation, UIKit can report a changed viewport before its resolved scene
+orientation changes. Each complete observation updates the synchronous APIs;
+`onResize` runs only when the viewport size changes. The consumer checks that
+callback's viewport, then reads a fresh JS snapshot after presentation and
+compares every geometry field, including orientation, with the settled UIKit
+witness. A queued resize message is not evidence of UIKit's later state.

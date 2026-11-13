@@ -5,11 +5,11 @@
 <a id="公开发行候选preview7"></a>
 ## Public distribution candidate: preview.7
 
-The installation examples below describe the preview.7 distribution candidate. Check the named registry or release before using them; source publication does not establish package publication or device acceptance. The source-build examples later in this document refer to the reviewed preview.6 checkout below. The core builder currently emits preview.6, so do not combine that runtime with preview.7 wrappers.
+The current core builder and these source examples use preview.7. Core runtime, iOS, Desktop and public CocoaPods Specs downloads are available; npm, Maven Central and pub.dev publication is incomplete. Check the [release status](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.en.md) before using installation commands. Match wrapper and runtime versions. Source availability, package publication, compilation and device acceptance are recorded separately.
 
 First public publication is being prepared. Use these commands once this version is visible in its registry. Historical private archives and locks retain their original identities.
 
-Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode / Swift 5.9+. It covers arm64 devices and arm64/x86_64 simulators.
+Version `0.1.0-preview.7.0` requires iOS 16+ and Xcode 27.2+ (Swift 5.9 language mode). It covers arm64 devices and arm64/x86_64 simulators.
 
 Use the exact SwiftPM version; Package.swift pins the binary URL and checksum:
 
@@ -34,7 +34,7 @@ The Pod downloads a fixed HTTP archive containing Swift sources, the XCFramework
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git sdk-ios-source
 cd sdk-ios-source
-git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
+git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 ```
 
 
@@ -43,7 +43,7 @@ git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
 
 Embed mini-program pages within iOS applications. The SDK provides Swift session management, UIKit / SwiftUI view integration, host messaging channels, and local persistence, with JavaScript execution via QuickJS and page rendering through Skia Metal.
 
-Reviewed source example version: **0.1.0-preview.6.0**. The SDK wrapper source is licensed under [Apache-2.0](LICENSE); the runtime source is provided in the main repository under Apache-2.0. This repository contains the SDK wrapper layer source, while the runtime is built or installed separately.
+Reviewed source example version: **0.1.0-preview.7.0**. The SDK wrapper source is licensed under [Apache-2.0](LICENSE); the runtime source is provided in the main repository under Apache-2.0. This repository contains the SDK wrapper layer source, while the runtime is built or installed separately.
 
 <a id="从当前源码开始"></a>
 ## Starting from Source Code
@@ -206,7 +206,7 @@ Repository-authored runtime and SDK source uses Apache-2.0. Build the current ru
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git
 cd sdk-ios
-git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
+git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 ```
 
 Once runtime access is authorized, provide `WEAPP_CONTAINER_RUNTIME_TOKEN` through the credential environment with **Contents: read** for the private artifact repository. Keep credentials out of source and command arguments.

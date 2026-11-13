@@ -5,11 +5,11 @@
 <a id="public-distribution-candidate-preview7"></a>
 ## 公开发行候选：preview.7
 
-下列安装示例描述 preview.7 发行候选，使用前须确认对应注册源或 Release 已提供该版本；源码公开不代表包已发布或设备验收完成。本文后续源码构建示例使用下面固定的 preview.6 checkout。当前核心构建器仍输出 preview.6，不要将该运行库与 preview.7 包装层混用。
+当前核心构建器与本页源码示例均使用 preview.7。核心运行库、iOS、Desktop 及公开 CocoaPods Specs 已提供下载；npm、Maven Central 和 pub.dev 尚未全部发布。使用安装命令前先核对[发布状态](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.md)，不要混用不同版本的包装层与运行库。源码公开、包发布、编译通过和设备验收分别记录。
 
 首次公开发布正在准备；安装命令须在对应注册源出现本版本后使用。历史私有归档及其锁文件保持原样。
 
-版本 `0.1.0-preview.7.0`；iOS 16+，Xcode / Swift 5.9+；包含 arm64 真机和 arm64/x86_64 模拟器。
+版本 `0.1.0-preview.7.0`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。
 
 Swift Package Manager 使用固定版本标签；二进制归档由 Package.swift 的 URL 与 checksum 锁定：
 
@@ -34,7 +34,7 @@ Pod 使用包含 Swift 层、XCFramework 和许可的固定 HTTP 归档，验证
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git sdk-ios-source
 cd sdk-ios-source
-git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
+git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 ```
 
 
@@ -43,7 +43,7 @@ git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
 
 在 iOS 应用中嵌入小程序页面。SDK 提供 Swift 会话、UIKit / SwiftUI 视图、宿主消息通道和本地持久化，使用 QuickJS 执行 JavaScript、Skia Metal 渲染页面。
 
-已复核源码示例版本：**0.1.0-preview.6.0**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
+已复核源码示例版本：**0.1.0-preview.7.0**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
 
 <a id="starting-from-source-code"></a>
 ## 从当前源码开始
@@ -207,7 +207,7 @@ node tools/simulator-smoke.mjs --distribution artifacts/sdk/ios/WeappContainer -
 ```sh
 git clone https://github.com/weapp-container/sdk-ios.git
 cd sdk-ios
-git checkout 7ce85729f57e9b60697574e3d6676749dd8d5245
+git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 ```
 
 获得运行库访问授权后，通过凭据环境提供 `WEAPP_CONTAINER_RUNTIME_TOKEN`，权限限定为私有产物仓库的 **Contents: read**。不要把凭据写进源码或命令参数。

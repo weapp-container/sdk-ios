@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/weapp-container/sdk-ios'
   s.license = { :type => 'Apache-2.0', :file => 'LICENSE' }
   s.author = 'Weapp Container contributors'
-  s.source = { :git => 'https://github.com/weapp-container/sdk-ios.git', :tag => "v#{s.version}" }
+  s.source = { :http => 'https://github.com/weapp-container/sdk-ios/releases/download/v0.1.0-preview.7.0/WeappContainer-0.1.0-preview.7.0.zip', :sha256 => '61a385ffb59f34e0317609a905c08215086db2b4dd8f5a57034a6e0f443834a0', :flatten => true }
   s.platform = :ios, '16.0'
   s.swift_version = '5.9'
   s.module_name = 'WeappContainer'
