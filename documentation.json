@@ -68,8 +68,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "README.md"
       },
-      "reviewedChineseSummary": "复核候选源码7.1与已公开7.0下载和锁的区别，保留当前安装状态",
-      "reviewedChineseSha256": "f0b4f326e8250f326c81769d4a898bc80ef80ed3d7cd8349783efd52e8c8fc54",
+      "reviewedChineseSummary": "iOS SDK `.7.1` candidate, pending GitHub release and CocoaPods Trunk publication",
+      "reviewedChineseSha256": "caec4a47924f0b366520832d6f53da2b6914cbe0a31be4975ac2af6e8f8ebac2",
       "legacyHeadingIds": [
         "1-获取运行库",
         "2-构建并接入",
@@ -229,8 +229,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "PUBLIC-RELEASE.md"
       },
-      "reviewedChineseSummary": "维护者发行顺序、认证、不可变资产与平台独立验收条件；不会自动发布或修改历史发行物。；已复核 preview.7 公开发行、工具链与生命周期更新",
-      "reviewedChineseSha256": "a298116b362271a41cd9110a33d8aa17d64ed03a0ee770a37fa7401c9ad3f1cc",
+      "reviewedChineseSummary": "iOS `.7.1` release workflow, exact archive pins, and pending registry acceptance",
+      "reviewedChineseSha256": "8551ab5eae2b2640e8d2ba2b05db380096c147f8cde9bc797d338922ecfbcc99",
       "legacyHeadingIds": []
     }
   ],
