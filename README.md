@@ -5,16 +5,16 @@
 <a id="public-distribution-candidate-preview7"></a>
 ## 公开发行候选：preview.7
 
-当前核心构建器与本页源码示例均使用 preview.7。核心运行库、iOS、Desktop 及公开 CocoaPods Specs 已提供下载；npm、Maven Central 和 pub.dev 尚未全部发布。使用安装命令前先核对[发布状态](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.md)，不要混用不同版本的包装层与运行库。源码公开、包发布、编译通过和设备验收分别记录。
+当前 SDK 源码是 `0.1.0-preview.7.1` 候选，核心运行库 `.7.1` 已发布；iOS GitHub release 和 CocoaPods Trunk `.7.1` 尚未发布。iOS、Desktop 与 CocoaPods `.7.0` 入口仍可用。使用安装命令前先核对[发布状态](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.md)，不要混用不同版本的包装层与运行库。源码公开、包发布、编译通过和设备验收分别记录。
 
-首次公开发布正在准备；安装命令须在对应注册源出现本版本后使用。历史私有归档及其锁文件保持原样。
+`.7.1` 安装入口在 GitHub release 与 CocoaPods Trunk 发布并完成匿名消费验证后可用。历史私有归档及其锁文件保持原样。
 
-版本 `0.1.0-preview.7.0`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。
+版本 `0.1.0-preview.7.1`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。
 
 Swift Package Manager 使用固定版本标签；二进制归档由 Package.swift 的 URL 与 checksum 锁定：
 
 ```swift
-.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.0")
+.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.1")
 ```
 
 CocoaPods 在 Podfile 添加组织公开 Specs 源和官方源：
@@ -23,7 +23,7 @@ CocoaPods 在 Podfile 添加组织公开 Specs 源和官方源：
 source 'https://github.com/weapp-container/Specs.git'
 source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-pod 'WeappContainer', '0.1.0-preview.7.0'
+pod 'WeappContainer', '0.1.0-preview.7.1'
 ```
 
 Pod 使用包含 Swift 层、XCFramework 和许可的固定 HTTP 归档，验证 SHA-256。普通安装无需 Node.js、Rust 或本地运行库目录。Trunk 投稿状态以 [Specs 发布记录](https://github.com/weapp-container/Specs) 为准。
@@ -43,7 +43,7 @@ git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 
 在 iOS 应用中嵌入小程序页面。SDK 提供 Swift 会话、UIKit / SwiftUI 视图、宿主消息通道和本地持久化，使用 QuickJS 执行 JavaScript、Skia Metal 渲染页面。
 
-已复核源码示例版本：**0.1.0-preview.7.0**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
+已复核源码示例版本：**0.1.0-preview.7.1**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
 
 <a id="starting-from-source-code"></a>
 ## 从当前源码开始
@@ -222,7 +222,7 @@ node tools/prepare-runtime.mjs
 node tools/prepare-runtime.mjs --artifact-dir /absolute/runtime-archives
 ```
 
-工具按 [当前公开锁](runtime-artifacts.0.1.0-preview.7.0.lock.json) 校验 **0.1.0-preview.7.0**、ABI 1、架构、大小和 SHA-256，安装到 `.runtime/install/native` 和 `.runtime/install/licenses`。缺少归档、无下载权限或校验不符时会失败；已有安装在失败时保留。锁文件中的 pin 不代表运行库可公开下载。
+工具按 [当前公开锁](runtime-artifacts.0.1.0-preview.7.1.lock.json) 校验 **0.1.0-preview.7.1**、ABI 1、架构、大小和 SHA-256，安装到 `.runtime/install/native` 和 `.runtime/install/licenses`。缺少归档、无下载权限或校验不符时会失败；已有安装在失败时保留。锁文件中的 pin 不代表运行库可公开下载。
 
 自定义归档清单使用 `--manifest /absolute/reviewed-lock.json`。慢速网络可通过 `WEAPP_CONTAINER_RUNTIME_TIMEOUT_MS` 调整下载超时，范围为 `1`–`3600000` 毫秒，默认 15 分钟。
 
@@ -233,4 +233,4 @@ node tools/prepare-runtime.mjs --artifact-dir /absolute/runtime-archives
 node tools/build.mjs --native-root .runtime/install/native --licenses-root .runtime/install/licenses --install-framework
 ```
 
-源码候选版 `0.1.0-preview.7.1` 用于核心运行库草稿自动化。公开下载及不可变锁仍指向 `0.1.0-preview.7.0`；本次源码更新不代表新 SDK 包已发布。
+源码候选版 `0.1.0-preview.7.1` 用于核心运行库草稿自动化。公开下载及不可变锁仍指向 `0.1.0-preview.7.1`；本次源码更新不代表新 SDK 包已发布。
