@@ -1,4 +1,8 @@
+<a id="ios-host-ability"></a>
 # iOS 宿主能力
+
+**简体中文** · [English](HOST-SERVICES.en.md)
+
 
 适配器要求匹配当前 host-services 协议的 native runtime。所有配置、安装、清理和
 宿主回调在 MainActor 上执行；旧 preview framework 不包含新协议。
@@ -164,6 +168,7 @@ WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官�
 官方公开头文件 WechatOpenSDK 2.0.9 与 AlipaySDK-iOS 15.8.30 已用于 Swift 类型
 检查，验证调用的选择器和字段。类型检查、后端本地测试、源码清单均不表示已经
 链接运行官方钱包或完成真实商户、相机、外设和账号切换验收。
+<a id="compilation-verification-record"></a>
 ## 编译验证记录
 
 [当前开发记录](test/evidence/host-services-development.json) 记录完整 Swift 模块和
@@ -184,4 +189,4 @@ WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官�
 等待取消，失败则运行一次清理；`tools/test-host-cancellation.mjs` 用实际 Swift
 弱引用检查这三个生命周期边界。
 
-Native snapshot owner validation belongs to the negotiated runtime. The SDK passes the complete captured context unchanged and preserves the runtime error, including `ERR_CANCELLED` for a retired owner; it updates its rebuild cache only after successful validation. A credential refresh cannot replace this owner check.
+原生快照所有者验证属于协商的运行时。SDK 会原样传递完整的捕获上下文，并保留运行时错误，包括已退任所有者的 `ERR_CANCELLED`；它仅在验证成功后才会更新其重建缓存。凭证刷新无法替代此所有者检查。

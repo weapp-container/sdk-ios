@@ -1,27 +1,30 @@
-# Weapp Container for iOS (preview)
+<a id="weapp-container-for-ios-preview"></a>
+# iOS 端小程序容器（预览版）
 
-Native QuickJS + Skia Metal SDK, iOS 16+, arm64 devices and arm64/x86_64 simulators.
-The application consumes Swift source and a prebuilt C XCFramework. It does not
-compile Rust, include this repository's crates, or embed a WebView.
+**简体中文** · [English](EMBEDDING.en.md)
 
-## Build the distribution
 
-Follow the standalone [root README](../README.md): download authenticated, version-locked private runtime archives, then run `node tools/build.mjs --native-root .runtime/install/native --licenses-root .runtime/install/licenses --install-framework`. The wrapper assembles an XCFramework from those inputs; it never compiles the runtime or reads a parent checkout. Output is `artifacts/ios/WeappContainer` with its build receipt and hashes.
+Native QuickJS + Skia Metal SDK，iOS 16 及以上版本，arm64 设备以及 arm64/x86_64 模拟器。
+该应用消耗 Swift 源代码和一个预构建的 C XCFramework。它不编译 Rust，不包含本仓库的 crates，也不嵌入 WebView。
 
-## Install
+<a id="build-the-distribution"></a>
+## 构建发行版
 
-Add the generated `WeappContainer` directory as a local Swift package, and add
-its `WeappContainer` product to the application target. Alternatively:
+按照独立的 [根级 README](../README.md)：下载已认证、版本锁定的私有运行时归档文件，然后运行 `node tools/build.mjs --native-root .runtime/install/native --licenses-root .runtime/install/licenses --install-framework`。包装器会从这些输入中组装出一个 XCFramework；它从不编译运行时或读取父仓库的检出内容。输出为 `artifacts/ios/WeappContainer`，包含其构建回执和哈希值。
+
+<a id="install"></a>
+## 安装
+
+将生成的 `WeappContainer` 目录作为本地 Swift 包添加，并将其中的 `WeappContainer` 产品添加到应用程序目标中。 alternatively:
 
 ```ruby
 pod 'WeappContainer', :path => '../WeappContainer'
 ```
 
-The generated directory contains its podspec, Swift sources, XCFramework,
-license, dependency lock and build receipt. A Rust toolchain is unnecessary in
-the consuming application. Do not point CocoaPods at the repository template.
+生成的目录包含其 podspec、Swift 源代码、XCFramework、许可证、依赖项锁定文件和构建回执。消费应用程序中不需要 Rust 工具链。请勿将 CocoaPods 指向仓库模板。
 
-## Embed
+<a id="embed"></a>
+## 嵌入
 
 ```swift
 import WeappContainer
@@ -42,89 +45,36 @@ func makeContainer(packURL: URL) throws -> WeappContainerViewController {
 }
 ```
 
-Add the controller as a normal child controller and give its view constraints.
-`load` waits for the view's first real window layout; the module's synchronous
-window/system APIs see those measured metrics during initialization. Cancelling
-that task before layout cancels the wait. Packs are verified local directories;
-remote downloads and pack updates belong to the host application.
+将控制器作为正常的子控制器添加，并为其视图设置约束。
+`load` 等待视图的第一次实际窗口布局；模块的同步窗口/系统 API 在初始化期间看到这些测量指标。在布局之前取消该任务将取消等待。包是已验证的本地目录；远程下载和包更新属于宿主应用程序。
 
-Development clients can await `session.prepareView()` after mounting the view
-to inspect capabilities before startup. It waits for those same real metrics
-and creates an empty runtime without executing App/Page JS or acknowledging a
-frame. Cancelling the task or closing the session settles the wait. Keep an
-accepted view mounted until a staged candidate has prepared and loaded; use
-`load` for initial startup and `applyDevPack` only for an already loaded session.
-This is an additive Swift wrapper method; the C ABI is unchanged.
+开发客户端可以在挂载视图后等待 `session.prepareView()`，在启动前检查能力。它会等待相同的实际指标，并创建一个空的运行时，而不会执行 App/Page JS 代码或确认帧。取消任务或关闭会话将结束等待。在阶段候选视图已准备并加载前，保持已接受的视图挂载；启动时使用 `load`，仅在已加载的会话中使用 `applyDevPack`。这是一个附加的 Swift 封装方法；C ABI 保持不变。
 
-For SwiftUI, create a `WeappContainerView` once and pass it to
-`WeappContainerRepresentable(view:)`. The caller owns the session lifetime.
-Flutter and React Native wrappers embed this same UIKit view.
+对于 SwiftUI，创建一个 `WeappContainerView` 实例，并将其传递给 `WeappContainerRepresentable(view:)`。调用方拥有会话的生命周期。Flutter 和 React Native 封装器嵌入了相同的 UIKit 视图。
 
-Use `sendMessage`, `navigate`, `back` and async host methods for application
-integration. JSON values use the Codable `WeappJSON` enum; runtime envelopes
-remain private. Host methods are registered before loading. Throw
-`WeappHostError` for a structured provider rejection. Native cancellation
-cancels the associated Swift Task; handlers should cooperate with cancellation.
+使用 `sendMessage`、`navigate`、`back` 和异步宿主方法进行应用集成。
+JSON 值使用 Codable `WeappJSON` 枚举；运行时信封保持私有。宿主方法在加载前注册。对结构化提供者拒绝抛出 `WeappHostError`。原生取消会取消关联的 Swift 任务；处理器应与取消协同操作。
 
-## Lifetime and rendering
+<a id="lifetime-and-rendering"></a>
+## 生命周期和渲染
 
-All session/view API and callbacks are main-actor isolated. Exactly one view can
-claim a session. Removing it from the window, hiding it or hiding an ancestor pauses rendering
-and JavaScript timers. `try session.setForeground(false)` also suspends a feature
-that remains mounted; `true` resumes only when its view and scene are visible.
-View polling cannot override an explicit host suspension. An independent completion timer continues HTTP, host-call,
-expiry and persistence progress while iOS permits process execution. It does not
-request background execution or extend the app's background lifetime.
+所有会话/视图 API 和回调都是主作用域隔离的。恰好一个视图可以声明一个会话。从窗口中移除它、隐藏它或隐藏其父级会暂停渲染和 JavaScript 定时器。`try session.setForeground(false)` 也会暂停一个仍被挂载的特性；当其视图和场景可见时，才恢复为 `true`。视图轮询无法覆盖显式主机暂停。一个独立的完成定时器在 iOS 允许进程执行的同时，会持续进行 HTTP、主机调用、过期和持久性进度。它不会请求后台执行，也不会延长应用的后台生命周期。
 
-Call `try await view.detach()` before creating a replacement view for the same
-session. Detach preserves the runtime. `load` also replaces a running pack: it
-asynchronously drains the Metal queue, detaches, loads transactionally and
-reattaches after success or failure. Failed candidates preserve the previous app.
+调用 `try await view.detach()` 之后再为同一会话创建替换视图。detach 会保留运行时。`load` 也会替换正在运行的包：它异步地 draining Metal 队列，detach，事务性地加载，成功或失败后重新附加。失败的候选者会保留之前的 App。
 
-The normal view path renders Skia directly into a CAMetalLayer drawable, with no
-CPU snapshot/readback or image upload. `onPresented` is fired after a completion
-barrier on the same Metal queue, not on submission. Rendering tracks SDK frame
-revisions, including repaints that reuse an application frame ID. Touches use
-logical points and drawables use actual screen scale; safe areas are measured in
-the view's coordinate space. One contact is supported; additional contacts cancel
-it explicitly.
+正常视图路径将 Skia 直接渲染到 CAMetalLayer 可绘制表面，无需 CPU 快照/读回或图像上传。`onPresented` 在同一 Metal 队列的完成屏障之后触发，而不是在提交时触发。渲染跟踪 SDK 帧修订，包括重绘操作，这些重绘操作会复用应用程序的帧 ID。触摸操作使用逻辑点，绘制操作使用实际屏幕缩放；安全区域以视图的坐标空间进行测量。仅支持一个接触点；额外的接触点会明确取消该操作。
 
-Touches that begin inside the native view belong to the mini-program. Its own
-gesture recognizer prevents ancestor `UIScrollView` pans from stealing that
-sequence; gestures that begin in the host's surrounding area still scroll the
-host normally. The SDK does not change a host scroll view's delegate or enabled
-state. Host navigation and operating-system interruptions can still cancel the
-touch, and cancellation never synthesizes a tap.
+在原生视图内部开始的触摸属于小程序。其自身的手势识别器会阻止祖先 `UIScrollView` 的滑动操作窃取该触摸序列；在宿主周围区域开始的手势仍会正常滚动宿主。SDK 不会更改宿主滚动视图的委托或启用状态。宿主导航和操作系统中断仍可以取消触摸，且取消操作永远不会合成一次点击。
 
-Await `session.flushStorage()` when an explicit durability point is needed, and
-`session.close()` (or `view.close()`) before releasing the feature. Close drains
-GPU work and awaits persistence before destroying native state. A stable
-application/account storage key is required for persistence and has one writer;
-keys must not be generated from session UUIDs or pack versions. The default root
-is the app's Application Support/WeappContainer directory. Explicit
-`.init(storage: .memoryOnly)` selects nonpersistent storage. Deinitialization is
-only a final cleanup safety net and cannot report persistence errors to callers.
+等待需要明确持久性时调用 `session.flushStorage()`，并在释放功能前调用 `session.close()`（或 `view.close()`）。关闭会消耗 GPU 工作，并在持久化之前销毁原生状态。持久化需要稳定的应用/账户存储密钥，且该密钥只有一个写入者；密钥不得从会话 UUID 或包版本生成。默认根目录为应用的 Application Support/WeappContainer 目录。明确调用 `.init(storage: .memoryOnly)` 会选择非持久化存储。去初始化仅是最终清理的安全保障，无法向调用者报告持久化错误。
 
-`wx.request` uses the shared reqwest/rustls HTTP(S) transport rather than
-URLSession. App Transport Security settings do not configure this transport.
-Host methods implemented with URLSession follow that API's ATS policy. The preview supports
-`wx.request`, storage, window/system information and the shared contract's mini-
-program subset. Upload/download/WebSocket are not implemented; inspect
-`session.capabilities()` after loading for actual compiled support.
+`wx.request` 使用共享的 reqwest/rustls HTTP(S) 传输层，而不是 URLSession。应用传输安全（ATS）设置不会配置此传输层。使用 URLSession 实现的主机方法遵循该 API 的 ATS 策略。预览版本支持 `wx.request`、存储、窗口/系统信息以及共享合约的小程序子集。暂不支持上传/下载/WebSocket；加载后请查看 `session.capabilities()` 以获取实际编译支持情况。
 
-## Independent consumer validation
+<a id="independent-consumer-validation"></a>
+## 独立的消费者验证
 
-`node tools/simulator-smoke.mjs --distribution /absolute/WeappContainer` builds
-and runs the isolated example using only the distribution. The script borrows a
-booted simulator, installs a uniquely identified test application, records
-completed Metal frames, messages, reload recovery, storage and lifecycle evidence,
-and removes its own application at the end. It never shuts down the simulator.
-`node scripts/sdk-ios-pod-smoke.mjs` separately verifies CocoaPods install and
-consumer linking from the same distribution.
+`node tools/simulator-smoke.mjs --distribution /absolute/WeappContainer` 构建并运行仅使用分发的独立示例。该脚本借用了已启动的模拟器，安装了唯一标识的测试应用，记录完成的 Metal 帧、消息、重新加载恢复、存储和生命周期证据，并在结束时移除其自身应用。它从不关闭模拟器。`node scripts/sdk-ios-pod-smoke.mjs` 分别验证 CocoaPods 的安装和消费者链接，使用相同的分发。
 
-Device and Intel simulator compile checks are recorded separately from real
-arm64 simulator execution; a simulator run is not device execution evidence.
+设备和英特尔模拟器编译检查与真实的 arm64 模拟器执行分开记录；模拟器运行不能作为设备执行的证据。
 
-Use `--compile-only` for arm64-device and x86_64-simulator consumer linking
-without interacting with a simulator; use `--simulator-only` for the arm64
-simulator interaction gate. Both modes validate the distribution checksums.
+使用 `--compile-only` 进行 arm64-device 和 x86_64-simulator 消费者链接，且不与模拟器交互；使用 `--simulator-only` 进行 arm64 模拟器交互门控。两种模式都会验证分发的校验和。

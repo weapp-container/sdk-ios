@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "repository": "weapp-container/sdk-ios",
+  "defaultLocale": "zh-CN",
+  "locales": [
+    "zh-CN",
+    "en"
+  ],
+  "pages": [
+    {
+      "id": "CONTRACT",
+      "zh": "CONTRACT.md",
+      "en": "CONTRACT.en.md",
+      "section": "overview",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "CONTRACT.md"
+      },
+      "reviewedChineseSummary": "SDK 协议 v1；会话与调度；内部命令；开发重载（预览.4）；呈现；小程序 API；原生宿主 Chrome（预览版 4）",
+      "reviewedChineseSha256": "8de3ad13d2f32b006a5dd08223ad8a1c01e1a6074723129425da2599168e423a",
+      "legacyHeadingIds": [
+        "development-reload-preview4",
+        "internal-commands",
+        "mini-program-api",
+        "native-host-chrome-preview4",
+        "presentation",
+        "sdk-contract-v1",
+        "session-and-scheduling"
+      ]
+    },
+    {
+      "id": "HOST-SERVICES",
+      "zh": "HOST-SERVICES.md",
+      "en": "HOST-SERVICES.en.md",
+      "section": "overview",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "HOST-SERVICES.md"
+      },
+      "reviewedChineseSummary": "iOS 宿主能力；编译验证记录",
+      "reviewedChineseSha256": "d644018eb75834b429d7997657f118e4a0f9afea675966b576abe71760b34355",
+      "legacyHeadingIds": [
+        "ios-宿主能力",
+        "编译验证记录"
+      ]
+    },
+    {
+      "id": "OPEN_SOURCE",
+      "zh": "OPEN_SOURCE.md",
+      "en": "OPEN_SOURCE.en.md",
+      "section": "overview",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "OPEN_SOURCE.md"
+      },
+      "reviewedChineseSummary": "开源运行时集成",
+      "reviewedChineseSha256": "253d2545971cb8d03ebea4859913da305b00e0c902bdad63b5f643f32eaec77b",
+      "legacyHeadingIds": [
+        "open-source-runtime-integration"
+      ]
+    },
+    {
+      "id": "README",
+      "zh": "README.md",
+      "en": "README.en.md",
+      "section": "overview",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "README.md"
+      },
+      "reviewedChineseSummary": "同步最新公开发行工作流入口，保留固定 preview.6 源码用法与 preview.7 发行候选的独立边界。；已复核 preview.7 公开发行、工具链与生命周期更新",
+      "reviewedChineseSha256": "fee7ee5061c12483fba4da46de5838f0998a64a0c264f4963b8882fab804fdb5",
+      "legacyHeadingIds": [
+        "1-获取运行库",
+        "2-构建并接入",
+        "3-嵌入-uikit-页面",
+        "4-通信与导航",
+        "5-生命周期与存储",
+        "weapp-container-ios-sdk",
+        "准备环境",
+        "验证与更多用法"
+      ]
+    },
+    {
+      "id": "docs/EMBEDDING",
+      "zh": "docs/EMBEDDING.md",
+      "en": "docs/EMBEDDING.en.md",
+      "section": "runtime",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "docs/EMBEDDING.md"
+      },
+      "reviewedChineseSummary": "iOS 端小程序容器（预览版）；构建发行版；安装；嵌入；生命周期和渲染；独立的消费者验证",
+      "reviewedChineseSha256": "6c3ad894d368b72ba7097ed716b9af4cd0ea36738f8f390db2ebcdd5cca33ee1",
+      "legacyHeadingIds": [
+        "build-the-distribution",
+        "embed",
+        "independent-consumer-validation",
+        "install",
+        "lifetime-and-rendering",
+        "weapp-container-for-ios-preview"
+      ]
+    },
+    {
+      "id": "docs/window-metrics",
+      "zh": "docs/window-metrics.md",
+      "en": "docs/window-metrics.en.md",
+      "section": "runtime",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "docs/window-metrics.md"
+      },
+      "reviewedChineseSummary": "UIKit 窗口度量；表面本地布局扩展；已复核 preview.7 公开发行、工具链与生命周期更新",
+      "reviewedChineseSha256": "969dacff8ce30156a25a963f837fd72cf39b2573231ee755807275adbfbb436a",
+      "legacyHeadingIds": [
+        "surface-local-layout-extension",
+        "uikit-window-metrics"
+      ]
+    },
+    {
+      "id": "docs/window-metrics.zh-CN",
+      "zh": "docs/window-metrics.zh-CN.md",
+      "en": "docs/window-metrics.zh-CN.en.md",
+      "section": "runtime",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "docs/window-metrics.zh-CN.md"
+      },
+      "reviewedChineseSummary": "UIKit 窗口信息用法；已复核 preview.7 公开发行、工具链与生命周期更新",
+      "reviewedChineseSha256": "2e6183253cbb9231487442961036cc948d200e2aca88d1497e785892d6e19408",
+      "legacyHeadingIds": [
+        "uikit-窗口信息用法"
+      ]
+    },
+    {
+      "id": "examples/consumer/README",
+      "zh": "examples/consumer/README.md",
+      "en": "examples/consumer/README.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/consumer/README.md"
+      },
+      "reviewedChineseSummary": "独立的 UIKit 消费者",
+      "reviewedChineseSha256": "4959d9e4305bc6aaaa93ee7512919020fb9e8b7d675372d1d40b2be1c67b4990",
+      "legacyHeadingIds": [
+        "independent-uikit-consumer"
+      ]
+    },
+    {
+      "id": "examples/host-services/NFC-APIS",
+      "zh": "examples/host-services/NFC-APIS.md",
+      "en": "examples/host-services/NFC-APIS.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/host-services/NFC-APIS.md"
+      },
+      "reviewedChineseSummary": "iOS NFC",
+      "reviewedChineseSha256": "dea8419d7b8582b6afddc5627f9f1bb41ed224b556460dfbeff6e5bac1ac59b1",
+      "legacyHeadingIds": [
+        "ios-nfc"
+      ]
+    },
+    {
+      "id": "examples/host-services/README",
+      "zh": "examples/host-services/README.md",
+      "en": "examples/host-services/README.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/host-services/README.md"
+      },
+      "reviewedChineseSummary": "本地宿主账号与 reference 支付接入",
+      "reviewedChineseSha256": "db16b70fdc71f795ed678167eacdf4fd830dc487ff8d70804b73184b66c169b5",
+      "legacyHeadingIds": [
+        "本地宿主账号与-reference-支付接入"
+      ]
+    },
+    {
+      "id": "examples/host-services/SYSTEM-APIS",
+      "zh": "examples/host-services/SYSTEM-APIS.md",
+      "en": "examples/host-services/SYSTEM-APIS.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/host-services/SYSTEM-APIS.md"
+      },
+      "reviewedChineseSummary": "原生系统 API",
+      "reviewedChineseSha256": "2f57ec927a7bd4da8a8522a1e2b019df18d5d79879e720b9c9b97b169ec2354b",
+      "legacyHeadingIds": [
+        "原生系统-api"
+      ]
+    },
+    {
+      "id": "examples/host-services/WIFI-APIS",
+      "zh": "examples/host-services/WIFI-APIS.md",
+      "en": "examples/host-services/WIFI-APIS.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/host-services/WIFI-APIS.md"
+      },
+      "reviewedChineseSummary": "iOS Wi-Fi 公共能力范围",
+      "reviewedChineseSha256": "00720ad91ecfcd55eb058313fd0b25f49a6a3b3f76e87aff3b7cdf1ef9965289",
+      "legacyHeadingIds": [
+        "ios-wi-fi-公共能力范围"
+      ]
+    },
+    {
+      "id": "tools/documentation/README",
+      "zh": "tools/documentation/README.md",
+      "en": "tools/documentation/README.en.md",
+      "section": "tools",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "tools/documentation/README.md"
+      },
+      "reviewedChineseSummary": "双语文档维护；更新一组文档；网站快照；检查与测试",
+      "reviewedChineseSha256": "6c0d12dd12a6cd4a1076e912f2a09d959772638769da314e76d1708cc7c5a64e",
+      "legacyHeadingIds": []
+    },
+    {
+      "id": "public-release",
+      "zh": "PUBLIC-RELEASE.md",
+      "en": "PUBLIC-RELEASE.en.md",
+      "section": "tools",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "PUBLIC-RELEASE.md"
+      },
+      "reviewedChineseSummary": "维护者发行顺序、认证、不可变资产与平台独立验收条件；不会自动发布或修改历史发行物。；已复核 preview.7 公开发行、工具链与生命周期更新",
+      "reviewedChineseSha256": "a298116b362271a41cd9110a33d8aa17d64ed03a0ee770a37fa7401c9ad3f1cc",
+      "legacyHeadingIds": []
+    }
+  ],
+  "excluded": [],
+  "assets": []
+}

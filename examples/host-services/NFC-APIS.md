@@ -1,5 +1,8 @@
 # iOS NFC
 
+**简体中文** · [English](NFC-APIS.en.md)
+
+
 基线固定为微信基础库 3.17.3、miniprogram-api-typings 5.2.3，66 个官方叶及
 CoreNFC SDK header 哈希见 NFC-CONTRACT.json。
 

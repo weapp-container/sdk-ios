@@ -1,6 +1,8 @@
+<a id="uikit-window-information-usage"></a>
 # UIKit 窗口信息用法
 
-[简体中文](window-metrics.zh-CN.md) | [English](window-metrics.md)
+**简体中文** · [English](window-metrics.zh-CN.en.md)
+
 
 把 `WeappContainerView` 挂载到实际渲染窗口。背景可以铺满 View；安全区用于保护内容和控件。不要根据机型、屏幕宽高比例或方向猜测侧栏位置，也不要将整张画布裁到安全区。
 
