@@ -68,8 +68,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "README.md"
       },
-      "reviewedChineseSummary": "同步最新公开发行工作流入口，保留固定 preview.6 源码用法与 preview.7 发行候选的独立边界。；已复核 preview.7 公开发行、工具链与生命周期更新",
-      "reviewedChineseSha256": "fee7ee5061c12483fba4da46de5838f0998a64a0c264f4963b8882fab804fdb5",
+      "reviewedChineseSummary": "同步最新公开发行工作流入口，保留固定 preview.6 源码用法与 preview.7 发行候选的独立边界。；已复核 preview.7 公开发行、工具链与生命周期更新；核对当前 preview.7 公开锁与历史兼容边界",
+      "reviewedChineseSha256": "19dd60fc5d9b5246180d4473fbda079dc84abe8f8d7960c54270647217799d6d",
       "legacyHeadingIds": [
         "1-获取运行库",
         "2-构建并接入",
