@@ -27,7 +27,7 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
     let fields = ["timeStamp", "nonceStr", "package", "signType", "paySign"]
     var output: [String: WeappJSON] = [:]
     for field in fields {
-        guard let value = input[field].string, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard let value = input[field]?.string, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw WeappHostError(code: .invalidRequest, message: "wx.requestPayment requires non-empty \(field)")
         }
         output[field] = .string(value)
