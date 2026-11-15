@@ -158,8 +158,9 @@ ApiCallContext 继续透传，运行时按完整应用/包、账号 epoch 和内
 验证旧清理迟到、取消、连续换号、重试和关闭屏障；它不构成设备验收。
 
 `WeappAppPayments` 注册 `weappContainer.payment.request`，只接受服务端 orderId。标准 `wx.requestPayment` 通过
-`installWxRequestPayment(in:channel:)` 单独安装，由宿主提供 `WeappNativeWxPayChannel` 处理运行时校验过的 JSAPI 字段。官方渠道为
-WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官方 SDK
+`installWxRequestPayment(in:channel:)` 单独安装，由宿主提供 `WeappNativeWxPayChannel` 处理运行时校验过的 JSAPI 字段。需要直接绑定官方微信 SDK 时可使用
+`WeappWechatWxPay(appID:partnerID:universalLink:)`；它只接受 `MD5` 和 `prepay_id=`，并通过该实例的 `handleOpenURL` / `handleUniversalLink` 接收回调。官方渠道为
+WeappWechatAppPay(appID:universalLink:)、WeappWechatWxPay(appID:partnerID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官方 SDK
 须作为该集成 target 的实际可见依赖，canImport 不成立时渠道明确不可用。SPM 宿主
 也可以在自己的 target 中实现 WeappNativeAppPayChannel；仅在宿主 target 链接一个
 库，并不自动使另一个独立 target 能 import 它。宿主处理官方 URL/Universal Link

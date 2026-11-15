@@ -126,7 +126,7 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
         let request = PayReq(); request.partnerId = partner; request.prepayId = prepay; request.nonceStr = nonce; request.timeStamp = time; request.package = "Sign=WXPay"; request.sign = signature
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.active = self; submitted = true; waiting = continuation
-            call.cancellation.onCancel { [weak self] in self?.waiting?.resume(throwing: CancellationError()); self?.waiting = nil }
+            call.cancellation.onCancel { [weak self] in self?.abort(CancellationError()) }
             WXApi.send(request) { [weak self] accepted in Task { @MainActor in
                 if !accepted { self?.finish(-1, "WeChat rejected APP payment launch") }
             } }
@@ -155,9 +155,108 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
         if code == 0 { continuation?.resume() }
         else { continuation?.resume(throwing: WeappHostError(code: code == -2 ? .cancelled : .invalidRequest, message: message, details: ["errCode": .number(Double(code)), "errMsg": .string("requestPayment:fail \(code == -2 ? "cancel" : message)")])) }
     }
+    private func abort(_ error: Error) {
+        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+        let continuation = waiting; waiting = nil; continuation?.resume(throwing: error)
+    }
 }
 #if canImport(WechatOpenSDK)
 extension WeappWechatAppPay: WXApiDelegate {
+    nonisolated public func onResp(_ response: BaseResp) {
+        guard response is PayResp else { return }
+        Task { @MainActor [weak self] in self?.finish(Int(response.errCode), response.errStr) }
+    }
+}
+#endif
+
+/// Official WechatOpenSDK bridge for a host that receives native PayReq
+/// compatible values from its merchant backend. The app and partner IDs stay
+/// in the host; only validated signed fields cross from the mini-program.
+@MainActor public final class WeappWechatWxPay: NSObject, WeappNativeWxPayChannel {
+    private let appID: String
+    private let partnerID: String
+    private let universalLink: String
+    private var waiting: CheckedContinuation<Void, Error>?
+    private var submitted = false
+    private static var active: WeappWechatWxPay?
+
+    public var isAvailable: Bool {
+        #if canImport(WechatOpenSDK)
+        return !appID.isEmpty && !partnerID.isEmpty
+        #else
+        return false
+        #endif
+    }
+
+    public init(appID: String, partnerID: String, universalLink: String) {
+        self.appID = appID; self.partnerID = partnerID; self.universalLink = universalLink; super.init()
+    }
+
+    public func pay(_ options: WeappJSON, call: WeappHostApiCall) async throws {
+        #if canImport(WechatOpenSDK)
+        guard options["signType"].string == "MD5",
+              let packageValue = options["package"].string,
+              packageValue.hasPrefix("prepay_id="), packageValue.count > "prepay_id=".count,
+              let nonce = options["nonceStr"].string,
+              let time = options["timeStamp"].string.flatMap(UInt32.init),
+              let signature = options["paySign"].string,
+              !appID.isEmpty, !partnerID.isEmpty,
+              URL(string: universalLink)?.scheme == "https", Self.active == nil else {
+            throw WeappHostError(code: .invalidRequest, message: "Invalid or busy WeChat JSAPI payment contract")
+        }
+        guard WXApi.registerApp(appID, universalLink: universalLink) else {
+            throw WeappHostError(code: .unsupported, message: "WeChat application registration failed")
+        }
+        let request = PayReq()
+        request.partnerId = partnerID
+        request.prepayId = String(packageValue.dropFirst("prepay_id=".count))
+        request.nonceStr = nonce
+        request.timeStamp = time
+        request.package = "Sign=WXPay"
+        request.sign = signature
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Self.active = self; submitted = true; waiting = continuation
+            call.cancellation.onCancel { [weak self] in self?.abort(CancellationError()) }
+            WXApi.send(request) { [weak self] accepted in Task { @MainActor in
+                if !accepted { self?.finish(-1, "WeChat rejected JSAPI payment launch") }
+            } }
+        }
+        #else
+        throw WeappHostError(code: .unsupported, message: "Link the official WechatOpenSDK in the host target")
+        #endif
+    }
+
+    public func handleOpenURL(_ url: URL) -> Bool {
+        #if canImport(WechatOpenSDK)
+        return WXApi.handleOpen(url, delegate: self)
+        #else
+        return false
+        #endif
+    }
+
+    public func handleUniversalLink(_ activity: NSUserActivity) -> Bool {
+        #if canImport(WechatOpenSDK)
+        return WXApi.handleOpenUniversalLink(activity, delegate: self)
+        #else
+        return false
+        #endif
+    }
+
+    private func finish(_ code: Int, _ message: String) {
+        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+        let continuation = waiting; waiting = nil
+        if code == 0 { continuation?.resume() }
+        else { continuation?.resume(throwing: WeappHostError(code: code == -2 ? .cancelled : .invalidRequest, message: message, details: ["errCode": .number(Double(code)), "errMsg": .string("requestPayment:fail \(code == -2 ? "cancel" : message)")])) }
+    }
+
+    private func abort(_ error: Error) {
+        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+        let continuation = waiting; waiting = nil; continuation?.resume(throwing: error)
+    }
+}
+
+#if canImport(WechatOpenSDK)
+extension WeappWechatWxPay: WXApiDelegate {
     nonisolated public func onResp(_ response: BaseResp) {
         guard response is PayResp else { return }
         Task { @MainActor [weak self] in self?.finish(Int(response.errCode), response.errStr) }
