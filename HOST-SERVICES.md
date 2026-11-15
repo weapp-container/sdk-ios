@@ -157,7 +157,8 @@ ApiCallContext 继续透传，运行时按完整应用/包、账号 epoch 和内
 请求当成释放完成。`node tools/test-account-cleanup.mjs` 在 Swift 实际并发调度中
 验证旧清理迟到、取消、连续换号、重试和关闭屏障；它不构成设备验收。
 
-`WeappAppPayments` 同时注册 `wx.requestPayment` 与 `weappContainer.payment.request`，只接受服务端 orderId。官方渠道为
+`WeappAppPayments` 注册 `weappContainer.payment.request`，只接受服务端 orderId。标准 `wx.requestPayment` 通过
+`installWxRequestPayment(in:channel:)` 单独安装，由宿主提供 `WeappNativeWxPayChannel` 处理运行时校验过的 JSAPI 字段。官方渠道为
 WeappWechatAppPay(appID:universalLink:) 和 WeappAlipayAppPay(urlScheme:)；官方 SDK
 须作为该集成 target 的实际可见依赖，canImport 不成立时渠道明确不可用。SPM 宿主
 也可以在自己的 target 中实现 WeappNativeAppPayChannel；仅在宿主 target 链接一个
