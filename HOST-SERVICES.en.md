@@ -159,8 +159,10 @@ The host hook must return after the exact device, file and background task are a
 The request is treated as release completed. `node tools/test-account-cleanup.mjs` in Swift's actual concurrent dispatch
 Verification of old cleanup lateness, cancellation, continuous number changes, retries, and closing barriers; it does not constitute equipment acceptance.
 
-`WeappAppPayments` registers `wx.requestPayment` and `weappContainer.payment.request` at the same time, and only accepts orderId from the server. The official channel is
-WeappWechatAppPay(appID:universalLink:) and WeappAlipayAppPay(urlScheme:); Official SDK
+`WeappAppPayments` registers `weappContainer.payment.request` and only accepts a server-owned orderId. Install standard `wx.requestPayment`
+separately with `installWxRequestPayment(in:channel:)`; the host supplies `WeappNativeWxPayChannel` for the validated JSAPI fields. Hosts that need the built-in official bridge can use
+`WeappWechatWxPay(appID:partnerID:universalLink:)`; it accepts only `MD5` and `prepay_id=` and receives callbacks through that instance's `handleOpenURL` / `handleUniversalLink`. The official channels are
+WeappWechatAppPay(appID:universalLink:), WeappWechatWxPay(appID:partnerID:universalLink:) and WeappAlipayAppPay(urlScheme:); Official SDK
 Must be used as the actual visible dependency of the integration target. When canImport is not established, the channel is clearly unavailable. SPM host
 You can also implement WeappNativeAppPayChannel in your own target; only link one in the host target
 library does not automatically enable another independent target to import it. Host processing official URL/Universal Link

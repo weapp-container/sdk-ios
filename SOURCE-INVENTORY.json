@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.1",
-  "sourceFilesSha256": "e53889f139c60c659eb5a190aa93ea86694ef043caff5949bccf1dbd80d00e77",
-  "review": "Bind the reviewed iOS .7.1 public release manifest, SwiftPM checksum and CocoaPods archive hash.",
+  "sourceFilesSha256": "2ea5397006bbbbffbcd2b3d980750fdcf98b27b8209b9d7cf7515b963b6e6007",
+  "review": "Record the Swift payment validation compiler fix.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -83,14 +83,14 @@
     },
     {
       "path": "HOST-SERVICES.en.md",
-      "sha256": "02bfed1b2abd6219ff249a4e9532cca5a9d54427681e880ff3c6072ea4174007",
-      "size": 17838,
+      "sha256": "8fe971eade3827c2678e5fd037f113178666945ebe81e5d929b55321687043b3",
+      "size": 18248,
       "mode": "100644"
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "d644018eb75834b429d7997657f118e4a0f9afea675966b576abe71760b34355",
-      "size": 14305,
+      "sha256": "db394728c7c74315faa38f4a8721c18e7b477ba48f191fca332c20a424aadb93",
+      "size": 14715,
       "mode": "100644"
     },
     {
@@ -155,8 +155,8 @@
     },
     {
       "path": "Sources/WeappContainer/AppPayments.swift",
-      "sha256": "5d4bf9ab4f9ee0ca3677ca2ae28ee5d6cb68b072546dcd836a1371c996b49e91",
-      "size": 9819,
+      "sha256": "0a8e1bd0948f1181a510130a68f0b18c10add923cba52460846e52ad3ae140d1",
+      "size": 17536,
       "mode": "100644"
     },
     {
@@ -347,8 +347,8 @@
     },
     {
       "path": "documentation.json",
-      "sha256": "5792db278415b3b17d2757cbc49ead8d42312a0329ea4d260f2eb96a073eac03",
-      "size": 8377,
+      "sha256": "267c028bbd04282db873ffa9a3f45990a1c3df6b8a7fd6d81925cff53576da25",
+      "size": 8455,
       "mode": "100644"
     },
     {
