@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.1",
-  "sourceFilesSha256": "ecf662efc8426b77d43c1d621ce2d4475fba377c210d5d316fde9879397c959d",
-  "review": "Review separate backend-order and standard JSAPI payment host boundaries.",
+  "sourceFilesSha256": "2ea5397006bbbbffbcd2b3d980750fdcf98b27b8209b9d7cf7515b963b6e6007",
+  "review": "Record the Swift payment validation compiler fix.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -83,14 +83,14 @@
     },
     {
       "path": "HOST-SERVICES.en.md",
-      "sha256": "c874add48036beb3c1b1c3cafae82974dc042038d06c692ecaa2fc8433e26691",
-      "size": 17964,
+      "sha256": "8fe971eade3827c2678e5fd037f113178666945ebe81e5d929b55321687043b3",
+      "size": 18248,
       "mode": "100644"
     },
     {
       "path": "HOST-SERVICES.md",
-      "sha256": "f5e79e98897ff7bd0993440353de2ec0342f3e324ac77ebba3e8650553e9a02b",
-      "size": 14448,
+      "sha256": "db394728c7c74315faa38f4a8721c18e7b477ba48f191fca332c20a424aadb93",
+      "size": 14715,
       "mode": "100644"
     },
     {
@@ -155,8 +155,8 @@
     },
     {
       "path": "Sources/WeappContainer/AppPayments.swift",
-      "sha256": "c6351b980899f05a373874bf7184d9938535114e93227e84d8f71ec3ee941e28",
-      "size": 12185,
+      "sha256": "0a8e1bd0948f1181a510130a68f0b18c10add923cba52460846e52ad3ae140d1",
+      "size": 17536,
       "mode": "100644"
     },
     {
@@ -347,8 +347,8 @@
     },
     {
       "path": "documentation.json",
-      "sha256": "5792db278415b3b17d2757cbc49ead8d42312a0329ea4d260f2eb96a073eac03",
-      "size": 8377,
+      "sha256": "267c028bbd04282db873ffa9a3f45990a1c3df6b8a7fd6d81925cff53576da25",
+      "size": 8455,
       "mode": "100644"
     },
     {
