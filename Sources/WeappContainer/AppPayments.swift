@@ -38,6 +38,20 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
     return .object(output)
 }
 
+@MainActor private enum WeappWechatPaymentLease {
+    private static var active: AnyObject?
+    static var isBusy: Bool { active != nil }
+    static func claim(_ owner: AnyObject) -> Bool {
+        guard active == nil else { return false }
+        active = owner
+        return true
+    }
+    static func owns(_ owner: AnyObject) -> Bool { active === owner }
+    static func release(_ owner: AnyObject) {
+        if active === owner { active = nil }
+    }
+}
+
 /// Only backend-owned APP launch parameters are passed to official native channels.
 @MainActor public final class WeappAppPayments {
     private let backend: WeappHostServicesClient
@@ -107,7 +121,6 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
     private let universalLink: String
     private var waiting: CheckedContinuation<Void, Error>?
     private var submitted = false
-    private static var active: WeappWechatAppPay?
     public var isAvailable: Bool {
         #if canImport(WechatOpenSDK)
         return true
@@ -121,12 +134,16 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
         guard launch["kind"].string == "wechat-app", launch["appId"].string == appID, launch["packageValue"].string == "Sign=WXPay",
               let partner = launch["partnerId"].string, let prepay = launch["prepayId"].string, let nonce = launch["nonceStr"].string,
               let time = launch["timeStamp"].string.flatMap(UInt32.init), let signature = launch["sign"].string,
-              URL(string: universalLink)?.scheme == "https", Self.active == nil else { throw WeappHostError(code: .invalidRequest, message: "Invalid or busy WeChat APP Pay contract") }
+              URL(string: universalLink)?.scheme == "https", !WeappWechatPaymentLease.isBusy else { throw WeappHostError(code: .invalidRequest, message: "Invalid or busy WeChat APP Pay contract") }
         guard WXApi.registerApp(appID, universalLink: universalLink) else { throw WeappHostError(code: .unsupported, message: "WeChat application registration failed") }
         let request = PayReq(); request.partnerId = partner; request.prepayId = prepay; request.nonceStr = nonce; request.timeStamp = time; request.package = "Sign=WXPay"; request.sign = signature
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            Self.active = self; submitted = true; waiting = continuation
-            call.cancellation.onCancel { [weak self] in self?.abort(CancellationError()) }
+            guard WeappWechatPaymentLease.claim(self) else {
+                continuation.resume(throwing: WeappHostError(code: .invalidRequest, message: "Another WeChat payment is awaiting its terminal callback"))
+                return
+            }
+            submitted = true; waiting = continuation
+            call.cancellation.onCancel { [weak self] in self?.cancelWait(CancellationError()) }
             WXApi.send(request) { [weak self] accepted in Task { @MainActor in
                 if !accepted { self?.finish(-1, "WeChat rejected APP payment launch") }
             } }
@@ -150,13 +167,13 @@ private func validatedWxPaymentOptions(_ payload: WeappJSON) throws -> WeappJSON
         #endif
     }
     fileprivate func finish(_ code: Int, _ message: String) {
-        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+        guard submitted, WeappWechatPaymentLease.owns(self) else { return }; submitted = false; WeappWechatPaymentLease.release(self)
         let continuation = waiting; waiting = nil
         if code == 0 { continuation?.resume() }
         else { continuation?.resume(throwing: WeappHostError(code: code == -2 ? .cancelled : .invalidRequest, message: message, details: ["errCode": .number(Double(code)), "errMsg": .string("requestPayment:fail \(code == -2 ? "cancel" : message)")])) }
     }
-    private func abort(_ error: Error) {
-        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+    private func cancelWait(_ error: Error) {
+        guard submitted, WeappWechatPaymentLease.owns(self) else { return }
         let continuation = waiting; waiting = nil; continuation?.resume(throwing: error)
     }
 }
@@ -178,7 +195,6 @@ extension WeappWechatAppPay: WXApiDelegate {
     private let universalLink: String
     private var waiting: CheckedContinuation<Void, Error>?
     private var submitted = false
-    private static var active: WeappWechatWxPay?
 
     public var isAvailable: Bool {
         #if canImport(WechatOpenSDK)
@@ -201,7 +217,7 @@ extension WeappWechatAppPay: WXApiDelegate {
               let time = options["timeStamp"].string.flatMap(UInt32.init),
               let signature = options["paySign"].string,
               !appID.isEmpty, !partnerID.isEmpty,
-              URL(string: universalLink)?.scheme == "https", Self.active == nil else {
+              URL(string: universalLink)?.scheme == "https", !WeappWechatPaymentLease.isBusy else {
             throw WeappHostError(code: .invalidRequest, message: "Invalid or busy WeChat JSAPI payment contract")
         }
         guard WXApi.registerApp(appID, universalLink: universalLink) else {
@@ -215,8 +231,12 @@ extension WeappWechatAppPay: WXApiDelegate {
         request.package = "Sign=WXPay"
         request.sign = signature
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            Self.active = self; submitted = true; waiting = continuation
-            call.cancellation.onCancel { [weak self] in self?.abort(CancellationError()) }
+            guard WeappWechatPaymentLease.claim(self) else {
+                continuation.resume(throwing: WeappHostError(code: .invalidRequest, message: "Another WeChat payment is awaiting its terminal callback"))
+                return
+            }
+            submitted = true; waiting = continuation
+            call.cancellation.onCancel { [weak self] in self?.cancelWait(CancellationError()) }
             WXApi.send(request) { [weak self] accepted in Task { @MainActor in
                 if !accepted { self?.finish(-1, "WeChat rejected JSAPI payment launch") }
             } }
@@ -243,14 +263,14 @@ extension WeappWechatAppPay: WXApiDelegate {
     }
 
     private func finish(_ code: Int, _ message: String) {
-        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+        guard submitted, WeappWechatPaymentLease.owns(self) else { return }; submitted = false; WeappWechatPaymentLease.release(self)
         let continuation = waiting; waiting = nil
         if code == 0 { continuation?.resume() }
         else { continuation?.resume(throwing: WeappHostError(code: code == -2 ? .cancelled : .invalidRequest, message: message, details: ["errCode": .number(Double(code)), "errMsg": .string("requestPayment:fail \(code == -2 ? "cancel" : message)")])) }
     }
 
-    private func abort(_ error: Error) {
-        guard submitted, Self.active === self else { return }; submitted = false; Self.active = nil
+    private func cancelWait(_ error: Error) {
+        guard submitted, WeappWechatPaymentLease.owns(self) else { return }
         let continuation = waiting; waiting = nil; continuation?.resume(throwing: error)
     }
 }
