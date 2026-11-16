@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.1",
-  "sourceFilesSha256": "2ea5397006bbbbffbcd2b3d980750fdcf98b27b8209b9d7cf7515b963b6e6007",
-  "review": "Record the Swift payment validation compiler fix.",
+  "sourceFilesSha256": "608cd5fc88c65babbd621cca766a7561705a040b06326d73a86864a2443c5f3b",
+  "review": "Review iOS session support for guest SDK compatibility profiles.",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -257,8 +257,8 @@
     },
     {
       "path": "Sources/WeappContainer/Session.swift",
-      "sha256": "151cdd4e984296dee491c24f50fcb8e18a3bb2e89966d35b200e275c784a0a05",
-      "size": 50915,
+      "sha256": "d38e580f7017d4744f9ebcdd881980d5cf5a28b05b0529a135de322243ff050a",
+      "size": 51055,
       "mode": "100644"
     },
     {
@@ -275,8 +275,8 @@
     },
     {
       "path": "Sources/WeappContainer/Types.swift",
-      "sha256": "61987b57486b4042c0cd783ea14048135df26515bba9c0d57b7ca50073e3fe38",
-      "size": 6324,
+      "sha256": "a31e688f4ac956963fa4b25e3f6b64a3298feb7dcb71645977d64bf13156bcc4",
+      "size": 6543,
       "mode": "100644"
     },
     {
