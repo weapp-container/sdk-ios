@@ -108,16 +108,17 @@ public struct WeappContainerConfiguration: Sendable {
     }
     public var storage: Storage
     public var sessionID: String
+    public var compatibilityVersion: String?
     public var gpuRequired: Bool?
     public var devDiagnostics: Bool
     /// Opt in before native creation; complete host layouts become mandatory.
     public var atomicHostLayout: Bool = false
     /// Enable only when the embedding host paints dynamic system tab chrome.
     public var systemTabBar: Bool = false
-    public init(storageKey: String, storageRoot: URL? = nil, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false) {
-        self.storage = .persistent(key: storageKey, root: storageRoot); self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics
+    public init(storageKey: String, storageRoot: URL? = nil, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false, compatibilityVersion: String? = nil) {
+        self.storage = .persistent(key: storageKey, root: storageRoot); self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics; self.compatibilityVersion = compatibilityVersion
     }
-    public init(storage: Storage, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false) {
-        self.storage = storage; self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics
+    public init(storage: Storage, sessionID: String = UUID().uuidString, gpuRequired: Bool? = nil, devDiagnostics: Bool = false, compatibilityVersion: String? = nil) {
+        self.storage = storage; self.sessionID = sessionID; self.gpuRequired = gpuRequired; self.devDiagnostics = devDiagnostics; self.compatibilityVersion = compatibilityVersion
     }
 }
