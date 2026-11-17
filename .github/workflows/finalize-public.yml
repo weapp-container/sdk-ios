@@ -1,0 +1,52 @@
+name: Finalize reviewed public SDK archives
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_run_id:
+        description: Successful build-public run whose hashes have been committed with --pin
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Require the successful producer recorded in committed pins
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync } from 'node:fs';
+          const id = process.env.ARTIFACT_RUN_ID;
+          if (!/^\d+$/.test(id ?? '')) throw Error('A numeric workflow run ID is required');
+          const run = JSON.parse(execFileSync('gh', ['api', `repos/${process.env.GITHUB_REPOSITORY}/actions/runs/${id}`]));
+          const pins = JSON.parse(readFileSync('release-assets.json'));
+          if (run.status !== 'completed' || run.conclusion !== 'success' || run.path !== '.github/workflows/build-public.yml' || run.head_sha !== pins.sourceCommit) throw Error('The reviewed pins must come from a successful build-public run');
+          execFileSync('git', ['merge-base', '--is-ancestor', run.head_sha, 'HEAD']);
+          NODE
+      - uses: actions/download-artifact@v4
+        with:
+          name: public-ios
+          run-id: ${{ inputs.artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: artifacts/producer
+      - run: node tools/package-release.mjs --out artifacts/producer/public --finalize
+      - run: node tools/package-release.mjs --out artifacts/producer/public --verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: finalized-public-release
+          path: artifacts/producer/public/
+          retention-days: 30
+          if-no-files-found: error
