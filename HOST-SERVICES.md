@@ -11,8 +11,9 @@ let toolkit = try WeappNativeDeviceServices(presenter: presenter,
     allowedMediaOrigins: ["https://media.example.com"])
 try session.configureHostServices(trustedConfiguration)
 try toolkit.install(in: session)
-// 此后再加载 pack；宿主持有 toolkit 直至 session 关闭。
 ```
+
+随后再加载 pack，并在 session 关闭前保持 toolkit 存活。
 
 系统权限由宿主接入；应用内授权状态和操作系统权限分别检查。未实现或设备不支持的 API 不会注册，也不会伪装成成功。
 

@@ -11,8 +11,9 @@ let toolkit = try WeappNativeDeviceServices(presenter: presenter,
     allowedMediaOrigins: ["https://media.example.com"])
 try session.configureHostServices(trustedConfiguration)
 try toolkit.install(in: session)
-// Load the pack afterward; keep the toolkit alive until the session closes.
 ```
+
+Load the pack afterward and keep the toolkit alive until the session closes.
 
 The host connects operating-system permissions. App-level authorization and operating-system permissions are checked separately. APIs that are unimplemented or unavailable on the device are not registered and do not report success.
 

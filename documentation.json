@@ -30,7 +30,7 @@
         "path": "HOST-SERVICES.md"
       },
       "reviewedChineseSummary": "iOS 宿主能力",
-      "reviewedChineseSha256": "beceef2b13053f27b10fe42a256be501d15937989f3c0c55e5fbe250c882abc6",
+      "reviewedChineseSha256": "07178c815268313be2dd80860b5119ee425f4acaa7d26014893c89dfe30c724e",
       "legacyHeadingIds": []
     },
     {
@@ -161,6 +161,19 @@
       },
       "reviewedChineseSummary": "iOS Wi-Fi 公共能力范围",
       "reviewedChineseSha256": "00720ad91ecfcd55eb058313fd0b25f49a6a3b3f76e87aff3b7cdf1ef9965289",
+      "legacyHeadingIds": []
+    },
+    {
+      "id": "examples/host-services/README",
+      "zh": "examples/host-services/README.md",
+      "en": "examples/host-services/README.en.md",
+      "section": "examples",
+      "source": {
+        "repository": "weapp-container/sdk-ios",
+        "path": "examples/host-services/README.md"
+      },
+      "reviewedChineseSummary": "宿主服务示例索引",
+      "reviewedChineseSha256": "f15ffccfb0c1c03b2a3b951e90fb52f486b127634871c0e4ace4fbc739a404cf",
       "legacyHeadingIds": []
     },
     {
