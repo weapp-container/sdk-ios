@@ -40,7 +40,7 @@ jobs:
           const pinned = JSON.parse(execFileSync(process.execPath, ['-e', "process.stdout.write(require('fs').readFileSync('release-assets.json'))"]));
           if (pinned.sdkVersion !== version || pinned.tag !== `v${version}`) throw Error('Committed release pins do not match the SDK version');
           const release = JSON.parse(execFileSync('gh', ['api', `repos/${process.env.GITHUB_REPOSITORY}/releases/tags/v${version}`]));
-          if (release.draft || !release.prerelease || release.tag_name !== `v${version}`) throw Error('The exact public prerelease is unavailable');
+          if (release.draft || release.prerelease !== version.includes('-') || release.tag_name !== `v${version}`) throw Error('The exact public release is unavailable');
           for (const expected of pinned.assets) {
             const matches = release.assets.filter(asset => asset.name === expected.fileName);
             if (matches.length !== 1 || matches[0].size !== expected.size || matches[0].digest !== `sha256:${expected.sha256}`) {
