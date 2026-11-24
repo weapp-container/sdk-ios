@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.1",
-  "sourceFilesSha256": "b1eddad59509b9868093101669fea5070149e225a7b24787c738b68e5e978cab",
-  "review": "Review and publish the bilingual host-service example indexes and refresh the complete reviewed SDK source inventory.",
+  "sourceFilesSha256": "e19c0b4abf77e7ace886f898fbad53a9cf659e37377f8992a4f9c2e92598192f",
+  "review": "Add runnable iOS consumer and current release documentation",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
     "path": "ORIGIN.json",
@@ -137,14 +137,14 @@
     },
     {
       "path": "README.en.md",
-      "sha256": "2cfc5a9a7d3b8457e060bed5d20aa4ae38e45a67c201a49d069709bd358db5c5",
-      "size": 16109,
+      "sha256": "c86b580663acb3b3b42cca8d4d144617ea4768f8d2fca8136b0dd78dd8e049a4",
+      "size": 16096,
       "mode": "100644"
     },
     {
       "path": "README.md",
-      "sha256": "c464e71ee68febb336b59f7905273e79bbf7af67af76e2534992abc1bb6a4120",
-      "size": 14105,
+      "sha256": "583ad73f64811abedba6f259e8f80582f52701a50970f8513083dc552991993c",
+      "size": 14185,
       "mode": "100644"
     },
     {
@@ -323,20 +323,20 @@
     },
     {
       "path": "documentation.json",
-      "sha256": "f51cbb2eb5d19cd5ff4d0d79a3c1c5f34987b9b877a45e34a38238e8afc68325",
-      "size": 6702,
+      "sha256": "2b997bd4a8d2edceea1a62f8ece94b65a02b12792d64d411e8987bd50a3fe12e",
+      "size": 6714,
       "mode": "100644"
     },
     {
       "path": "examples/consumer/README.en.md",
-      "sha256": "fae084bd50e63146c2ad8cfe6d49e05467e299088c375ef0ffd091550cb4999c",
-      "size": 2954,
+      "sha256": "00ea9206b8693b6c7dc34b704939fade194489cdbb6d87176b3eb3f5abd0e526",
+      "size": 4386,
       "mode": "100644"
     },
     {
       "path": "examples/consumer/README.md",
-      "sha256": "4959d9e4305bc6aaaa93ee7512919020fb9e8b7d675372d1d40b2be1c67b4990",
-      "size": 2878,
+      "sha256": "62c89a5f6ba315f24e0e9dd0ab9fe73c8310f8a9bc26aea23d84f896d90fe04f",
+      "size": 4253,
       "mode": "100644"
     },
     {

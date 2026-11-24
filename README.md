@@ -5,28 +5,20 @@
 <a id="public-distribution-candidate-preview7"></a>
 ## 公开发行候选：preview.7
 
-当前 SDK 源码是 `0.1.0-preview.7.1` 候选，核心运行库 `.7.1` 已发布；iOS GitHub release 和 CocoaPods Trunk `.7.1` 尚未发布。iOS、Desktop 与 CocoaPods `.7.0` 入口仍可用。使用安装命令前先核对[发布状态](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.md)，不要混用不同版本的包装层与运行库。源码公开、包发布、编译通过和设备验收分别记录。
+核心 prerelease `runtime-v0.1.0-preview.7.1` 已包含可匿名下载的 iOS SDK tarball，SHA-256 为 `bcb142018b078663533ff988b6288208ecb1834fb126de90b1a678aa2beaa6cf`。独立 `sdk-ios` GitHub release、SwiftPM 和 CocoaPods Trunk `.7.1` 入口仍未发布，因此下方公开安装元数据当前不可用。当前仍是预览版，没有稳定版。状态见[SDK 发行状态](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.md)。
 
-`.7.1` 安装入口在 GitHub release 与 CocoaPods Trunk 发布并完成匿名消费验证后可用。历史私有归档及其锁文件保持原样。
+版本 `0.1.0-preview.7.1`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。核心发行页提供[配套 iOS SDK 归档](https://github.com/weapp-container/weapp-container/releases/download/runtime-v0.1.0-preview.7.1/ios-sdk-0.1.0-preview.7.1-ios-universal.tar.gz)，SHA-256 为 `bcb142018b078663533ff988b6288208ecb1834fb126de90b1a678aa2beaa6cf`。
 
-版本 `0.1.0-preview.7.1`；iOS 16+，Xcode 27.2+（Swift 5.9 语言模式）；包含 arm64 真机和 arm64/x86_64 模拟器。
-
-Swift Package Manager 使用固定版本标签；二进制归档由 Package.swift 的 URL 与 checksum 锁定：
-
-```swift
-.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.1")
-```
-
-CocoaPods 在 Podfile 添加组织公开 Specs 源和已配置的其他源：
+下载并校验后，将归档解压到本地目录。在 Xcode 中将该目录作为本地 Swift package 添加。若使用 CocoaPods，在应用 Podfile 中用本地路径引用归档中的 `WeappContainer.podspec`：
 
 ```ruby
-source 'https://github.com/weapp-container/Specs.git'
-source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-pod 'WeappContainer', '0.1.0-preview.7.1'
+target 'YourApp' do
+  pod 'WeappContainer', :path => '/absolute/path/to/WeappContainer'
+end
 ```
 
-Pod 使用包含 Swift 层、XCFramework 和许可的固定 HTTP 归档，验证 SHA-256。普通安装无需 Node.js、Rust 或本地运行库目录。Trunk 投稿状态以 [Specs 发布记录](https://github.com/weapp-container/Specs) 为准。
+独立 `sdk-ios` GitHub release 和 CocoaPods Trunk `.7.1` 入口尚未发布，`Package.swift` 与 podspec 中的远程 URL 当前不可用。上述本地归档路径不依赖这些远程入口。
 
 <a id="reviewed-source-build-checkout"></a>
 ### 已复核的源码构建版本
@@ -77,18 +69,19 @@ node sdk/contract/fixtures/make-acceptance-pack.mjs --out artifacts/hello-pack
 <a id="1-obtain-runtime-library"></a>
 ## 1. 获取运行库
 
-在公开核心仓库的干净 checkout 根目录执行：
+在公开核心仓库根目录按[源码构建指南](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.md)构建 iOS device 与 simulator runtime target 及 notices，然后执行：
 
 ```sh
-pnpm sdk:build:ios -- --install-framework
+node sdk/ios/tools/build.mjs --native-root artifacts/sdk/native \
+  --licenses-root artifacts/sdk/licenses --out artifacts/sdk/ios --install-framework
 ```
 
-该命令从当前源码构建运行库，收集 notices，并调用固定的 SDK 包装层生成接入包。输出在 `artifacts/sdk/ios/`。完整工具链和输入检查见[源码构建](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.md)。历史归档安装属于文末的可选兼容路径。
+该命令调用固定的 SDK 包装层生成 XCFramework 与本地 Swift package。输出在 `artifacts/sdk/ios/`。历史归档安装属于文末的可选兼容路径。
 
 <a id="2-build-and-integrate"></a>
 ## 2. 构建并接入
 
-上一节的源码构建已在 `artifacts/sdk/ios/` 生成本地接入包。独立 SDK checkout 的包装层构建命令见历史归档章节。
+上一节的包装层构建已在 `artifacts/sdk/ios/` 生成本地接入包。独立 SDK checkout 的包装层构建命令见历史归档章节。
 
 输出目录为 `artifacts/sdk/ios/WeappContainer`，包含 Swift 源码、XCFramework、SwiftPM / CocoaPods 配置、许可证和构建记录。`--install-framework` 同时安装到本仓库忽略的 `Frameworks/` 目录，供根 `Package.swift` 使用。
 

@@ -6,6 +6,27 @@
 
 烟雾运行者将准备好的 Swift 包和显式提供的可移植测试 fixture 复制到一个新的消费者目录中。它编译了设备 arm64 和模拟器 x86_64 目标，然后在现有的借来的 arm64 模拟器上运行一个 XCTest。它从不创建或关闭模拟器。
 
+## 从源码运行
+
+```sh
+node sdk/contract/fixtures/make-acceptance-pack.mjs --out artifacts/hello-pack
+node scripts/sdk-native-build.mjs --target aarch64-apple-ios --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target aarch64-apple-ios --features quickjs-native-ios,skia-gpu-metal
+node scripts/sdk-native-build.mjs --target aarch64-apple-ios-sim --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target aarch64-apple-ios-sim --features quickjs-native-ios,skia-gpu-metal
+node scripts/sdk-native-build.mjs --target x86_64-apple-ios --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target x86_64-apple-ios --features quickjs-native-ios,skia-gpu-metal
+node sdk/ios/tools/build.mjs --native-root artifacts/sdk/native \
+  --licenses-root artifacts/sdk/licenses --out artifacts/sdk/ios --install-framework
+node sdk/ios/tools/simulator-smoke.mjs \
+  --distribution artifacts/sdk/ios/WeappContainer \
+  --pack artifacts/hello-pack \
+  --simulator <booted-udid> \
+  --out artifacts/ios/validation
+```
+
+示例屏幕包含双会话、`Reload`、异步宿主调用、前后台、导航、嵌套滚动、旋转、重新挂载、关闭和持久化重开控件。`Consumer.swift` 展示 `WeappContainerSession`、`WeappContainerView`、宿主方法注册、事件订阅和窗口指标读取，`ConsumerUITests.swift` 驱动同一套操作并保存回执。
+
 ```sh
 node tools/simulator-smoke.mjs \
   --distribution /absolute/path/to/WeappContainer \

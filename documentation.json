@@ -68,8 +68,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "README.md"
       },
-      "reviewedChineseSummary": "Weapp Container iOS SDK",
-      "reviewedChineseSha256": "c464e71ee68febb336b59f7905273e79bbf7af67af76e2534992abc1bb6a4120",
+      "reviewedChineseSummary": "iOS SDK 与公开发行说明",
+      "reviewedChineseSha256": "583ad73f64811abedba6f259e8f80582f52701a50970f8513083dc552991993c",
       "legacyHeadingIds": []
     },
     {
@@ -120,8 +120,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "examples/consumer/README.md"
       },
-      "reviewedChineseSummary": "独立的 UIKit 消费者",
-      "reviewedChineseSha256": "4959d9e4305bc6aaaa93ee7512919020fb9e8b7d675372d1d40b2be1c67b4990",
+      "reviewedChineseSummary": "iOS UIKit consumer 示例应用",
+      "reviewedChineseSha256": "62c89a5f6ba315f24e0e9dd0ab9fe73c8310f8a9bc26aea23d84f896d90fe04f",
       "legacyHeadingIds": []
     },
     {

@@ -6,6 +6,27 @@
 
 The smoke runner copies the prepared Swift package and explicitly supplied portable fixture into a new consumer directory. It compiles the device arm64 and simulator x86_64 targets, then runs one XCTest on an existing borrowed arm64 simulator. It never creates or shuts down a simulator.
 
+## Run from Source
+
+```sh
+node sdk/contract/fixtures/make-acceptance-pack.mjs --out artifacts/hello-pack
+node scripts/sdk-native-build.mjs --target aarch64-apple-ios --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target aarch64-apple-ios --features quickjs-native-ios,skia-gpu-metal
+node scripts/sdk-native-build.mjs --target aarch64-apple-ios-sim --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target aarch64-apple-ios-sim --features quickjs-native-ios,skia-gpu-metal
+node scripts/sdk-native-build.mjs --target x86_64-apple-ios --out artifacts/sdk/native
+node scripts/sdk-licenses.mjs --target x86_64-apple-ios --features quickjs-native-ios,skia-gpu-metal
+node sdk/ios/tools/build.mjs --native-root artifacts/sdk/native \
+  --licenses-root artifacts/sdk/licenses --out artifacts/sdk/ios --install-framework
+node sdk/ios/tools/simulator-smoke.mjs \
+  --distribution artifacts/sdk/ios/WeappContainer \
+  --pack artifacts/hello-pack \
+  --simulator <booted-udid> \
+  --out artifacts/ios/validation
+```
+
+The example screen contains dual sessions, `Reload`, asynchronous host calls, foreground state, navigation, nested scrolling, rotation, remount, close, and persistent reopen controls. `Consumer.swift` shows `WeappContainerSession`, `WeappContainerView`, host-method registration, event subscription, and window-metrics capture. `ConsumerUITests.swift` drives the same operations and preserves the receipt.
+
 ```sh
 node tools/simulator-smoke.mjs \
   --distribution /absolute/path/to/WeappContainer \

@@ -5,28 +5,20 @@
 <a id="公开发行候选preview7"></a>
 ## Public distribution candidate: preview.7
 
-This SDK source is the `0.1.0-preview.7.1` candidate, and the `.7.1` core runtime is published; the iOS GitHub release and CocoaPods Trunk entry are not published yet. The iOS, Desktop and CocoaPods `.7.0` entries remain available. Check the [release status](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.en.md) before using installation commands. Match wrapper and runtime versions. Source availability, package publication, compilation and device acceptance are recorded separately.
+The core prerelease `runtime-v0.1.0-preview.7.1` contains an anonymously downloadable iOS SDK tarball with SHA-256 `bcb142018b078663533ff988b6288208ecb1834fb126de90b1a678aa2beaa6cf`. The standalone `sdk-ios` GitHub release, SwiftPM and CocoaPods Trunk `.7.1` entries are still unpublished, so the public installation metadata below is currently unavailable. This remains a prerelease, with no stable version available. See the [SDK release status](https://github.com/weapp-container/weapp-container/blob/main/docs/public-sdk-release.en.md).
 
-The `.7.1` installation entries become usable after the GitHub release and CocoaPods Trunk publication pass anonymous consumer verification. Historical private archives and locks retain their original identities.
+Version `0.1.0-preview.7.1` requires iOS 16+ and Xcode 27.2+ (Swift 5.9 language mode). It covers arm64 devices and arm64/x86_64 simulators. The core release provides the matching [iOS SDK archive](https://github.com/weapp-container/weapp-container/releases/download/runtime-v0.1.0-preview.7.1/ios-sdk-0.1.0-preview.7.1-ios-universal.tar.gz), with SHA-256 `bcb142018b078663533ff988b6288208ecb1834fb126de90b1a678aa2beaa6cf`.
 
-Version `0.1.0-preview.7.1` requires iOS 16+ and Xcode 27.2+ (Swift 5.9 language mode). It covers arm64 devices and arm64/x86_64 simulators.
-
-Use the exact SwiftPM version; Package.swift pins the binary URL and checksum:
-
-```swift
-.package(url: "https://github.com/weapp-container/sdk-ios.git", exact: "0.1.0-preview.7.1")
-```
-
-For CocoaPods, add the public organization Specs repository alongside your configured sources:
+Download and verify the archive, then extract it locally. Add the extracted directory as a local Swift package in Xcode. For CocoaPods, reference the included `WeappContainer.podspec` by local path:
 
 ```ruby
-source 'https://github.com/weapp-container/Specs.git'
-source 'https://cdn.cocoapods.org/'
 platform :ios, '16.0'
-pod 'WeappContainer', '0.1.0-preview.7.1'
+target 'YourApp' do
+  pod 'WeappContainer', :path => '/absolute/path/to/WeappContainer'
+end
 ```
 
-The Pod downloads a fixed HTTP archive containing Swift sources, the XCFramework and licenses, verified by SHA-256. Installation needs no Node.js, Rust or local runtime checkout. Check the [Specs publication record](https://github.com/weapp-container/Specs) for Trunk availability.
+The standalone `sdk-ios` GitHub release and CocoaPods Trunk `.7.1` entry have not been published, so the remote URLs in `Package.swift` and the podspec are currently unavailable. The local archive path above does not depend on those remote entries.
 
 <a id="已复核的源码构建版本"></a>
 ### Reviewed source-build checkout
@@ -77,18 +69,19 @@ The host application consumes the built XCFramework and Swift wrapper without Ru
 <a id="1-获取运行库"></a>
 ## 1. Obtain Runtime Library
 
-Execute the following command in the root directory of a clean checkout of the public core repository:
+From the public core repository root, build the iOS device and simulator runtime targets and notices using the [source build guide](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md), then run:
 
 ```sh
-pnpm sdk:build:ios -- --install-framework
+node sdk/ios/tools/build.mjs --native-root artifacts/sdk/native \
+  --licenses-root artifacts/sdk/licenses --out artifacts/sdk/ios --install-framework
 ```
 
-This command builds the runtime, collects notices, and invokes the fixed SDK wrapper to generate the integration package. Output is generated at `artifacts/sdk/ios/`. Full toolchain and input validation are detailed in [Source Build](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md). Historical archive installation is an optional compatibility path mentioned at the end.
+This command invokes the fixed SDK wrapper to generate the XCFramework and local Swift package. Output is generated at `artifacts/sdk/ios/`. Historical archive installation is an optional compatibility path mentioned at the end.
 
 <a id="2-构建并接入"></a>
 ## 2. Build and Integrate
 
-The source build above produces the local integration package in `artifacts/sdk/ios/`. Wrapper-only build commands for a standalone SDK checkout are in the historical archive section.
+The wrapper build above produces the local integration package in `artifacts/sdk/ios/`. Wrapper-only build commands for a standalone SDK checkout are in the historical archive section.
 
 Output directory is at `artifacts/sdk/ios/WeappContainer`, containing Swift source code, XCFramework, SwiftPM / CocoaPods configuration, license files, and build records. `--install-framework` is also installed into the directory ignored by this repository at `Frameworks/` for use by the root `Package.swift`.
 
