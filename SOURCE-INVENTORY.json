@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "sdkVersion": "0.1.0-preview.7.1",
-  "sourceFilesSha256": "a84e7e23b99b4926c75625f04d9b22775e710f0f5caa1c97978f4dbb1c7d4955",
+  "sourceFilesSha256": "85dcfcb3e608db9819547ce8bf37ec67a6417b0b95b51605bb4af13c2c0c2ac4",
   "review": "Record stable and preview publication channel behavior in the release tooling",
   "scope": "Current reviewed SDK wrapper source bytes only; this inventory is not build, artifact, device or parity acceptance evidence.",
   "historicalOrigin": {
@@ -47,8 +47,8 @@
     },
     {
       "path": ".github/workflows/publish-release.yml",
-      "sha256": "15e73ee6364ec122c9ef89289c2d82bf9b639903f41a6803f5ca79e6b91fc89f",
-      "size": 1776,
+      "sha256": "88be9a6f1fe9ffb4a91078d5100e21e85a68fb40d300e47336bf943b60d44435",
+      "size": 1773,
       "mode": "100644"
     },
     {
