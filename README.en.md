@@ -20,17 +20,6 @@ end
 
 The standalone `sdk-ios` GitHub release and CocoaPods Trunk `.7.1` entry have not been published, so the remote URLs in `Package.swift` and the podspec are currently unavailable. The local archive path above does not depend on those remote entries.
 
-<a id="已复核的源码构建版本"></a>
-### Reviewed source-build checkout
-
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git sdk-ios-source
-cd sdk-ios-source
-git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
-```
-
-
-
 [Documentation](https://container.weapp.dev/en/docs/) · [Build from source](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md) · [APIs and contracts](https://github.com/weapp-container/sdk-contract/blob/main/README.en.md)
 
 Embed mini-program pages within iOS applications. The SDK provides Swift session management, UIKit / SwiftUI view integration, host messaging channels, and local persistence, with JavaScript execution via QuickJS and page rendering through Skia Metal.
@@ -38,21 +27,9 @@ Embed mini-program pages within iOS applications. The SDK provides Swift session
 Reviewed source example version: **0.1.0-preview.7.1**. The SDK wrapper source is licensed under [Apache-2.0](LICENSE); the runtime source is provided in the main repository under Apache-2.0. This repository contains the SDK wrapper layer source, while the runtime is built or installed separately.
 
 <a id="从当前源码开始"></a>
-## Starting from Source Code
+## Maintainer source builds
 
-For initial integration, prefer using the public core repository and its fixed SDK commit—no download token is required for historical archives:
-
-```sh
-git clone --recurse-submodules https://github.com/weapp-container/weapp-container.git
-cd weapp-container
-corepack enable
-pnpm install --frozen-lockfile
-node sdk/contract/fixtures/make-acceptance-pack.mjs --out artifacts/hello-pack
-```
-
-Then prepare the platform-specific runtime and notices according to the [source build instructions](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md), and use the build tool from this repository to generate the integration package. The platform toolchain remains a required dependency; public source availability does not imply that binary packages are available in public package repositories. Existing native mini-program or framework build artifacts can be packaged independently using a portable pack tool; the weapp-vite tool is not required.
-
-The following sections retain detailed instructions for installing the SDK, view integration, and lifecycle management. Commands involving `prepare-runtime` / `prepare-native` belong to explicit archiving paths and must use a verified manifest; historical default locks may not be downloadable, see end-of-documentation notes for details.
+Normal applications can download and verify the iOS SDK archive above, then add it as a local Swift Package or CocoaPods dependency. A source checkout is unnecessary. SDK maintainers rebuilding the runtime or updating release manifests should follow the [source build guide](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.en.md).
 
 <a id="准备环境"></a>
 ## Environment Setup
@@ -196,11 +173,7 @@ Repository-authored runtime and SDK source uses Apache-2.0. Build the current ru
 <a id="可选安装已审核的历史归档"></a>
 ### Optional: install reviewed historical archives
 
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git
-cd sdk-ios
-git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
-```
+The following steps are for SDK maintainers with access to historical archives. Applications should use the public iOS SDK archive above and do not need an SDK checkout.
 
 Once runtime access is authorized, provide `WEAPP_CONTAINER_RUNTIME_TOKEN` through the credential environment with **Contents: read** for the private artifact repository. Keep credentials out of source and command arguments.
 

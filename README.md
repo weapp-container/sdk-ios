@@ -20,17 +20,6 @@ end
 
 独立 `sdk-ios` GitHub release 和 CocoaPods Trunk `.7.1` 入口尚未发布，`Package.swift` 与 podspec 中的远程 URL 当前不可用。上述本地归档路径不依赖这些远程入口。
 
-<a id="reviewed-source-build-checkout"></a>
-### 已复核的源码构建版本
-
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git sdk-ios-source
-cd sdk-ios-source
-git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
-```
-
-
-
 [开发文档](https://container.weapp.dev/docs/) · [源码构建](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.md) · [API 与协议](https://github.com/weapp-container/sdk-contract/blob/main/README.md)
 
 在 iOS 应用中嵌入小程序页面。SDK 提供 Swift 会话、UIKit / SwiftUI 视图、宿主消息通道和本地持久化，使用 QuickJS 执行 JavaScript、Skia Metal 渲染页面。
@@ -38,21 +27,9 @@ git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
 已复核源码示例版本：**0.1.0-preview.7.1**。SDK 封装源码采用 [Apache-2.0](LICENSE)；运行时源码在主仓库按 Apache-2.0 提供。本仓库包含 SDK 包装层源码，运行库单独构建或安装。
 
 <a id="starting-from-source-code"></a>
-## 从当前源码开始
+## 维护者源码构建
 
-首次接入优先使用公开的核心仓库及其固定 SDK 提交，不需要历史归档的下载 token：
-
-```sh
-git clone --recurse-submodules https://github.com/weapp-container/weapp-container.git
-cd weapp-container
-corepack enable
-pnpm install --frozen-lockfile
-node sdk/contract/fixtures/make-acceptance-pack.mjs --out artifacts/hello-pack
-```
-
-随后按[源码构建说明](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.md)准备目标平台的运行库和 notices，再用本仓库的构建工具生成接入包。平台工具链仍是必要依赖；源码公开不表示公共包仓库已有可下载的二进制。已有原生小程序或框架构建产物可以由独立 portable pack 工具打包，不要求 weapp-vite。
-
-下面保留独立 SDK 的安装、视图与生命周期说明。涉及 `prepare-runtime` / `prepare-native` 的命令属于显式归档路径，必须使用核验过的配套 manifest；历史默认锁可能无法下载，详见文末说明。
+普通应用下载并校验上面的 iOS SDK 归档后，将其作为本地 Swift Package 或 CocoaPods 依赖即可，不需要下载 SDK 或核心仓库源码。只有维护 SDK、重建运行库或更新发行清单时，才按[源码构建说明](https://github.com/weapp-container/weapp-container/blob/main/docs/sdk-source-build.md)准备源码和目标工具链。
 
 <a id="environment-setup"></a>
 ## 准备环境
@@ -197,11 +174,7 @@ node tools/simulator-smoke.mjs --distribution artifacts/sdk/ios/WeappContainer -
 ### 可选：安装已审核的历史归档
 
 
-```sh
-git clone https://github.com/weapp-container/sdk-ios.git
-cd sdk-ios
-git checkout a5c9d76b8e8068efbcedbf7af073a138b69f54f2
-```
+以下步骤仅供具有历史归档访问权限的 SDK 维护者使用。普通应用直接使用本页上方公开的 iOS SDK 归档，无需准备 SDK checkout。
 
 获得运行库访问授权后，通过凭据环境提供 `WEAPP_CONTAINER_RUNTIME_TOKEN`，权限限定为私有产物仓库的 **Contents: read**。不要把凭据写进源码或命令参数。
 

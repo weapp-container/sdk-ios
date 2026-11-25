@@ -68,8 +68,8 @@
         "repository": "weapp-container/sdk-ios",
         "path": "README.md"
       },
-      "reviewedChineseSummary": "iOS SDK 与公开发行说明",
-      "reviewedChineseSha256": "583ad73f64811abedba6f259e8f80582f52701a50970f8513083dc552991993c",
+      "reviewedChineseSummary": "普通用户使用公开 iOS SDK 归档，历史归档命令仅供维护者使用",
+      "reviewedChineseSha256": "f7d0ecaf25757d559057d76af173706d83f687dcd648005e6b95fd66d81cd77c",
       "legacyHeadingIds": []
     },
     {
